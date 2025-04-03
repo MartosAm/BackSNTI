@@ -1,5 +1,10 @@
+// middleware/index.js
 const auth = require('./auth');
-const { isAdmin, hasPermission } = require('./authorization');
+const authorization = require('./authorization');
 const errorHandler = require('./error-handler');
 
-module.exports = { auth, isAdmin, hasPermission, errorHandler };
+module.exports = {
+  auth,
+  authorization,
+  errorHandler
+};

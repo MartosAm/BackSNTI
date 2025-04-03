@@ -1,19 +1,24 @@
-const isAdmin = (req, res, next) => {
-    if (req.user && req.user.rol === 'administrador') {
+// middleware/authorization.js
+const hasRole = (roles) => {
+  return (req, res, next) => {
+    if (!req.user || !req.user.role) {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso prohibido. Rol no definido.'
+      });
+    }
+
+    if (roles.includes(req.user.role)) {
       next();
     } else {
-      res.status(403).json({ message: 'Acceso prohibido.' });
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso prohibido. Rol no autorizado.'
+      });
     }
   };
-  
-  const hasPermission = (permission) => {
-    return (req, res, next) => {
-      if (req.user && req.user.permissions.includes(permission)) {
-        next();
-      } else {
-        res.status(403).json({ message: 'Acceso prohibido. Permiso insuficiente.' });
-      }
-    };
-  };
-  
-  module.exports = { isAdmin, hasPermission };
+};
+
+module.exports = {
+  hasRole
+};

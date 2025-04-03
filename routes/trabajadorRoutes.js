@@ -2,16 +2,21 @@
 const express = require('express');
 const router = express.Router();
 const trabajadorController = require('../controllers/trabajadorController');
-const authMiddleware = require('../middleware/index');
+const { auth } = require('../middleware');
 
-// Aplicar middleware de autenticación a todas las rutas
-router.use(authMiddleware.verifyToken);
+/**
+ * @swagger
+ * tags:
+ *   name: Trabajadores
+ *   description: Endpoints para administrar trabajadores
+ */
 
-// Rutas para trabajadores
-router.post('/', trabajadorController.crearTrabajador);
-router.get('/', trabajadorController.obtenerTrabajadores);
-router.get('/:id', trabajadorController.obtenerTrabajadorPorId);
-router.put('/:id', trabajadorController.actualizarTrabajador);
-router.delete('/:id', trabajadorController.eliminarTrabajador);
+// Ruta para crear un trabajador
+router.post(
+  '/',
+  auth.verifyToken,
+  trabajadorController.validarTrabajador,
+  trabajadorController.crearTrabajador
+);
 
 module.exports = router;

@@ -6,7 +6,8 @@
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
+  previewFeatures = ["multiSchema"]  // Habilita la función experimental
+
 }
 
 // This is your Prisma schema file for bdsnti database
