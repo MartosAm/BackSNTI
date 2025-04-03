@@ -3,11 +3,16 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-const prisma = require("./prisma/client"); // Importar Prisma para conexión a BD
-const routes = require("./routes"); // Importar rutas
+const { PrismaClient } = require('@prisma/client');
+const trabajadorRoutes = require('./routes/trabajadorRoutes');
+const routes = require('./routes'); // Importar rutas desde index.js
+
+
+app.use('/api/trabajadores', trabajadorRoutes);
 
 // Inicializar Express
 const app = express();
+const prisma = new PrismaClient();
 
 // Middleware globales
 app.use(cors()); // Habilitar CORS
@@ -17,7 +22,7 @@ app.use(express.json()); // Parseo de JSON
 app.use(express.urlencoded({ extended: true })); // Manejo de formularios
 
 // Rutas principales
-app.use("/api", routes);
+app.use("/api", routes, );
 
 // Ruta base
 app.get("/", (req, res) => {
