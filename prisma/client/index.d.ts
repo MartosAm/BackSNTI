@@ -73,44 +73,19 @@ export type usuarios = $Result.DefaultSelection<Prisma.$usuariosPayload>
  * Enums
  */
 export namespace $Enums {
-  export const curso_status_domain: {
-  En_curso: 'En_curso'
+  export const rol_usuario: {
+  Administrador: 'Administrador',
+  Recursos_Humanos: 'Recursos_Humanos',
+  Empleado: 'Empleado'
 };
 
-export type curso_status_domain = (typeof curso_status_domain)[keyof typeof curso_status_domain]
-
-
-export const sexo_domain: {
-  M: 'M',
-  F: 'F'
-};
-
-export type sexo_domain = (typeof sexo_domain)[keyof typeof sexo_domain]
-
-
-export const situacion_sentimental_domain: {
-  Soltero: 'Soltero',
-  Casado: 'Casado',
-  Divorciado: 'Divorciado',
-  Viudo: 'Viudo',
-  Union_Libre: 'Union_Libre'
-};
-
-export type situacion_sentimental_domain = (typeof situacion_sentimental_domain)[keyof typeof situacion_sentimental_domain]
+export type rol_usuario = (typeof rol_usuario)[keyof typeof rol_usuario]
 
 }
 
-export type curso_status_domain = $Enums.curso_status_domain
+export type rol_usuario = $Enums.rol_usuario
 
-export const curso_status_domain: typeof $Enums.curso_status_domain
-
-export type sexo_domain = $Enums.sexo_domain
-
-export const sexo_domain: typeof $Enums.sexo_domain
-
-export type situacion_sentimental_domain = $Enums.situacion_sentimental_domain
-
-export const situacion_sentimental_domain: typeof $Enums.situacion_sentimental_domain
+export const rol_usuario: typeof $Enums.rol_usuario
 
 /**
  * ##  Prisma Client ʲˢ
@@ -404,7 +379,7 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.5.0
+   * Prisma Client JS version: 6.6.0
    * Query Engine version: 173f8d54f8d52e692c7e27e72a88314ec7aeff60
    */
   export type PrismaVersion = {
@@ -1853,16 +1828,16 @@ export namespace Prisma {
    */
 
   export type DocumentosCountOutputType = {
+    cambiosadscripcion: number
     hijos: number
     permisos: number
-    cambiosadscripcion: number
     trabajadores_cursos: number
   }
 
   export type DocumentosCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cambiosadscripcion?: boolean | DocumentosCountOutputTypeCountCambiosadscripcionArgs
     hijos?: boolean | DocumentosCountOutputTypeCountHijosArgs
     permisos?: boolean | DocumentosCountOutputTypeCountPermisosArgs
-    cambiosadscripcion?: boolean | DocumentosCountOutputTypeCountCambiosadscripcionArgs
     trabajadores_cursos?: boolean | DocumentosCountOutputTypeCountTrabajadores_cursosArgs
   }
 
@@ -1880,6 +1855,13 @@ export namespace Prisma {
   /**
    * DocumentosCountOutputType without action
    */
+  export type DocumentosCountOutputTypeCountCambiosadscripcionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: cambiosadscripcionWhereInput
+  }
+
+  /**
+   * DocumentosCountOutputType without action
+   */
   export type DocumentosCountOutputTypeCountHijosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: hijosWhereInput
   }
@@ -1889,13 +1871,6 @@ export namespace Prisma {
    */
   export type DocumentosCountOutputTypeCountPermisosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: permisosWhereInput
-  }
-
-  /**
-   * DocumentosCountOutputType without action
-   */
-  export type DocumentosCountOutputTypeCountCambiosadscripcionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: cambiosadscripcionWhereInput
   }
 
   /**
@@ -2669,7 +2644,7 @@ export namespace Prisma {
 
   /**
    * Fields of the auditoria model
-   */ 
+   */
   interface auditoriaFieldRefs {
     readonly id_auditoria: FieldRef<"auditoria", 'Int'>
     readonly tabla_afectada: FieldRef<"auditoria", 'String'>
@@ -3772,7 +3747,7 @@ export namespace Prisma {
 
   /**
    * Fields of the cambiosadscripcion model
-   */ 
+   */
   interface cambiosadscripcionFieldRefs {
     readonly id_cambio: FieldRef<"cambiosadscripcion", 'Int'>
     readonly id_trabajador: FieldRef<"cambiosadscripcion", 'Int'>
@@ -4243,7 +4218,7 @@ export namespace Prisma {
     codigo_curso: string | null
     nombre_curso: string | null
     horas_duracion: number | null
-    estatus: $Enums.curso_status_domain | null
+    estatus: string | null
   }
 
   export type CursosMaxAggregateOutputType = {
@@ -4251,7 +4226,7 @@ export namespace Prisma {
     codigo_curso: string | null
     nombre_curso: string | null
     horas_duracion: number | null
-    estatus: $Enums.curso_status_domain | null
+    estatus: string | null
   }
 
   export type CursosCountAggregateOutputType = {
@@ -4390,7 +4365,7 @@ export namespace Prisma {
     codigo_curso: string
     nombre_curso: string
     horas_duracion: number
-    estatus: $Enums.curso_status_domain | null
+    estatus: string | null
     _count: CursosCountAggregateOutputType | null
     _avg: CursosAvgAggregateOutputType | null
     _sum: CursosSumAggregateOutputType | null
@@ -4464,7 +4439,7 @@ export namespace Prisma {
       codigo_curso: string
       nombre_curso: string
       horas_duracion: number
-      estatus: $Enums.curso_status_domain | null
+      estatus: string | null
     }, ExtArgs["result"]["cursos"]>
     composites: {}
   }
@@ -4887,13 +4862,13 @@ export namespace Prisma {
 
   /**
    * Fields of the cursos model
-   */ 
+   */
   interface cursosFieldRefs {
     readonly id_curso: FieldRef<"cursos", 'Int'>
     readonly codigo_curso: FieldRef<"cursos", 'String'>
     readonly nombre_curso: FieldRef<"cursos", 'String'>
     readonly horas_duracion: FieldRef<"cursos", 'Int'>
-    readonly estatus: FieldRef<"cursos", 'curso_status_domain'>
+    readonly estatus: FieldRef<"cursos", 'String'>
   }
     
 
@@ -5582,9 +5557,9 @@ export namespace Prisma {
     fecha_subida?: boolean
     tamano_bytes?: boolean
     es_publico?: boolean
+    cambiosadscripcion?: boolean | documentos$cambiosadscripcionArgs<ExtArgs>
     hijos?: boolean | documentos$hijosArgs<ExtArgs>
     permisos?: boolean | documentos$permisosArgs<ExtArgs>
-    cambiosadscripcion?: boolean | documentos$cambiosadscripcionArgs<ExtArgs>
     trabajadores_cursos?: boolean | documentos$trabajadores_cursosArgs<ExtArgs>
     _count?: boolean | DocumentosCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["documentos"]>
@@ -5636,9 +5611,9 @@ export namespace Prisma {
 
   export type documentosOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id_documento" | "id_trabajador" | "tipo_documento" | "metadata" | "hash_archivo" | "nombre_archivo" | "descripcion" | "tipo_archivo" | "ruta_almacenamiento" | "fecha_subida" | "tamano_bytes" | "es_publico", ExtArgs["result"]["documentos"]>
   export type documentosInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cambiosadscripcion?: boolean | documentos$cambiosadscripcionArgs<ExtArgs>
     hijos?: boolean | documentos$hijosArgs<ExtArgs>
     permisos?: boolean | documentos$permisosArgs<ExtArgs>
-    cambiosadscripcion?: boolean | documentos$cambiosadscripcionArgs<ExtArgs>
     trabajadores_cursos?: boolean | documentos$trabajadores_cursosArgs<ExtArgs>
     _count?: boolean | DocumentosCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -5648,9 +5623,9 @@ export namespace Prisma {
   export type $documentosPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "documentos"
     objects: {
+      cambiosadscripcion: Prisma.$cambiosadscripcionPayload<ExtArgs>[]
       hijos: Prisma.$hijosPayload<ExtArgs>[]
       permisos: Prisma.$permisosPayload<ExtArgs>[]
-      cambiosadscripcion: Prisma.$cambiosadscripcionPayload<ExtArgs>[]
       trabajadores_cursos: Prisma.$trabajadores_cursosPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -6060,9 +6035,9 @@ export namespace Prisma {
    */
   export interface Prisma__documentosClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    cambiosadscripcion<T extends documentos$cambiosadscripcionArgs<ExtArgs> = {}>(args?: Subset<T, documentos$cambiosadscripcionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$cambiosadscripcionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     hijos<T extends documentos$hijosArgs<ExtArgs> = {}>(args?: Subset<T, documentos$hijosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$hijosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     permisos<T extends documentos$permisosArgs<ExtArgs> = {}>(args?: Subset<T, documentos$permisosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$permisosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    cambiosadscripcion<T extends documentos$cambiosadscripcionArgs<ExtArgs> = {}>(args?: Subset<T, documentos$cambiosadscripcionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$cambiosadscripcionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     trabajadores_cursos<T extends documentos$trabajadores_cursosArgs<ExtArgs> = {}>(args?: Subset<T, documentos$trabajadores_cursosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$trabajadores_cursosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -6091,7 +6066,7 @@ export namespace Prisma {
 
   /**
    * Fields of the documentos model
-   */ 
+   */
   interface documentosFieldRefs {
     readonly id_documento: FieldRef<"documentos", 'Int'>
     readonly id_trabajador: FieldRef<"documentos", 'Int'>
@@ -6493,6 +6468,30 @@ export namespace Prisma {
   }
 
   /**
+   * documentos.cambiosadscripcion
+   */
+  export type documentos$cambiosadscripcionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the cambiosadscripcion
+     */
+    select?: cambiosadscripcionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the cambiosadscripcion
+     */
+    omit?: cambiosadscripcionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: cambiosadscripcionInclude<ExtArgs> | null
+    where?: cambiosadscripcionWhereInput
+    orderBy?: cambiosadscripcionOrderByWithRelationInput | cambiosadscripcionOrderByWithRelationInput[]
+    cursor?: cambiosadscripcionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CambiosadscripcionScalarFieldEnum | CambiosadscripcionScalarFieldEnum[]
+  }
+
+  /**
    * documentos.hijos
    */
   export type documentos$hijosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6538,30 +6537,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PermisosScalarFieldEnum | PermisosScalarFieldEnum[]
-  }
-
-  /**
-   * documentos.cambiosadscripcion
-   */
-  export type documentos$cambiosadscripcionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the cambiosadscripcion
-     */
-    select?: cambiosadscripcionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the cambiosadscripcion
-     */
-    omit?: cambiosadscripcionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: cambiosadscripcionInclude<ExtArgs> | null
-    where?: cambiosadscripcionWhereInput
-    orderBy?: cambiosadscripcionOrderByWithRelationInput | cambiosadscripcionOrderByWithRelationInput[]
-    cursor?: cambiosadscripcionWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: CambiosadscripcionScalarFieldEnum | CambiosadscripcionScalarFieldEnum[]
   }
 
   /**
@@ -7298,7 +7273,7 @@ export namespace Prisma {
 
   /**
    * Fields of the hijos model
-   */ 
+   */
   interface hijosFieldRefs {
     readonly id_hijo: FieldRef<"hijos", 'Int'>
     readonly id_trabajador: FieldRef<"hijos", 'Int'>
@@ -8466,7 +8441,7 @@ export namespace Prisma {
 
   /**
    * Fields of the permisos model
-   */ 
+   */
   interface permisosFieldRefs {
     readonly id_permiso: FieldRef<"permisos", 'Int'>
     readonly id_trabajador: FieldRef<"permisos", 'Int'>
@@ -9633,7 +9608,7 @@ export namespace Prisma {
 
   /**
    * Fields of the sanciones model
-   */ 
+   */
   interface sancionesFieldRefs {
     readonly id_sancion: FieldRef<"sanciones", 'Int'>
     readonly id_trabajador: FieldRef<"sanciones", 'Int'>
@@ -10701,7 +10676,7 @@ export namespace Prisma {
 
   /**
    * Fields of the secciones model
-   */ 
+   */
   interface seccionesFieldRefs {
     readonly id_seccion: FieldRef<"secciones", 'Int'>
     readonly nombre_seccion: FieldRef<"secciones", 'String'>
@@ -11166,11 +11141,11 @@ export namespace Prisma {
     apellido_paterno: string | null
     apellido_materno: string | null
     fecha_nacimiento: Date | null
-    sexo: $Enums.sexo_domain | null
+    sexo: string | null
     curp: string | null
     rfc: string | null
     email: string | null
-    situacion_sentimental: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental: string | null
     numero_hijos: number | null
     numero_empleado: string | null
     numero_plaza: string | null
@@ -11194,11 +11169,11 @@ export namespace Prisma {
     apellido_paterno: string | null
     apellido_materno: string | null
     fecha_nacimiento: Date | null
-    sexo: $Enums.sexo_domain | null
+    sexo: string | null
     curp: string | null
     rfc: string | null
     email: string | null
-    situacion_sentimental: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental: string | null
     numero_hijos: number | null
     numero_empleado: string | null
     numero_plaza: string | null
@@ -11435,11 +11410,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno: string | null
     fecha_nacimiento: Date
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental: string | null
     numero_hijos: number
     numero_empleado: string
     numero_plaza: string
@@ -11502,10 +11477,9 @@ export namespace Prisma {
     certificado_estudios?: boolean
     plaza_base?: boolean
     fecha_actualizacion?: boolean
-    seccion?: boolean | seccionesDefaultArgs<ExtArgs>
     sanciones?: boolean | trabajadores$sancionesArgs<ExtArgs>
+    seccion?: boolean | seccionesDefaultArgs<ExtArgs>
     trabajadores_cursos?: boolean | trabajadores$trabajadores_cursosArgs<ExtArgs>
-    usuarios?: boolean | trabajadores$usuariosArgs<ExtArgs>
     _count?: boolean | TrabajadoresCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["trabajadores"]>
 
@@ -11597,10 +11571,9 @@ export namespace Prisma {
 
   export type trabajadoresOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id_trabajador" | "nombre" | "apellido_paterno" | "apellido_materno" | "fecha_nacimiento" | "sexo" | "curp" | "rfc" | "email" | "situacion_sentimental" | "numero_hijos" | "numero_empleado" | "numero_plaza" | "fecha_ingreso" | "fecha_ingreso_gobierno" | "nivel_puesto" | "nombre_puesto" | "puesto_inpi" | "adscripcion" | "id_seccion" | "nivel_estudios" | "institucion_estudios" | "certificado_estudios" | "plaza_base" | "fecha_actualizacion", ExtArgs["result"]["trabajadores"]>
   export type trabajadoresInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    seccion?: boolean | seccionesDefaultArgs<ExtArgs>
     sanciones?: boolean | trabajadores$sancionesArgs<ExtArgs>
+    seccion?: boolean | seccionesDefaultArgs<ExtArgs>
     trabajadores_cursos?: boolean | trabajadores$trabajadores_cursosArgs<ExtArgs>
-    usuarios?: boolean | trabajadores$usuariosArgs<ExtArgs>
     _count?: boolean | TrabajadoresCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type trabajadoresIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11613,10 +11586,9 @@ export namespace Prisma {
   export type $trabajadoresPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "trabajadores"
     objects: {
-      seccion: Prisma.$seccionesPayload<ExtArgs>
       sanciones: Prisma.$sancionesPayload<ExtArgs>[]
+      seccion: Prisma.$seccionesPayload<ExtArgs>
       trabajadores_cursos: Prisma.$trabajadores_cursosPayload<ExtArgs>[]
-      usuarios: Prisma.$usuariosPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id_trabajador: number
@@ -11624,11 +11596,11 @@ export namespace Prisma {
       apellido_paterno: string
       apellido_materno: string | null
       fecha_nacimiento: Date
-      sexo: $Enums.sexo_domain
+      sexo: string
       curp: string
       rfc: string
       email: string
-      situacion_sentimental: $Enums.situacion_sentimental_domain | null
+      situacion_sentimental: string | null
       numero_hijos: number
       numero_empleado: string
       numero_plaza: string
@@ -12038,10 +12010,9 @@ export namespace Prisma {
    */
   export interface Prisma__trabajadoresClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    seccion<T extends seccionesDefaultArgs<ExtArgs> = {}>(args?: Subset<T, seccionesDefaultArgs<ExtArgs>>): Prisma__seccionesClient<$Result.GetResult<Prisma.$seccionesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     sanciones<T extends trabajadores$sancionesArgs<ExtArgs> = {}>(args?: Subset<T, trabajadores$sancionesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$sancionesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    seccion<T extends seccionesDefaultArgs<ExtArgs> = {}>(args?: Subset<T, seccionesDefaultArgs<ExtArgs>>): Prisma__seccionesClient<$Result.GetResult<Prisma.$seccionesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     trabajadores_cursos<T extends trabajadores$trabajadores_cursosArgs<ExtArgs> = {}>(args?: Subset<T, trabajadores$trabajadores_cursosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$trabajadores_cursosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    usuarios<T extends trabajadores$usuariosArgs<ExtArgs> = {}>(args?: Subset<T, trabajadores$usuariosArgs<ExtArgs>>): Prisma__usuariosClient<$Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12069,18 +12040,18 @@ export namespace Prisma {
 
   /**
    * Fields of the trabajadores model
-   */ 
+   */
   interface trabajadoresFieldRefs {
     readonly id_trabajador: FieldRef<"trabajadores", 'Int'>
     readonly nombre: FieldRef<"trabajadores", 'String'>
     readonly apellido_paterno: FieldRef<"trabajadores", 'String'>
     readonly apellido_materno: FieldRef<"trabajadores", 'String'>
     readonly fecha_nacimiento: FieldRef<"trabajadores", 'DateTime'>
-    readonly sexo: FieldRef<"trabajadores", 'sexo_domain'>
+    readonly sexo: FieldRef<"trabajadores", 'String'>
     readonly curp: FieldRef<"trabajadores", 'String'>
     readonly rfc: FieldRef<"trabajadores", 'String'>
     readonly email: FieldRef<"trabajadores", 'String'>
-    readonly situacion_sentimental: FieldRef<"trabajadores", 'situacion_sentimental_domain'>
+    readonly situacion_sentimental: FieldRef<"trabajadores", 'String'>
     readonly numero_hijos: FieldRef<"trabajadores", 'Int'>
     readonly numero_empleado: FieldRef<"trabajadores", 'String'>
     readonly numero_plaza: FieldRef<"trabajadores", 'String'>
@@ -12540,25 +12511,6 @@ export namespace Prisma {
   }
 
   /**
-   * trabajadores.usuarios
-   */
-  export type trabajadores$usuariosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the usuarios
-     */
-    select?: usuariosSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the usuarios
-     */
-    omit?: usuariosOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
-    where?: usuariosWhereInput
-  }
-
-  /**
    * trabajadores without action
    */
   export type trabajadoresDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12780,7 +12732,7 @@ export namespace Prisma {
     id_trabajador_curso: number
     id_trabajador: number
     id_curso: number
-    fecha_inscripcion: Date | null
+    fecha_inscripcion: Date
     calificacion: Decimal | null
     completado: boolean | null
     fecha_completado: Date | null
@@ -12815,9 +12767,9 @@ export namespace Prisma {
     completado?: boolean
     fecha_completado?: boolean
     certificado_id?: boolean
-    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
-    cursos?: boolean | cursosDefaultArgs<ExtArgs>
     documentos?: boolean | trabajadores_cursos$documentosArgs<ExtArgs>
+    cursos?: boolean | cursosDefaultArgs<ExtArgs>
+    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["trabajadores_cursos"]>
 
   export type trabajadores_cursosSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -12829,9 +12781,9 @@ export namespace Prisma {
     completado?: boolean
     fecha_completado?: boolean
     certificado_id?: boolean
-    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
-    cursos?: boolean | cursosDefaultArgs<ExtArgs>
     documentos?: boolean | trabajadores_cursos$documentosArgs<ExtArgs>
+    cursos?: boolean | cursosDefaultArgs<ExtArgs>
+    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["trabajadores_cursos"]>
 
   export type trabajadores_cursosSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -12843,9 +12795,9 @@ export namespace Prisma {
     completado?: boolean
     fecha_completado?: boolean
     certificado_id?: boolean
-    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
-    cursos?: boolean | cursosDefaultArgs<ExtArgs>
     documentos?: boolean | trabajadores_cursos$documentosArgs<ExtArgs>
+    cursos?: boolean | cursosDefaultArgs<ExtArgs>
+    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["trabajadores_cursos"]>
 
   export type trabajadores_cursosSelectScalar = {
@@ -12861,33 +12813,33 @@ export namespace Prisma {
 
   export type trabajadores_cursosOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id_trabajador_curso" | "id_trabajador" | "id_curso" | "fecha_inscripcion" | "calificacion" | "completado" | "fecha_completado" | "certificado_id", ExtArgs["result"]["trabajadores_cursos"]>
   export type trabajadores_cursosInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
-    cursos?: boolean | cursosDefaultArgs<ExtArgs>
     documentos?: boolean | trabajadores_cursos$documentosArgs<ExtArgs>
+    cursos?: boolean | cursosDefaultArgs<ExtArgs>
+    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
   }
   export type trabajadores_cursosIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
-    cursos?: boolean | cursosDefaultArgs<ExtArgs>
     documentos?: boolean | trabajadores_cursos$documentosArgs<ExtArgs>
+    cursos?: boolean | cursosDefaultArgs<ExtArgs>
+    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
   }
   export type trabajadores_cursosIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
-    cursos?: boolean | cursosDefaultArgs<ExtArgs>
     documentos?: boolean | trabajadores_cursos$documentosArgs<ExtArgs>
+    cursos?: boolean | cursosDefaultArgs<ExtArgs>
+    trabajadores?: boolean | trabajadoresDefaultArgs<ExtArgs>
   }
 
   export type $trabajadores_cursosPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "trabajadores_cursos"
     objects: {
-      trabajadores: Prisma.$trabajadoresPayload<ExtArgs>
-      cursos: Prisma.$cursosPayload<ExtArgs>
       documentos: Prisma.$documentosPayload<ExtArgs> | null
+      cursos: Prisma.$cursosPayload<ExtArgs>
+      trabajadores: Prisma.$trabajadoresPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id_trabajador_curso: number
       id_trabajador: number
       id_curso: number
-      fecha_inscripcion: Date | null
+      fecha_inscripcion: Date
       calificacion: Prisma.Decimal | null
       completado: boolean | null
       fecha_completado: Date | null
@@ -13286,9 +13238,9 @@ export namespace Prisma {
    */
   export interface Prisma__trabajadores_cursosClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    trabajadores<T extends trabajadoresDefaultArgs<ExtArgs> = {}>(args?: Subset<T, trabajadoresDefaultArgs<ExtArgs>>): Prisma__trabajadoresClient<$Result.GetResult<Prisma.$trabajadoresPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    cursos<T extends cursosDefaultArgs<ExtArgs> = {}>(args?: Subset<T, cursosDefaultArgs<ExtArgs>>): Prisma__cursosClient<$Result.GetResult<Prisma.$cursosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     documentos<T extends trabajadores_cursos$documentosArgs<ExtArgs> = {}>(args?: Subset<T, trabajadores_cursos$documentosArgs<ExtArgs>>): Prisma__documentosClient<$Result.GetResult<Prisma.$documentosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    cursos<T extends cursosDefaultArgs<ExtArgs> = {}>(args?: Subset<T, cursosDefaultArgs<ExtArgs>>): Prisma__cursosClient<$Result.GetResult<Prisma.$cursosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    trabajadores<T extends trabajadoresDefaultArgs<ExtArgs> = {}>(args?: Subset<T, trabajadoresDefaultArgs<ExtArgs>>): Prisma__trabajadoresClient<$Result.GetResult<Prisma.$trabajadoresPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -13316,7 +13268,7 @@ export namespace Prisma {
 
   /**
    * Fields of the trabajadores_cursos model
-   */ 
+   */
   interface trabajadores_cursosFieldRefs {
     readonly id_trabajador_curso: FieldRef<"trabajadores_cursos", 'Int'>
     readonly id_trabajador: FieldRef<"trabajadores_cursos", 'Int'>
@@ -13793,6 +13745,7 @@ export namespace Prisma {
     fecha_creacion: Date | null
     ultimo_login: Date | null
     ultimo_cambio_password: Date | null
+    rol: $Enums.rol_usuario | null
   }
 
   export type UsuariosMaxAggregateOutputType = {
@@ -13805,6 +13758,7 @@ export namespace Prisma {
     fecha_creacion: Date | null
     ultimo_login: Date | null
     ultimo_cambio_password: Date | null
+    rol: $Enums.rol_usuario | null
   }
 
   export type UsuariosCountAggregateOutputType = {
@@ -13817,6 +13771,7 @@ export namespace Prisma {
     fecha_creacion: number
     ultimo_login: number
     ultimo_cambio_password: number
+    rol: number
     _all: number
   }
 
@@ -13843,6 +13798,7 @@ export namespace Prisma {
     fecha_creacion?: true
     ultimo_login?: true
     ultimo_cambio_password?: true
+    rol?: true
   }
 
   export type UsuariosMaxAggregateInputType = {
@@ -13855,6 +13811,7 @@ export namespace Prisma {
     fecha_creacion?: true
     ultimo_login?: true
     ultimo_cambio_password?: true
+    rol?: true
   }
 
   export type UsuariosCountAggregateInputType = {
@@ -13867,6 +13824,7 @@ export namespace Prisma {
     fecha_creacion?: true
     ultimo_login?: true
     ultimo_cambio_password?: true
+    rol?: true
     _all?: true
   }
 
@@ -13966,6 +13924,7 @@ export namespace Prisma {
     fecha_creacion: Date | null
     ultimo_login: Date | null
     ultimo_cambio_password: Date | null
+    rol: $Enums.rol_usuario
     _count: UsuariosCountAggregateOutputType | null
     _avg: UsuariosAvgAggregateOutputType | null
     _sum: UsuariosSumAggregateOutputType | null
@@ -13997,7 +13956,7 @@ export namespace Prisma {
     fecha_creacion?: boolean
     ultimo_login?: boolean
     ultimo_cambio_password?: boolean
-    trabajadores?: boolean | usuarios$trabajadoresArgs<ExtArgs>
+    rol?: boolean
   }, ExtArgs["result"]["usuarios"]>
 
   export type usuariosSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -14010,7 +13969,7 @@ export namespace Prisma {
     fecha_creacion?: boolean
     ultimo_login?: boolean
     ultimo_cambio_password?: boolean
-    trabajadores?: boolean | usuarios$trabajadoresArgs<ExtArgs>
+    rol?: boolean
   }, ExtArgs["result"]["usuarios"]>
 
   export type usuariosSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -14023,7 +13982,7 @@ export namespace Prisma {
     fecha_creacion?: boolean
     ultimo_login?: boolean
     ultimo_cambio_password?: boolean
-    trabajadores?: boolean | usuarios$trabajadoresArgs<ExtArgs>
+    rol?: boolean
   }, ExtArgs["result"]["usuarios"]>
 
   export type usuariosSelectScalar = {
@@ -14036,24 +13995,14 @@ export namespace Prisma {
     fecha_creacion?: boolean
     ultimo_login?: boolean
     ultimo_cambio_password?: boolean
+    rol?: boolean
   }
 
-  export type usuariosOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id_usuario" | "id_trabajador" | "identificador" | "contraseña_hash" | "intentos_fallidos" | "bloqueado" | "fecha_creacion" | "ultimo_login" | "ultimo_cambio_password", ExtArgs["result"]["usuarios"]>
-  export type usuariosInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    trabajadores?: boolean | usuarios$trabajadoresArgs<ExtArgs>
-  }
-  export type usuariosIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    trabajadores?: boolean | usuarios$trabajadoresArgs<ExtArgs>
-  }
-  export type usuariosIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    trabajadores?: boolean | usuarios$trabajadoresArgs<ExtArgs>
-  }
+  export type usuariosOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id_usuario" | "id_trabajador" | "identificador" | "contraseña_hash" | "intentos_fallidos" | "bloqueado" | "fecha_creacion" | "ultimo_login" | "ultimo_cambio_password" | "rol", ExtArgs["result"]["usuarios"]>
 
   export type $usuariosPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "usuarios"
-    objects: {
-      trabajadores: Prisma.$trabajadoresPayload<ExtArgs> | null
-    }
+    objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id_usuario: number
       id_trabajador: number | null
@@ -14064,6 +14013,7 @@ export namespace Prisma {
       fecha_creacion: Date | null
       ultimo_login: Date | null
       ultimo_cambio_password: Date | null
+      rol: $Enums.rol_usuario
     }, ExtArgs["result"]["usuarios"]>
     composites: {}
   }
@@ -14458,7 +14408,6 @@ export namespace Prisma {
    */
   export interface Prisma__usuariosClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    trabajadores<T extends usuarios$trabajadoresArgs<ExtArgs> = {}>(args?: Subset<T, usuarios$trabajadoresArgs<ExtArgs>>): Prisma__trabajadoresClient<$Result.GetResult<Prisma.$trabajadoresPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -14486,7 +14435,7 @@ export namespace Prisma {
 
   /**
    * Fields of the usuarios model
-   */ 
+   */
   interface usuariosFieldRefs {
     readonly id_usuario: FieldRef<"usuarios", 'Int'>
     readonly id_trabajador: FieldRef<"usuarios", 'Int'>
@@ -14497,6 +14446,7 @@ export namespace Prisma {
     readonly fecha_creacion: FieldRef<"usuarios", 'DateTime'>
     readonly ultimo_login: FieldRef<"usuarios", 'DateTime'>
     readonly ultimo_cambio_password: FieldRef<"usuarios", 'DateTime'>
+    readonly rol: FieldRef<"usuarios", 'rol_usuario'>
   }
     
 
@@ -14513,10 +14463,6 @@ export namespace Prisma {
      * Omit specific fields from the usuarios
      */
     omit?: usuariosOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
     /**
      * Filter, which usuarios to fetch.
      */
@@ -14536,10 +14482,6 @@ export namespace Prisma {
      */
     omit?: usuariosOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
-    /**
      * Filter, which usuarios to fetch.
      */
     where: usuariosWhereUniqueInput
@@ -14557,10 +14499,6 @@ export namespace Prisma {
      * Omit specific fields from the usuarios
      */
     omit?: usuariosOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
     /**
      * Filter, which usuarios to fetch.
      */
@@ -14610,10 +14548,6 @@ export namespace Prisma {
      */
     omit?: usuariosOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
-    /**
      * Filter, which usuarios to fetch.
      */
     where?: usuariosWhereInput
@@ -14662,10 +14596,6 @@ export namespace Prisma {
      */
     omit?: usuariosOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
-    /**
      * Filter, which usuarios to fetch.
      */
     where?: usuariosWhereInput
@@ -14709,10 +14639,6 @@ export namespace Prisma {
      */
     omit?: usuariosOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
-    /**
      * The data needed to create a usuarios.
      */
     data: XOR<usuariosCreateInput, usuariosUncheckedCreateInput>
@@ -14746,10 +14672,6 @@ export namespace Prisma {
      */
     data: usuariosCreateManyInput | usuariosCreateManyInput[]
     skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -14764,10 +14686,6 @@ export namespace Prisma {
      * Omit specific fields from the usuarios
      */
     omit?: usuariosOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
     /**
      * The data needed to update a usuarios.
      */
@@ -14820,10 +14738,6 @@ export namespace Prisma {
      * Limit how many usuarios to update.
      */
     limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -14838,10 +14752,6 @@ export namespace Prisma {
      * Omit specific fields from the usuarios
      */
     omit?: usuariosOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
     /**
      * The filter to search for the usuarios to update in case it exists.
      */
@@ -14869,10 +14779,6 @@ export namespace Prisma {
      */
     omit?: usuariosOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
-    /**
      * Filter which usuarios to delete.
      */
     where: usuariosWhereUniqueInput
@@ -14893,25 +14799,6 @@ export namespace Prisma {
   }
 
   /**
-   * usuarios.trabajadores
-   */
-  export type usuarios$trabajadoresArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the trabajadores
-     */
-    select?: trabajadoresSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the trabajadores
-     */
-    omit?: trabajadoresOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: trabajadoresInclude<ExtArgs> | null
-    where?: trabajadoresWhereInput
-  }
-
-  /**
    * usuarios without action
    */
   export type usuariosDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14923,10 +14810,6 @@ export namespace Prisma {
      * Omit specific fields from the usuarios
      */
     omit?: usuariosOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: usuariosInclude<ExtArgs> | null
   }
 
 
@@ -15107,7 +14990,8 @@ export namespace Prisma {
     bloqueado: 'bloqueado',
     fecha_creacion: 'fecha_creacion',
     ultimo_login: 'ultimo_login',
-    ultimo_cambio_password: 'ultimo_cambio_password'
+    ultimo_cambio_password: 'ultimo_cambio_password',
+    rol: 'rol'
   };
 
   export type UsuariosScalarFieldEnum = (typeof UsuariosScalarFieldEnum)[keyof typeof UsuariosScalarFieldEnum]
@@ -15155,7 +15039,7 @@ export namespace Prisma {
 
 
   /**
-   * Field references 
+   * Field references
    */
 
 
@@ -15216,20 +15100,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'curso_status_domain'
-   */
-  export type Enumcurso_status_domainFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'curso_status_domain'>
-    
-
-
-  /**
-   * Reference to a field of type 'curso_status_domain[]'
-   */
-  export type ListEnumcurso_status_domainFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'curso_status_domain[]'>
-    
-
-
-  /**
    * Reference to a field of type 'BigInt'
    */
   export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
@@ -15251,34 +15121,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'sexo_domain'
-   */
-  export type Enumsexo_domainFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'sexo_domain'>
-    
-
-
-  /**
-   * Reference to a field of type 'sexo_domain[]'
-   */
-  export type ListEnumsexo_domainFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'sexo_domain[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'situacion_sentimental_domain'
-   */
-  export type Enumsituacion_sentimental_domainFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'situacion_sentimental_domain'>
-    
-
-
-  /**
-   * Reference to a field of type 'situacion_sentimental_domain[]'
-   */
-  export type ListEnumsituacion_sentimental_domainFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'situacion_sentimental_domain[]'>
-    
-
-
-  /**
    * Reference to a field of type 'Decimal'
    */
   export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
@@ -15289,6 +15131,20 @@ export namespace Prisma {
    * Reference to a field of type 'Decimal[]'
    */
   export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'rol_usuario'
+   */
+  export type Enumrol_usuarioFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'rol_usuario'>
+    
+
+
+  /**
+   * Reference to a field of type 'rol_usuario[]'
+   */
+  export type ListEnumrol_usuarioFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'rol_usuario[]'>
     
 
 
@@ -15463,7 +15319,7 @@ export namespace Prisma {
     codigo_curso?: StringFilter<"cursos"> | string
     nombre_curso?: StringFilter<"cursos"> | string
     horas_duracion?: IntFilter<"cursos"> | number
-    estatus?: Enumcurso_status_domainNullableFilter<"cursos"> | $Enums.curso_status_domain | null
+    estatus?: StringNullableFilter<"cursos"> | string | null
     trabajadores_cursos?: Trabajadores_cursosListRelationFilter
   }
 
@@ -15484,7 +15340,7 @@ export namespace Prisma {
     NOT?: cursosWhereInput | cursosWhereInput[]
     nombre_curso?: StringFilter<"cursos"> | string
     horas_duracion?: IntFilter<"cursos"> | number
-    estatus?: Enumcurso_status_domainNullableFilter<"cursos"> | $Enums.curso_status_domain | null
+    estatus?: StringNullableFilter<"cursos"> | string | null
     trabajadores_cursos?: Trabajadores_cursosListRelationFilter
   }, "id_curso" | "codigo_curso">
 
@@ -15509,7 +15365,7 @@ export namespace Prisma {
     codigo_curso?: StringWithAggregatesFilter<"cursos"> | string
     nombre_curso?: StringWithAggregatesFilter<"cursos"> | string
     horas_duracion?: IntWithAggregatesFilter<"cursos"> | number
-    estatus?: Enumcurso_status_domainNullableWithAggregatesFilter<"cursos"> | $Enums.curso_status_domain | null
+    estatus?: StringNullableWithAggregatesFilter<"cursos"> | string | null
   }
 
   export type documentosWhereInput = {
@@ -15528,9 +15384,9 @@ export namespace Prisma {
     fecha_subida?: DateTimeNullableFilter<"documentos"> | Date | string | null
     tamano_bytes?: BigIntFilter<"documentos"> | bigint | number
     es_publico?: BoolNullableFilter<"documentos"> | boolean | null
+    cambiosadscripcion?: CambiosadscripcionListRelationFilter
     hijos?: HijosListRelationFilter
     permisos?: PermisosListRelationFilter
-    cambiosadscripcion?: CambiosadscripcionListRelationFilter
     trabajadores_cursos?: Trabajadores_cursosListRelationFilter
   }
 
@@ -15547,9 +15403,9 @@ export namespace Prisma {
     fecha_subida?: SortOrderInput | SortOrder
     tamano_bytes?: SortOrder
     es_publico?: SortOrderInput | SortOrder
+    cambiosadscripcion?: cambiosadscripcionOrderByRelationAggregateInput
     hijos?: hijosOrderByRelationAggregateInput
     permisos?: permisosOrderByRelationAggregateInput
-    cambiosadscripcion?: cambiosadscripcionOrderByRelationAggregateInput
     trabajadores_cursos?: trabajadores_cursosOrderByRelationAggregateInput
   }
 
@@ -15569,9 +15425,9 @@ export namespace Prisma {
     fecha_subida?: DateTimeNullableFilter<"documentos"> | Date | string | null
     tamano_bytes?: BigIntFilter<"documentos"> | bigint | number
     es_publico?: BoolNullableFilter<"documentos"> | boolean | null
+    cambiosadscripcion?: CambiosadscripcionListRelationFilter
     hijos?: HijosListRelationFilter
     permisos?: PermisosListRelationFilter
-    cambiosadscripcion?: CambiosadscripcionListRelationFilter
     trabajadores_cursos?: Trabajadores_cursosListRelationFilter
   }, "id_documento">
 
@@ -15885,11 +15741,11 @@ export namespace Prisma {
     apellido_paterno?: StringFilter<"trabajadores"> | string
     apellido_materno?: StringNullableFilter<"trabajadores"> | string | null
     fecha_nacimiento?: DateTimeFilter<"trabajadores"> | Date | string
-    sexo?: Enumsexo_domainFilter<"trabajadores"> | $Enums.sexo_domain
+    sexo?: StringFilter<"trabajadores"> | string
     curp?: StringFilter<"trabajadores"> | string
     rfc?: StringFilter<"trabajadores"> | string
     email?: StringFilter<"trabajadores"> | string
-    situacion_sentimental?: Enumsituacion_sentimental_domainNullableFilter<"trabajadores"> | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: StringNullableFilter<"trabajadores"> | string | null
     numero_hijos?: IntFilter<"trabajadores"> | number
     numero_empleado?: StringFilter<"trabajadores"> | string
     numero_plaza?: StringFilter<"trabajadores"> | string
@@ -15905,10 +15761,9 @@ export namespace Prisma {
     certificado_estudios?: BoolNullableFilter<"trabajadores"> | boolean | null
     plaza_base?: StringNullableFilter<"trabajadores"> | string | null
     fecha_actualizacion?: DateTimeNullableFilter<"trabajadores"> | Date | string | null
-    seccion?: XOR<SeccionesScalarRelationFilter, seccionesWhereInput>
     sanciones?: SancionesListRelationFilter
+    seccion?: XOR<SeccionesScalarRelationFilter, seccionesWhereInput>
     trabajadores_cursos?: Trabajadores_cursosListRelationFilter
-    usuarios?: XOR<UsuariosNullableScalarRelationFilter, usuariosWhereInput> | null
   }
 
   export type trabajadoresOrderByWithRelationInput = {
@@ -15937,10 +15792,9 @@ export namespace Prisma {
     certificado_estudios?: SortOrderInput | SortOrder
     plaza_base?: SortOrderInput | SortOrder
     fecha_actualizacion?: SortOrderInput | SortOrder
-    seccion?: seccionesOrderByWithRelationInput
     sanciones?: sancionesOrderByRelationAggregateInput
+    seccion?: seccionesOrderByWithRelationInput
     trabajadores_cursos?: trabajadores_cursosOrderByRelationAggregateInput
-    usuarios?: usuariosOrderByWithRelationInput
   }
 
   export type trabajadoresWhereUniqueInput = Prisma.AtLeast<{
@@ -15957,8 +15811,8 @@ export namespace Prisma {
     apellido_paterno?: StringFilter<"trabajadores"> | string
     apellido_materno?: StringNullableFilter<"trabajadores"> | string | null
     fecha_nacimiento?: DateTimeFilter<"trabajadores"> | Date | string
-    sexo?: Enumsexo_domainFilter<"trabajadores"> | $Enums.sexo_domain
-    situacion_sentimental?: Enumsituacion_sentimental_domainNullableFilter<"trabajadores"> | $Enums.situacion_sentimental_domain | null
+    sexo?: StringFilter<"trabajadores"> | string
+    situacion_sentimental?: StringNullableFilter<"trabajadores"> | string | null
     numero_hijos?: IntFilter<"trabajadores"> | number
     fecha_ingreso?: DateTimeFilter<"trabajadores"> | Date | string
     fecha_ingreso_gobierno?: DateTimeFilter<"trabajadores"> | Date | string
@@ -15972,10 +15826,9 @@ export namespace Prisma {
     certificado_estudios?: BoolNullableFilter<"trabajadores"> | boolean | null
     plaza_base?: StringNullableFilter<"trabajadores"> | string | null
     fecha_actualizacion?: DateTimeNullableFilter<"trabajadores"> | Date | string | null
-    seccion?: XOR<SeccionesScalarRelationFilter, seccionesWhereInput>
     sanciones?: SancionesListRelationFilter
+    seccion?: XOR<SeccionesScalarRelationFilter, seccionesWhereInput>
     trabajadores_cursos?: Trabajadores_cursosListRelationFilter
-    usuarios?: XOR<UsuariosNullableScalarRelationFilter, usuariosWhereInput> | null
   }, "id_trabajador" | "curp" | "rfc" | "email" | "numero_empleado" | "numero_plaza">
 
   export type trabajadoresOrderByWithAggregationInput = {
@@ -16020,11 +15873,11 @@ export namespace Prisma {
     apellido_paterno?: StringWithAggregatesFilter<"trabajadores"> | string
     apellido_materno?: StringNullableWithAggregatesFilter<"trabajadores"> | string | null
     fecha_nacimiento?: DateTimeWithAggregatesFilter<"trabajadores"> | Date | string
-    sexo?: Enumsexo_domainWithAggregatesFilter<"trabajadores"> | $Enums.sexo_domain
+    sexo?: StringWithAggregatesFilter<"trabajadores"> | string
     curp?: StringWithAggregatesFilter<"trabajadores"> | string
     rfc?: StringWithAggregatesFilter<"trabajadores"> | string
     email?: StringWithAggregatesFilter<"trabajadores"> | string
-    situacion_sentimental?: Enumsituacion_sentimental_domainNullableWithAggregatesFilter<"trabajadores"> | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: StringNullableWithAggregatesFilter<"trabajadores"> | string | null
     numero_hijos?: IntWithAggregatesFilter<"trabajadores"> | number
     numero_empleado?: StringWithAggregatesFilter<"trabajadores"> | string
     numero_plaza?: StringWithAggregatesFilter<"trabajadores"> | string
@@ -16049,28 +15902,28 @@ export namespace Prisma {
     id_trabajador_curso?: IntFilter<"trabajadores_cursos"> | number
     id_trabajador?: IntFilter<"trabajadores_cursos"> | number
     id_curso?: IntFilter<"trabajadores_cursos"> | number
-    fecha_inscripcion?: DateTimeNullableFilter<"trabajadores_cursos"> | Date | string | null
+    fecha_inscripcion?: DateTimeFilter<"trabajadores_cursos"> | Date | string
     calificacion?: DecimalNullableFilter<"trabajadores_cursos"> | Decimal | DecimalJsLike | number | string | null
     completado?: BoolNullableFilter<"trabajadores_cursos"> | boolean | null
     fecha_completado?: DateTimeNullableFilter<"trabajadores_cursos"> | Date | string | null
     certificado_id?: IntNullableFilter<"trabajadores_cursos"> | number | null
-    trabajadores?: XOR<TrabajadoresScalarRelationFilter, trabajadoresWhereInput>
-    cursos?: XOR<CursosScalarRelationFilter, cursosWhereInput>
     documentos?: XOR<DocumentosNullableScalarRelationFilter, documentosWhereInput> | null
+    cursos?: XOR<CursosScalarRelationFilter, cursosWhereInput>
+    trabajadores?: XOR<TrabajadoresScalarRelationFilter, trabajadoresWhereInput>
   }
 
   export type trabajadores_cursosOrderByWithRelationInput = {
     id_trabajador_curso?: SortOrder
     id_trabajador?: SortOrder
     id_curso?: SortOrder
-    fecha_inscripcion?: SortOrderInput | SortOrder
+    fecha_inscripcion?: SortOrder
     calificacion?: SortOrderInput | SortOrder
     completado?: SortOrderInput | SortOrder
     fecha_completado?: SortOrderInput | SortOrder
     certificado_id?: SortOrderInput | SortOrder
-    trabajadores?: trabajadoresOrderByWithRelationInput
-    cursos?: cursosOrderByWithRelationInput
     documentos?: documentosOrderByWithRelationInput
+    cursos?: cursosOrderByWithRelationInput
+    trabajadores?: trabajadoresOrderByWithRelationInput
   }
 
   export type trabajadores_cursosWhereUniqueInput = Prisma.AtLeast<{
@@ -16081,21 +15934,21 @@ export namespace Prisma {
     NOT?: trabajadores_cursosWhereInput | trabajadores_cursosWhereInput[]
     id_trabajador?: IntFilter<"trabajadores_cursos"> | number
     id_curso?: IntFilter<"trabajadores_cursos"> | number
-    fecha_inscripcion?: DateTimeNullableFilter<"trabajadores_cursos"> | Date | string | null
+    fecha_inscripcion?: DateTimeFilter<"trabajadores_cursos"> | Date | string
     calificacion?: DecimalNullableFilter<"trabajadores_cursos"> | Decimal | DecimalJsLike | number | string | null
     completado?: BoolNullableFilter<"trabajadores_cursos"> | boolean | null
     fecha_completado?: DateTimeNullableFilter<"trabajadores_cursos"> | Date | string | null
     certificado_id?: IntNullableFilter<"trabajadores_cursos"> | number | null
-    trabajadores?: XOR<TrabajadoresScalarRelationFilter, trabajadoresWhereInput>
-    cursos?: XOR<CursosScalarRelationFilter, cursosWhereInput>
     documentos?: XOR<DocumentosNullableScalarRelationFilter, documentosWhereInput> | null
+    cursos?: XOR<CursosScalarRelationFilter, cursosWhereInput>
+    trabajadores?: XOR<TrabajadoresScalarRelationFilter, trabajadoresWhereInput>
   }, "id_trabajador_curso" | "trabajadores_cursos_unique">
 
   export type trabajadores_cursosOrderByWithAggregationInput = {
     id_trabajador_curso?: SortOrder
     id_trabajador?: SortOrder
     id_curso?: SortOrder
-    fecha_inscripcion?: SortOrderInput | SortOrder
+    fecha_inscripcion?: SortOrder
     calificacion?: SortOrderInput | SortOrder
     completado?: SortOrderInput | SortOrder
     fecha_completado?: SortOrderInput | SortOrder
@@ -16114,7 +15967,7 @@ export namespace Prisma {
     id_trabajador_curso?: IntWithAggregatesFilter<"trabajadores_cursos"> | number
     id_trabajador?: IntWithAggregatesFilter<"trabajadores_cursos"> | number
     id_curso?: IntWithAggregatesFilter<"trabajadores_cursos"> | number
-    fecha_inscripcion?: DateTimeNullableWithAggregatesFilter<"trabajadores_cursos"> | Date | string | null
+    fecha_inscripcion?: DateTimeWithAggregatesFilter<"trabajadores_cursos"> | Date | string
     calificacion?: DecimalNullableWithAggregatesFilter<"trabajadores_cursos"> | Decimal | DecimalJsLike | number | string | null
     completado?: BoolNullableWithAggregatesFilter<"trabajadores_cursos"> | boolean | null
     fecha_completado?: DateTimeNullableWithAggregatesFilter<"trabajadores_cursos"> | Date | string | null
@@ -16134,7 +15987,7 @@ export namespace Prisma {
     fecha_creacion?: DateTimeNullableFilter<"usuarios"> | Date | string | null
     ultimo_login?: DateTimeNullableFilter<"usuarios"> | Date | string | null
     ultimo_cambio_password?: DateTimeNullableFilter<"usuarios"> | Date | string | null
-    trabajadores?: XOR<TrabajadoresNullableScalarRelationFilter, trabajadoresWhereInput> | null
+    rol?: Enumrol_usuarioFilter<"usuarios"> | $Enums.rol_usuario
   }
 
   export type usuariosOrderByWithRelationInput = {
@@ -16147,7 +16000,7 @@ export namespace Prisma {
     fecha_creacion?: SortOrderInput | SortOrder
     ultimo_login?: SortOrderInput | SortOrder
     ultimo_cambio_password?: SortOrderInput | SortOrder
-    trabajadores?: trabajadoresOrderByWithRelationInput
+    rol?: SortOrder
   }
 
   export type usuariosWhereUniqueInput = Prisma.AtLeast<{
@@ -16163,7 +16016,7 @@ export namespace Prisma {
     fecha_creacion?: DateTimeNullableFilter<"usuarios"> | Date | string | null
     ultimo_login?: DateTimeNullableFilter<"usuarios"> | Date | string | null
     ultimo_cambio_password?: DateTimeNullableFilter<"usuarios"> | Date | string | null
-    trabajadores?: XOR<TrabajadoresNullableScalarRelationFilter, trabajadoresWhereInput> | null
+    rol?: Enumrol_usuarioFilter<"usuarios"> | $Enums.rol_usuario
   }, "id_usuario" | "id_trabajador" | "identificador">
 
   export type usuariosOrderByWithAggregationInput = {
@@ -16176,6 +16029,7 @@ export namespace Prisma {
     fecha_creacion?: SortOrderInput | SortOrder
     ultimo_login?: SortOrderInput | SortOrder
     ultimo_cambio_password?: SortOrderInput | SortOrder
+    rol?: SortOrder
     _count?: usuariosCountOrderByAggregateInput
     _avg?: usuariosAvgOrderByAggregateInput
     _max?: usuariosMaxOrderByAggregateInput
@@ -16196,6 +16050,7 @@ export namespace Prisma {
     fecha_creacion?: DateTimeNullableWithAggregatesFilter<"usuarios"> | Date | string | null
     ultimo_login?: DateTimeNullableWithAggregatesFilter<"usuarios"> | Date | string | null
     ultimo_cambio_password?: DateTimeNullableWithAggregatesFilter<"usuarios"> | Date | string | null
+    rol?: Enumrol_usuarioWithAggregatesFilter<"usuarios"> | $Enums.rol_usuario
   }
 
   export type auditoriaCreateInput = {
@@ -16356,7 +16211,7 @@ export namespace Prisma {
     codigo_curso: string
     nombre_curso: string
     horas_duracion: number
-    estatus?: $Enums.curso_status_domain | null
+    estatus?: string | null
     trabajadores_cursos?: trabajadores_cursosCreateNestedManyWithoutCursosInput
   }
 
@@ -16365,7 +16220,7 @@ export namespace Prisma {
     codigo_curso: string
     nombre_curso: string
     horas_duracion: number
-    estatus?: $Enums.curso_status_domain | null
+    estatus?: string | null
     trabajadores_cursos?: trabajadores_cursosUncheckedCreateNestedManyWithoutCursosInput
   }
 
@@ -16373,7 +16228,7 @@ export namespace Prisma {
     codigo_curso?: StringFieldUpdateOperationsInput | string
     nombre_curso?: StringFieldUpdateOperationsInput | string
     horas_duracion?: IntFieldUpdateOperationsInput | number
-    estatus?: NullableEnumcurso_status_domainFieldUpdateOperationsInput | $Enums.curso_status_domain | null
+    estatus?: NullableStringFieldUpdateOperationsInput | string | null
     trabajadores_cursos?: trabajadores_cursosUpdateManyWithoutCursosNestedInput
   }
 
@@ -16382,7 +16237,7 @@ export namespace Prisma {
     codigo_curso?: StringFieldUpdateOperationsInput | string
     nombre_curso?: StringFieldUpdateOperationsInput | string
     horas_duracion?: IntFieldUpdateOperationsInput | number
-    estatus?: NullableEnumcurso_status_domainFieldUpdateOperationsInput | $Enums.curso_status_domain | null
+    estatus?: NullableStringFieldUpdateOperationsInput | string | null
     trabajadores_cursos?: trabajadores_cursosUncheckedUpdateManyWithoutCursosNestedInput
   }
 
@@ -16391,14 +16246,14 @@ export namespace Prisma {
     codigo_curso: string
     nombre_curso: string
     horas_duracion: number
-    estatus?: $Enums.curso_status_domain | null
+    estatus?: string | null
   }
 
   export type cursosUpdateManyMutationInput = {
     codigo_curso?: StringFieldUpdateOperationsInput | string
     nombre_curso?: StringFieldUpdateOperationsInput | string
     horas_duracion?: IntFieldUpdateOperationsInput | number
-    estatus?: NullableEnumcurso_status_domainFieldUpdateOperationsInput | $Enums.curso_status_domain | null
+    estatus?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type cursosUncheckedUpdateManyInput = {
@@ -16406,7 +16261,7 @@ export namespace Prisma {
     codigo_curso?: StringFieldUpdateOperationsInput | string
     nombre_curso?: StringFieldUpdateOperationsInput | string
     horas_duracion?: IntFieldUpdateOperationsInput | number
-    estatus?: NullableEnumcurso_status_domainFieldUpdateOperationsInput | $Enums.curso_status_domain | null
+    estatus?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type documentosCreateInput = {
@@ -16421,9 +16276,9 @@ export namespace Prisma {
     fecha_subida?: Date | string | null
     tamano_bytes: bigint | number
     es_publico?: boolean | null
+    cambiosadscripcion?: cambiosadscripcionCreateNestedManyWithoutDocumentosInput
     hijos?: hijosCreateNestedManyWithoutDocumentosInput
     permisos?: permisosCreateNestedManyWithoutDocumentosInput
-    cambiosadscripcion?: cambiosadscripcionCreateNestedManyWithoutDocumentosInput
     trabajadores_cursos?: trabajadores_cursosCreateNestedManyWithoutDocumentosInput
   }
 
@@ -16440,9 +16295,9 @@ export namespace Prisma {
     fecha_subida?: Date | string | null
     tamano_bytes: bigint | number
     es_publico?: boolean | null
+    cambiosadscripcion?: cambiosadscripcionUncheckedCreateNestedManyWithoutDocumentosInput
     hijos?: hijosUncheckedCreateNestedManyWithoutDocumentosInput
     permisos?: permisosUncheckedCreateNestedManyWithoutDocumentosInput
-    cambiosadscripcion?: cambiosadscripcionUncheckedCreateNestedManyWithoutDocumentosInput
     trabajadores_cursos?: trabajadores_cursosUncheckedCreateNestedManyWithoutDocumentosInput
   }
 
@@ -16458,9 +16313,9 @@ export namespace Prisma {
     fecha_subida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tamano_bytes?: BigIntFieldUpdateOperationsInput | bigint | number
     es_publico?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    cambiosadscripcion?: cambiosadscripcionUpdateManyWithoutDocumentosNestedInput
     hijos?: hijosUpdateManyWithoutDocumentosNestedInput
     permisos?: permisosUpdateManyWithoutDocumentosNestedInput
-    cambiosadscripcion?: cambiosadscripcionUpdateManyWithoutDocumentosNestedInput
     trabajadores_cursos?: trabajadores_cursosUpdateManyWithoutDocumentosNestedInput
   }
 
@@ -16477,9 +16332,9 @@ export namespace Prisma {
     fecha_subida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tamano_bytes?: BigIntFieldUpdateOperationsInput | bigint | number
     es_publico?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    cambiosadscripcion?: cambiosadscripcionUncheckedUpdateManyWithoutDocumentosNestedInput
     hijos?: hijosUncheckedUpdateManyWithoutDocumentosNestedInput
     permisos?: permisosUncheckedUpdateManyWithoutDocumentosNestedInput
-    cambiosadscripcion?: cambiosadscripcionUncheckedUpdateManyWithoutDocumentosNestedInput
     trabajadores_cursos?: trabajadores_cursosUncheckedUpdateManyWithoutDocumentosNestedInput
   }
 
@@ -16794,11 +16649,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -16813,10 +16668,9 @@ export namespace Prisma {
     certificado_estudios?: boolean | null
     plaza_base?: string | null
     fecha_actualizacion?: Date | string | null
-    seccion: seccionesCreateNestedOneWithoutTrabajadoresInput
     sanciones?: sancionesCreateNestedManyWithoutTrabajadoresInput
+    seccion: seccionesCreateNestedOneWithoutTrabajadoresInput
     trabajadores_cursos?: trabajadores_cursosCreateNestedManyWithoutTrabajadoresInput
-    usuarios?: usuariosCreateNestedOneWithoutTrabajadoresInput
   }
 
   export type trabajadoresUncheckedCreateInput = {
@@ -16825,11 +16679,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -16847,7 +16701,6 @@ export namespace Prisma {
     fecha_actualizacion?: Date | string | null
     sanciones?: sancionesUncheckedCreateNestedManyWithoutTrabajadoresInput
     trabajadores_cursos?: trabajadores_cursosUncheckedCreateNestedManyWithoutTrabajadoresInput
-    usuarios?: usuariosUncheckedCreateNestedOneWithoutTrabajadoresInput
   }
 
   export type trabajadoresUpdateInput = {
@@ -16855,11 +16708,11 @@ export namespace Prisma {
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -16874,10 +16727,9 @@ export namespace Prisma {
     certificado_estudios?: NullableBoolFieldUpdateOperationsInput | boolean | null
     plaza_base?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    seccion?: seccionesUpdateOneRequiredWithoutTrabajadoresNestedInput
     sanciones?: sancionesUpdateManyWithoutTrabajadoresNestedInput
+    seccion?: seccionesUpdateOneRequiredWithoutTrabajadoresNestedInput
     trabajadores_cursos?: trabajadores_cursosUpdateManyWithoutTrabajadoresNestedInput
-    usuarios?: usuariosUpdateOneWithoutTrabajadoresNestedInput
   }
 
   export type trabajadoresUncheckedUpdateInput = {
@@ -16886,11 +16738,11 @@ export namespace Prisma {
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -16908,7 +16760,6 @@ export namespace Prisma {
     fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sanciones?: sancionesUncheckedUpdateManyWithoutTrabajadoresNestedInput
     trabajadores_cursos?: trabajadores_cursosUncheckedUpdateManyWithoutTrabajadoresNestedInput
-    usuarios?: usuariosUncheckedUpdateOneWithoutTrabajadoresNestedInput
   }
 
   export type trabajadoresCreateManyInput = {
@@ -16917,11 +16768,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -16944,11 +16795,11 @@ export namespace Prisma {
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -16971,11 +16822,11 @@ export namespace Prisma {
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -16994,20 +16845,20 @@ export namespace Prisma {
   }
 
   export type trabajadores_cursosCreateInput = {
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
-    trabajadores: trabajadoresCreateNestedOneWithoutTrabajadores_cursosInput
-    cursos: cursosCreateNestedOneWithoutTrabajadores_cursosInput
     documentos?: documentosCreateNestedOneWithoutTrabajadores_cursosInput
+    cursos: cursosCreateNestedOneWithoutTrabajadores_cursosInput
+    trabajadores: trabajadoresCreateNestedOneWithoutTrabajadores_cursosInput
   }
 
   export type trabajadores_cursosUncheckedCreateInput = {
     id_trabajador_curso?: number
     id_trabajador: number
     id_curso: number
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
@@ -17015,20 +16866,20 @@ export namespace Prisma {
   }
 
   export type trabajadores_cursosUpdateInput = {
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    trabajadores?: trabajadoresUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
-    cursos?: cursosUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
     documentos?: documentosUpdateOneWithoutTrabajadores_cursosNestedInput
+    cursos?: cursosUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
+    trabajadores?: trabajadoresUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
   }
 
   export type trabajadores_cursosUncheckedUpdateInput = {
     id_trabajador_curso?: IntFieldUpdateOperationsInput | number
     id_trabajador?: IntFieldUpdateOperationsInput | number
     id_curso?: IntFieldUpdateOperationsInput | number
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17039,7 +16890,7 @@ export namespace Prisma {
     id_trabajador_curso?: number
     id_trabajador: number
     id_curso: number
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
@@ -17047,7 +16898,7 @@ export namespace Prisma {
   }
 
   export type trabajadores_cursosUpdateManyMutationInput = {
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17057,7 +16908,7 @@ export namespace Prisma {
     id_trabajador_curso?: IntFieldUpdateOperationsInput | number
     id_trabajador?: IntFieldUpdateOperationsInput | number
     id_curso?: IntFieldUpdateOperationsInput | number
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -17065,6 +16916,7 @@ export namespace Prisma {
   }
 
   export type usuariosCreateInput = {
+    id_trabajador?: number | null
     identificador: string
     contraseña_hash: string
     intentos_fallidos?: number | null
@@ -17072,7 +16924,7 @@ export namespace Prisma {
     fecha_creacion?: Date | string | null
     ultimo_login?: Date | string | null
     ultimo_cambio_password?: Date | string | null
-    trabajadores?: trabajadoresCreateNestedOneWithoutUsuariosInput
+    rol?: $Enums.rol_usuario
   }
 
   export type usuariosUncheckedCreateInput = {
@@ -17085,9 +16937,11 @@ export namespace Prisma {
     fecha_creacion?: Date | string | null
     ultimo_login?: Date | string | null
     ultimo_cambio_password?: Date | string | null
+    rol?: $Enums.rol_usuario
   }
 
   export type usuariosUpdateInput = {
+    id_trabajador?: NullableIntFieldUpdateOperationsInput | number | null
     identificador?: StringFieldUpdateOperationsInput | string
     contraseña_hash?: StringFieldUpdateOperationsInput | string
     intentos_fallidos?: NullableIntFieldUpdateOperationsInput | number | null
@@ -17095,7 +16949,7 @@ export namespace Prisma {
     fecha_creacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimo_login?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimo_cambio_password?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    trabajadores?: trabajadoresUpdateOneWithoutUsuariosNestedInput
+    rol?: Enumrol_usuarioFieldUpdateOperationsInput | $Enums.rol_usuario
   }
 
   export type usuariosUncheckedUpdateInput = {
@@ -17108,6 +16962,7 @@ export namespace Prisma {
     fecha_creacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimo_login?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimo_cambio_password?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rol?: Enumrol_usuarioFieldUpdateOperationsInput | $Enums.rol_usuario
   }
 
   export type usuariosCreateManyInput = {
@@ -17120,9 +16975,11 @@ export namespace Prisma {
     fecha_creacion?: Date | string | null
     ultimo_login?: Date | string | null
     ultimo_cambio_password?: Date | string | null
+    rol?: $Enums.rol_usuario
   }
 
   export type usuariosUpdateManyMutationInput = {
+    id_trabajador?: NullableIntFieldUpdateOperationsInput | number | null
     identificador?: StringFieldUpdateOperationsInput | string
     contraseña_hash?: StringFieldUpdateOperationsInput | string
     intentos_fallidos?: NullableIntFieldUpdateOperationsInput | number | null
@@ -17130,6 +16987,7 @@ export namespace Prisma {
     fecha_creacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimo_login?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimo_cambio_password?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rol?: Enumrol_usuarioFieldUpdateOperationsInput | $Enums.rol_usuario
   }
 
   export type usuariosUncheckedUpdateManyInput = {
@@ -17142,6 +17000,7 @@ export namespace Prisma {
     fecha_creacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimo_login?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ultimo_cambio_password?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rol?: Enumrol_usuarioFieldUpdateOperationsInput | $Enums.rol_usuario
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -17169,7 +17028,7 @@ export namespace Prisma {
     mode?: QueryMode
     not?: NestedStringFilter<$PrismaModel> | string
   }
-  export type JsonNullableFilter<$PrismaModel = never> = 
+  export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
         Required<JsonNullableFilterBase<$PrismaModel>>
@@ -17281,7 +17140,7 @@ export namespace Prisma {
     _min?: NestedStringFilter<$PrismaModel>
     _max?: NestedStringFilter<$PrismaModel>
   }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> = 
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
         Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
@@ -17460,13 +17319,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type Enumcurso_status_domainNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.curso_status_domain | Enumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    in?: $Enums.curso_status_domain[] | ListEnumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.curso_status_domain[] | ListEnumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumcurso_status_domainNullableFilter<$PrismaModel> | $Enums.curso_status_domain | null
-  }
-
   export type Trabajadores_cursosListRelationFilter = {
     every?: trabajadores_cursosWhereInput
     some?: trabajadores_cursosWhereInput
@@ -17511,16 +17363,6 @@ export namespace Prisma {
     horas_duracion?: SortOrder
   }
 
-  export type Enumcurso_status_domainNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.curso_status_domain | Enumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    in?: $Enums.curso_status_domain[] | ListEnumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.curso_status_domain[] | ListEnumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumcurso_status_domainNullableWithAggregatesFilter<$PrismaModel> | $Enums.curso_status_domain | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumcurso_status_domainNullableFilter<$PrismaModel>
-    _max?: NestedEnumcurso_status_domainNullableFilter<$PrismaModel>
-  }
-
   export type BigIntFilter<$PrismaModel = never> = {
     equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
     in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
@@ -17537,6 +17379,12 @@ export namespace Prisma {
     not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
   }
 
+  export type CambiosadscripcionListRelationFilter = {
+    every?: cambiosadscripcionWhereInput
+    some?: cambiosadscripcionWhereInput
+    none?: cambiosadscripcionWhereInput
+  }
+
   export type HijosListRelationFilter = {
     every?: hijosWhereInput
     some?: hijosWhereInput
@@ -17549,10 +17397,8 @@ export namespace Prisma {
     none?: permisosWhereInput
   }
 
-  export type CambiosadscripcionListRelationFilter = {
-    every?: cambiosadscripcionWhereInput
-    some?: cambiosadscripcionWhereInput
-    none?: cambiosadscripcionWhereInput
+  export type cambiosadscripcionOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type hijosOrderByRelationAggregateInput = {
@@ -17560,10 +17406,6 @@ export namespace Prisma {
   }
 
   export type permisosOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type cambiosadscripcionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -17820,34 +17662,15 @@ export namespace Prisma {
     id_seccion?: SortOrder
   }
 
-  export type Enumsexo_domainFilter<$PrismaModel = never> = {
-    equals?: $Enums.sexo_domain | Enumsexo_domainFieldRefInput<$PrismaModel>
-    in?: $Enums.sexo_domain[] | ListEnumsexo_domainFieldRefInput<$PrismaModel>
-    notIn?: $Enums.sexo_domain[] | ListEnumsexo_domainFieldRefInput<$PrismaModel>
-    not?: NestedEnumsexo_domainFilter<$PrismaModel> | $Enums.sexo_domain
-  }
-
-  export type Enumsituacion_sentimental_domainNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.situacion_sentimental_domain | Enumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    in?: $Enums.situacion_sentimental_domain[] | ListEnumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.situacion_sentimental_domain[] | ListEnumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumsituacion_sentimental_domainNullableFilter<$PrismaModel> | $Enums.situacion_sentimental_domain | null
-  }
-
-  export type SeccionesScalarRelationFilter = {
-    is?: seccionesWhereInput
-    isNot?: seccionesWhereInput
-  }
-
   export type SancionesListRelationFilter = {
     every?: sancionesWhereInput
     some?: sancionesWhereInput
     none?: sancionesWhereInput
   }
 
-  export type UsuariosNullableScalarRelationFilter = {
-    is?: usuariosWhereInput | null
-    isNot?: usuariosWhereInput | null
+  export type SeccionesScalarRelationFilter = {
+    is?: seccionesWhereInput
+    isNot?: seccionesWhereInput
   }
 
   export type sancionesOrderByRelationAggregateInput = {
@@ -17950,26 +17773,6 @@ export namespace Prisma {
     id_seccion?: SortOrder
   }
 
-  export type Enumsexo_domainWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.sexo_domain | Enumsexo_domainFieldRefInput<$PrismaModel>
-    in?: $Enums.sexo_domain[] | ListEnumsexo_domainFieldRefInput<$PrismaModel>
-    notIn?: $Enums.sexo_domain[] | ListEnumsexo_domainFieldRefInput<$PrismaModel>
-    not?: NestedEnumsexo_domainWithAggregatesFilter<$PrismaModel> | $Enums.sexo_domain
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumsexo_domainFilter<$PrismaModel>
-    _max?: NestedEnumsexo_domainFilter<$PrismaModel>
-  }
-
-  export type Enumsituacion_sentimental_domainNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.situacion_sentimental_domain | Enumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    in?: $Enums.situacion_sentimental_domain[] | ListEnumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.situacion_sentimental_domain[] | ListEnumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumsituacion_sentimental_domainNullableWithAggregatesFilter<$PrismaModel> | $Enums.situacion_sentimental_domain | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumsituacion_sentimental_domainNullableFilter<$PrismaModel>
-    _max?: NestedEnumsituacion_sentimental_domainNullableFilter<$PrismaModel>
-  }
-
   export type DecimalNullableFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
     in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
@@ -18056,9 +17859,11 @@ export namespace Prisma {
     _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
-  export type TrabajadoresNullableScalarRelationFilter = {
-    is?: trabajadoresWhereInput | null
-    isNot?: trabajadoresWhereInput | null
+  export type Enumrol_usuarioFilter<$PrismaModel = never> = {
+    equals?: $Enums.rol_usuario | Enumrol_usuarioFieldRefInput<$PrismaModel>
+    in?: $Enums.rol_usuario[] | ListEnumrol_usuarioFieldRefInput<$PrismaModel>
+    notIn?: $Enums.rol_usuario[] | ListEnumrol_usuarioFieldRefInput<$PrismaModel>
+    not?: NestedEnumrol_usuarioFilter<$PrismaModel> | $Enums.rol_usuario
   }
 
   export type usuariosCountOrderByAggregateInput = {
@@ -18071,6 +17876,7 @@ export namespace Prisma {
     fecha_creacion?: SortOrder
     ultimo_login?: SortOrder
     ultimo_cambio_password?: SortOrder
+    rol?: SortOrder
   }
 
   export type usuariosAvgOrderByAggregateInput = {
@@ -18089,6 +17895,7 @@ export namespace Prisma {
     fecha_creacion?: SortOrder
     ultimo_login?: SortOrder
     ultimo_cambio_password?: SortOrder
+    rol?: SortOrder
   }
 
   export type usuariosMinOrderByAggregateInput = {
@@ -18101,12 +17908,23 @@ export namespace Prisma {
     fecha_creacion?: SortOrder
     ultimo_login?: SortOrder
     ultimo_cambio_password?: SortOrder
+    rol?: SortOrder
   }
 
   export type usuariosSumOrderByAggregateInput = {
     id_usuario?: SortOrder
     id_trabajador?: SortOrder
     intentos_fallidos?: SortOrder
+  }
+
+  export type Enumrol_usuarioWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.rol_usuario | Enumrol_usuarioFieldRefInput<$PrismaModel>
+    in?: $Enums.rol_usuario[] | ListEnumrol_usuarioFieldRefInput<$PrismaModel>
+    notIn?: $Enums.rol_usuario[] | ListEnumrol_usuarioFieldRefInput<$PrismaModel>
+    not?: NestedEnumrol_usuarioWithAggregatesFilter<$PrismaModel> | $Enums.rol_usuario
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumrol_usuarioFilter<$PrismaModel>
+    _max?: NestedEnumrol_usuarioFilter<$PrismaModel>
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -18171,10 +17989,6 @@ export namespace Prisma {
     connect?: trabajadores_cursosWhereUniqueInput | trabajadores_cursosWhereUniqueInput[]
   }
 
-  export type NullableEnumcurso_status_domainFieldUpdateOperationsInput = {
-    set?: $Enums.curso_status_domain | null
-  }
-
   export type trabajadores_cursosUpdateManyWithoutCursosNestedInput = {
     create?: XOR<trabajadores_cursosCreateWithoutCursosInput, trabajadores_cursosUncheckedCreateWithoutCursosInput> | trabajadores_cursosCreateWithoutCursosInput[] | trabajadores_cursosUncheckedCreateWithoutCursosInput[]
     connectOrCreate?: trabajadores_cursosCreateOrConnectWithoutCursosInput | trabajadores_cursosCreateOrConnectWithoutCursosInput[]
@@ -18203,6 +18017,13 @@ export namespace Prisma {
     deleteMany?: trabajadores_cursosScalarWhereInput | trabajadores_cursosScalarWhereInput[]
   }
 
+  export type cambiosadscripcionCreateNestedManyWithoutDocumentosInput = {
+    create?: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput> | cambiosadscripcionCreateWithoutDocumentosInput[] | cambiosadscripcionUncheckedCreateWithoutDocumentosInput[]
+    connectOrCreate?: cambiosadscripcionCreateOrConnectWithoutDocumentosInput | cambiosadscripcionCreateOrConnectWithoutDocumentosInput[]
+    createMany?: cambiosadscripcionCreateManyDocumentosInputEnvelope
+    connect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
+  }
+
   export type hijosCreateNestedManyWithoutDocumentosInput = {
     create?: XOR<hijosCreateWithoutDocumentosInput, hijosUncheckedCreateWithoutDocumentosInput> | hijosCreateWithoutDocumentosInput[] | hijosUncheckedCreateWithoutDocumentosInput[]
     connectOrCreate?: hijosCreateOrConnectWithoutDocumentosInput | hijosCreateOrConnectWithoutDocumentosInput[]
@@ -18217,18 +18038,18 @@ export namespace Prisma {
     connect?: permisosWhereUniqueInput | permisosWhereUniqueInput[]
   }
 
-  export type cambiosadscripcionCreateNestedManyWithoutDocumentosInput = {
-    create?: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput> | cambiosadscripcionCreateWithoutDocumentosInput[] | cambiosadscripcionUncheckedCreateWithoutDocumentosInput[]
-    connectOrCreate?: cambiosadscripcionCreateOrConnectWithoutDocumentosInput | cambiosadscripcionCreateOrConnectWithoutDocumentosInput[]
-    createMany?: cambiosadscripcionCreateManyDocumentosInputEnvelope
-    connect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
-  }
-
   export type trabajadores_cursosCreateNestedManyWithoutDocumentosInput = {
     create?: XOR<trabajadores_cursosCreateWithoutDocumentosInput, trabajadores_cursosUncheckedCreateWithoutDocumentosInput> | trabajadores_cursosCreateWithoutDocumentosInput[] | trabajadores_cursosUncheckedCreateWithoutDocumentosInput[]
     connectOrCreate?: trabajadores_cursosCreateOrConnectWithoutDocumentosInput | trabajadores_cursosCreateOrConnectWithoutDocumentosInput[]
     createMany?: trabajadores_cursosCreateManyDocumentosInputEnvelope
     connect?: trabajadores_cursosWhereUniqueInput | trabajadores_cursosWhereUniqueInput[]
+  }
+
+  export type cambiosadscripcionUncheckedCreateNestedManyWithoutDocumentosInput = {
+    create?: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput> | cambiosadscripcionCreateWithoutDocumentosInput[] | cambiosadscripcionUncheckedCreateWithoutDocumentosInput[]
+    connectOrCreate?: cambiosadscripcionCreateOrConnectWithoutDocumentosInput | cambiosadscripcionCreateOrConnectWithoutDocumentosInput[]
+    createMany?: cambiosadscripcionCreateManyDocumentosInputEnvelope
+    connect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
   }
 
   export type hijosUncheckedCreateNestedManyWithoutDocumentosInput = {
@@ -18243,13 +18064,6 @@ export namespace Prisma {
     connectOrCreate?: permisosCreateOrConnectWithoutDocumentosInput | permisosCreateOrConnectWithoutDocumentosInput[]
     createMany?: permisosCreateManyDocumentosInputEnvelope
     connect?: permisosWhereUniqueInput | permisosWhereUniqueInput[]
-  }
-
-  export type cambiosadscripcionUncheckedCreateNestedManyWithoutDocumentosInput = {
-    create?: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput> | cambiosadscripcionCreateWithoutDocumentosInput[] | cambiosadscripcionUncheckedCreateWithoutDocumentosInput[]
-    connectOrCreate?: cambiosadscripcionCreateOrConnectWithoutDocumentosInput | cambiosadscripcionCreateOrConnectWithoutDocumentosInput[]
-    createMany?: cambiosadscripcionCreateManyDocumentosInputEnvelope
-    connect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
   }
 
   export type trabajadores_cursosUncheckedCreateNestedManyWithoutDocumentosInput = {
@@ -18269,6 +18083,20 @@ export namespace Prisma {
 
   export type NullableBoolFieldUpdateOperationsInput = {
     set?: boolean | null
+  }
+
+  export type cambiosadscripcionUpdateManyWithoutDocumentosNestedInput = {
+    create?: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput> | cambiosadscripcionCreateWithoutDocumentosInput[] | cambiosadscripcionUncheckedCreateWithoutDocumentosInput[]
+    connectOrCreate?: cambiosadscripcionCreateOrConnectWithoutDocumentosInput | cambiosadscripcionCreateOrConnectWithoutDocumentosInput[]
+    upsert?: cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput | cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput[]
+    createMany?: cambiosadscripcionCreateManyDocumentosInputEnvelope
+    set?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
+    disconnect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
+    delete?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
+    connect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
+    update?: cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput | cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput[]
+    updateMany?: cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput | cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput[]
+    deleteMany?: cambiosadscripcionScalarWhereInput | cambiosadscripcionScalarWhereInput[]
   }
 
   export type hijosUpdateManyWithoutDocumentosNestedInput = {
@@ -18299,20 +18127,6 @@ export namespace Prisma {
     deleteMany?: permisosScalarWhereInput | permisosScalarWhereInput[]
   }
 
-  export type cambiosadscripcionUpdateManyWithoutDocumentosNestedInput = {
-    create?: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput> | cambiosadscripcionCreateWithoutDocumentosInput[] | cambiosadscripcionUncheckedCreateWithoutDocumentosInput[]
-    connectOrCreate?: cambiosadscripcionCreateOrConnectWithoutDocumentosInput | cambiosadscripcionCreateOrConnectWithoutDocumentosInput[]
-    upsert?: cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput | cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput[]
-    createMany?: cambiosadscripcionCreateManyDocumentosInputEnvelope
-    set?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
-    disconnect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
-    delete?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
-    connect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
-    update?: cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput | cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput[]
-    updateMany?: cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput | cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput[]
-    deleteMany?: cambiosadscripcionScalarWhereInput | cambiosadscripcionScalarWhereInput[]
-  }
-
   export type trabajadores_cursosUpdateManyWithoutDocumentosNestedInput = {
     create?: XOR<trabajadores_cursosCreateWithoutDocumentosInput, trabajadores_cursosUncheckedCreateWithoutDocumentosInput> | trabajadores_cursosCreateWithoutDocumentosInput[] | trabajadores_cursosUncheckedCreateWithoutDocumentosInput[]
     connectOrCreate?: trabajadores_cursosCreateOrConnectWithoutDocumentosInput | trabajadores_cursosCreateOrConnectWithoutDocumentosInput[]
@@ -18325,6 +18139,20 @@ export namespace Prisma {
     update?: trabajadores_cursosUpdateWithWhereUniqueWithoutDocumentosInput | trabajadores_cursosUpdateWithWhereUniqueWithoutDocumentosInput[]
     updateMany?: trabajadores_cursosUpdateManyWithWhereWithoutDocumentosInput | trabajadores_cursosUpdateManyWithWhereWithoutDocumentosInput[]
     deleteMany?: trabajadores_cursosScalarWhereInput | trabajadores_cursosScalarWhereInput[]
+  }
+
+  export type cambiosadscripcionUncheckedUpdateManyWithoutDocumentosNestedInput = {
+    create?: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput> | cambiosadscripcionCreateWithoutDocumentosInput[] | cambiosadscripcionUncheckedCreateWithoutDocumentosInput[]
+    connectOrCreate?: cambiosadscripcionCreateOrConnectWithoutDocumentosInput | cambiosadscripcionCreateOrConnectWithoutDocumentosInput[]
+    upsert?: cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput | cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput[]
+    createMany?: cambiosadscripcionCreateManyDocumentosInputEnvelope
+    set?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
+    disconnect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
+    delete?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
+    connect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
+    update?: cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput | cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput[]
+    updateMany?: cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput | cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput[]
+    deleteMany?: cambiosadscripcionScalarWhereInput | cambiosadscripcionScalarWhereInput[]
   }
 
   export type hijosUncheckedUpdateManyWithoutDocumentosNestedInput = {
@@ -18353,20 +18181,6 @@ export namespace Prisma {
     update?: permisosUpdateWithWhereUniqueWithoutDocumentosInput | permisosUpdateWithWhereUniqueWithoutDocumentosInput[]
     updateMany?: permisosUpdateManyWithWhereWithoutDocumentosInput | permisosUpdateManyWithWhereWithoutDocumentosInput[]
     deleteMany?: permisosScalarWhereInput | permisosScalarWhereInput[]
-  }
-
-  export type cambiosadscripcionUncheckedUpdateManyWithoutDocumentosNestedInput = {
-    create?: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput> | cambiosadscripcionCreateWithoutDocumentosInput[] | cambiosadscripcionUncheckedCreateWithoutDocumentosInput[]
-    connectOrCreate?: cambiosadscripcionCreateOrConnectWithoutDocumentosInput | cambiosadscripcionCreateOrConnectWithoutDocumentosInput[]
-    upsert?: cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput | cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput[]
-    createMany?: cambiosadscripcionCreateManyDocumentosInputEnvelope
-    set?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
-    disconnect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
-    delete?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
-    connect?: cambiosadscripcionWhereUniqueInput | cambiosadscripcionWhereUniqueInput[]
-    update?: cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput | cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput[]
-    updateMany?: cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput | cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput[]
-    deleteMany?: cambiosadscripcionScalarWhereInput | cambiosadscripcionScalarWhereInput[]
   }
 
   export type trabajadores_cursosUncheckedUpdateManyWithoutDocumentosNestedInput = {
@@ -18471,12 +18285,6 @@ export namespace Prisma {
     deleteMany?: trabajadoresScalarWhereInput | trabajadoresScalarWhereInput[]
   }
 
-  export type seccionesCreateNestedOneWithoutTrabajadoresInput = {
-    create?: XOR<seccionesCreateWithoutTrabajadoresInput, seccionesUncheckedCreateWithoutTrabajadoresInput>
-    connectOrCreate?: seccionesCreateOrConnectWithoutTrabajadoresInput
-    connect?: seccionesWhereUniqueInput
-  }
-
   export type sancionesCreateNestedManyWithoutTrabajadoresInput = {
     create?: XOR<sancionesCreateWithoutTrabajadoresInput, sancionesUncheckedCreateWithoutTrabajadoresInput> | sancionesCreateWithoutTrabajadoresInput[] | sancionesUncheckedCreateWithoutTrabajadoresInput[]
     connectOrCreate?: sancionesCreateOrConnectWithoutTrabajadoresInput | sancionesCreateOrConnectWithoutTrabajadoresInput[]
@@ -18484,17 +18292,17 @@ export namespace Prisma {
     connect?: sancionesWhereUniqueInput | sancionesWhereUniqueInput[]
   }
 
+  export type seccionesCreateNestedOneWithoutTrabajadoresInput = {
+    create?: XOR<seccionesCreateWithoutTrabajadoresInput, seccionesUncheckedCreateWithoutTrabajadoresInput>
+    connectOrCreate?: seccionesCreateOrConnectWithoutTrabajadoresInput
+    connect?: seccionesWhereUniqueInput
+  }
+
   export type trabajadores_cursosCreateNestedManyWithoutTrabajadoresInput = {
     create?: XOR<trabajadores_cursosCreateWithoutTrabajadoresInput, trabajadores_cursosUncheckedCreateWithoutTrabajadoresInput> | trabajadores_cursosCreateWithoutTrabajadoresInput[] | trabajadores_cursosUncheckedCreateWithoutTrabajadoresInput[]
     connectOrCreate?: trabajadores_cursosCreateOrConnectWithoutTrabajadoresInput | trabajadores_cursosCreateOrConnectWithoutTrabajadoresInput[]
     createMany?: trabajadores_cursosCreateManyTrabajadoresInputEnvelope
     connect?: trabajadores_cursosWhereUniqueInput | trabajadores_cursosWhereUniqueInput[]
-  }
-
-  export type usuariosCreateNestedOneWithoutTrabajadoresInput = {
-    create?: XOR<usuariosCreateWithoutTrabajadoresInput, usuariosUncheckedCreateWithoutTrabajadoresInput>
-    connectOrCreate?: usuariosCreateOrConnectWithoutTrabajadoresInput
-    connect?: usuariosWhereUniqueInput
   }
 
   export type sancionesUncheckedCreateNestedManyWithoutTrabajadoresInput = {
@@ -18511,28 +18319,6 @@ export namespace Prisma {
     connect?: trabajadores_cursosWhereUniqueInput | trabajadores_cursosWhereUniqueInput[]
   }
 
-  export type usuariosUncheckedCreateNestedOneWithoutTrabajadoresInput = {
-    create?: XOR<usuariosCreateWithoutTrabajadoresInput, usuariosUncheckedCreateWithoutTrabajadoresInput>
-    connectOrCreate?: usuariosCreateOrConnectWithoutTrabajadoresInput
-    connect?: usuariosWhereUniqueInput
-  }
-
-  export type Enumsexo_domainFieldUpdateOperationsInput = {
-    set?: $Enums.sexo_domain
-  }
-
-  export type NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput = {
-    set?: $Enums.situacion_sentimental_domain | null
-  }
-
-  export type seccionesUpdateOneRequiredWithoutTrabajadoresNestedInput = {
-    create?: XOR<seccionesCreateWithoutTrabajadoresInput, seccionesUncheckedCreateWithoutTrabajadoresInput>
-    connectOrCreate?: seccionesCreateOrConnectWithoutTrabajadoresInput
-    upsert?: seccionesUpsertWithoutTrabajadoresInput
-    connect?: seccionesWhereUniqueInput
-    update?: XOR<XOR<seccionesUpdateToOneWithWhereWithoutTrabajadoresInput, seccionesUpdateWithoutTrabajadoresInput>, seccionesUncheckedUpdateWithoutTrabajadoresInput>
-  }
-
   export type sancionesUpdateManyWithoutTrabajadoresNestedInput = {
     create?: XOR<sancionesCreateWithoutTrabajadoresInput, sancionesUncheckedCreateWithoutTrabajadoresInput> | sancionesCreateWithoutTrabajadoresInput[] | sancionesUncheckedCreateWithoutTrabajadoresInput[]
     connectOrCreate?: sancionesCreateOrConnectWithoutTrabajadoresInput | sancionesCreateOrConnectWithoutTrabajadoresInput[]
@@ -18547,6 +18333,14 @@ export namespace Prisma {
     deleteMany?: sancionesScalarWhereInput | sancionesScalarWhereInput[]
   }
 
+  export type seccionesUpdateOneRequiredWithoutTrabajadoresNestedInput = {
+    create?: XOR<seccionesCreateWithoutTrabajadoresInput, seccionesUncheckedCreateWithoutTrabajadoresInput>
+    connectOrCreate?: seccionesCreateOrConnectWithoutTrabajadoresInput
+    upsert?: seccionesUpsertWithoutTrabajadoresInput
+    connect?: seccionesWhereUniqueInput
+    update?: XOR<XOR<seccionesUpdateToOneWithWhereWithoutTrabajadoresInput, seccionesUpdateWithoutTrabajadoresInput>, seccionesUncheckedUpdateWithoutTrabajadoresInput>
+  }
+
   export type trabajadores_cursosUpdateManyWithoutTrabajadoresNestedInput = {
     create?: XOR<trabajadores_cursosCreateWithoutTrabajadoresInput, trabajadores_cursosUncheckedCreateWithoutTrabajadoresInput> | trabajadores_cursosCreateWithoutTrabajadoresInput[] | trabajadores_cursosUncheckedCreateWithoutTrabajadoresInput[]
     connectOrCreate?: trabajadores_cursosCreateOrConnectWithoutTrabajadoresInput | trabajadores_cursosCreateOrConnectWithoutTrabajadoresInput[]
@@ -18559,16 +18353,6 @@ export namespace Prisma {
     update?: trabajadores_cursosUpdateWithWhereUniqueWithoutTrabajadoresInput | trabajadores_cursosUpdateWithWhereUniqueWithoutTrabajadoresInput[]
     updateMany?: trabajadores_cursosUpdateManyWithWhereWithoutTrabajadoresInput | trabajadores_cursosUpdateManyWithWhereWithoutTrabajadoresInput[]
     deleteMany?: trabajadores_cursosScalarWhereInput | trabajadores_cursosScalarWhereInput[]
-  }
-
-  export type usuariosUpdateOneWithoutTrabajadoresNestedInput = {
-    create?: XOR<usuariosCreateWithoutTrabajadoresInput, usuariosUncheckedCreateWithoutTrabajadoresInput>
-    connectOrCreate?: usuariosCreateOrConnectWithoutTrabajadoresInput
-    upsert?: usuariosUpsertWithoutTrabajadoresInput
-    disconnect?: usuariosWhereInput | boolean
-    delete?: usuariosWhereInput | boolean
-    connect?: usuariosWhereUniqueInput
-    update?: XOR<XOR<usuariosUpdateToOneWithWhereWithoutTrabajadoresInput, usuariosUpdateWithoutTrabajadoresInput>, usuariosUncheckedUpdateWithoutTrabajadoresInput>
   }
 
   export type sancionesUncheckedUpdateManyWithoutTrabajadoresNestedInput = {
@@ -18599,20 +18383,10 @@ export namespace Prisma {
     deleteMany?: trabajadores_cursosScalarWhereInput | trabajadores_cursosScalarWhereInput[]
   }
 
-  export type usuariosUncheckedUpdateOneWithoutTrabajadoresNestedInput = {
-    create?: XOR<usuariosCreateWithoutTrabajadoresInput, usuariosUncheckedCreateWithoutTrabajadoresInput>
-    connectOrCreate?: usuariosCreateOrConnectWithoutTrabajadoresInput
-    upsert?: usuariosUpsertWithoutTrabajadoresInput
-    disconnect?: usuariosWhereInput | boolean
-    delete?: usuariosWhereInput | boolean
-    connect?: usuariosWhereUniqueInput
-    update?: XOR<XOR<usuariosUpdateToOneWithWhereWithoutTrabajadoresInput, usuariosUpdateWithoutTrabajadoresInput>, usuariosUncheckedUpdateWithoutTrabajadoresInput>
-  }
-
-  export type trabajadoresCreateNestedOneWithoutTrabajadores_cursosInput = {
-    create?: XOR<trabajadoresCreateWithoutTrabajadores_cursosInput, trabajadoresUncheckedCreateWithoutTrabajadores_cursosInput>
-    connectOrCreate?: trabajadoresCreateOrConnectWithoutTrabajadores_cursosInput
-    connect?: trabajadoresWhereUniqueInput
+  export type documentosCreateNestedOneWithoutTrabajadores_cursosInput = {
+    create?: XOR<documentosCreateWithoutTrabajadores_cursosInput, documentosUncheckedCreateWithoutTrabajadores_cursosInput>
+    connectOrCreate?: documentosCreateOrConnectWithoutTrabajadores_cursosInput
+    connect?: documentosWhereUniqueInput
   }
 
   export type cursosCreateNestedOneWithoutTrabajadores_cursosInput = {
@@ -18621,10 +18395,10 @@ export namespace Prisma {
     connect?: cursosWhereUniqueInput
   }
 
-  export type documentosCreateNestedOneWithoutTrabajadores_cursosInput = {
-    create?: XOR<documentosCreateWithoutTrabajadores_cursosInput, documentosUncheckedCreateWithoutTrabajadores_cursosInput>
-    connectOrCreate?: documentosCreateOrConnectWithoutTrabajadores_cursosInput
-    connect?: documentosWhereUniqueInput
+  export type trabajadoresCreateNestedOneWithoutTrabajadores_cursosInput = {
+    create?: XOR<trabajadoresCreateWithoutTrabajadores_cursosInput, trabajadoresUncheckedCreateWithoutTrabajadores_cursosInput>
+    connectOrCreate?: trabajadoresCreateOrConnectWithoutTrabajadores_cursosInput
+    connect?: trabajadoresWhereUniqueInput
   }
 
   export type NullableDecimalFieldUpdateOperationsInput = {
@@ -18633,22 +18407,6 @@ export namespace Prisma {
     decrement?: Decimal | DecimalJsLike | number | string
     multiply?: Decimal | DecimalJsLike | number | string
     divide?: Decimal | DecimalJsLike | number | string
-  }
-
-  export type trabajadoresUpdateOneRequiredWithoutTrabajadores_cursosNestedInput = {
-    create?: XOR<trabajadoresCreateWithoutTrabajadores_cursosInput, trabajadoresUncheckedCreateWithoutTrabajadores_cursosInput>
-    connectOrCreate?: trabajadoresCreateOrConnectWithoutTrabajadores_cursosInput
-    upsert?: trabajadoresUpsertWithoutTrabajadores_cursosInput
-    connect?: trabajadoresWhereUniqueInput
-    update?: XOR<XOR<trabajadoresUpdateToOneWithWhereWithoutTrabajadores_cursosInput, trabajadoresUpdateWithoutTrabajadores_cursosInput>, trabajadoresUncheckedUpdateWithoutTrabajadores_cursosInput>
-  }
-
-  export type cursosUpdateOneRequiredWithoutTrabajadores_cursosNestedInput = {
-    create?: XOR<cursosCreateWithoutTrabajadores_cursosInput, cursosUncheckedCreateWithoutTrabajadores_cursosInput>
-    connectOrCreate?: cursosCreateOrConnectWithoutTrabajadores_cursosInput
-    upsert?: cursosUpsertWithoutTrabajadores_cursosInput
-    connect?: cursosWhereUniqueInput
-    update?: XOR<XOR<cursosUpdateToOneWithWhereWithoutTrabajadores_cursosInput, cursosUpdateWithoutTrabajadores_cursosInput>, cursosUncheckedUpdateWithoutTrabajadores_cursosInput>
   }
 
   export type documentosUpdateOneWithoutTrabajadores_cursosNestedInput = {
@@ -18661,20 +18419,24 @@ export namespace Prisma {
     update?: XOR<XOR<documentosUpdateToOneWithWhereWithoutTrabajadores_cursosInput, documentosUpdateWithoutTrabajadores_cursosInput>, documentosUncheckedUpdateWithoutTrabajadores_cursosInput>
   }
 
-  export type trabajadoresCreateNestedOneWithoutUsuariosInput = {
-    create?: XOR<trabajadoresCreateWithoutUsuariosInput, trabajadoresUncheckedCreateWithoutUsuariosInput>
-    connectOrCreate?: trabajadoresCreateOrConnectWithoutUsuariosInput
-    connect?: trabajadoresWhereUniqueInput
+  export type cursosUpdateOneRequiredWithoutTrabajadores_cursosNestedInput = {
+    create?: XOR<cursosCreateWithoutTrabajadores_cursosInput, cursosUncheckedCreateWithoutTrabajadores_cursosInput>
+    connectOrCreate?: cursosCreateOrConnectWithoutTrabajadores_cursosInput
+    upsert?: cursosUpsertWithoutTrabajadores_cursosInput
+    connect?: cursosWhereUniqueInput
+    update?: XOR<XOR<cursosUpdateToOneWithWhereWithoutTrabajadores_cursosInput, cursosUpdateWithoutTrabajadores_cursosInput>, cursosUncheckedUpdateWithoutTrabajadores_cursosInput>
   }
 
-  export type trabajadoresUpdateOneWithoutUsuariosNestedInput = {
-    create?: XOR<trabajadoresCreateWithoutUsuariosInput, trabajadoresUncheckedCreateWithoutUsuariosInput>
-    connectOrCreate?: trabajadoresCreateOrConnectWithoutUsuariosInput
-    upsert?: trabajadoresUpsertWithoutUsuariosInput
-    disconnect?: trabajadoresWhereInput | boolean
-    delete?: trabajadoresWhereInput | boolean
+  export type trabajadoresUpdateOneRequiredWithoutTrabajadores_cursosNestedInput = {
+    create?: XOR<trabajadoresCreateWithoutTrabajadores_cursosInput, trabajadoresUncheckedCreateWithoutTrabajadores_cursosInput>
+    connectOrCreate?: trabajadoresCreateOrConnectWithoutTrabajadores_cursosInput
+    upsert?: trabajadoresUpsertWithoutTrabajadores_cursosInput
     connect?: trabajadoresWhereUniqueInput
-    update?: XOR<XOR<trabajadoresUpdateToOneWithWhereWithoutUsuariosInput, trabajadoresUpdateWithoutUsuariosInput>, trabajadoresUncheckedUpdateWithoutUsuariosInput>
+    update?: XOR<XOR<trabajadoresUpdateToOneWithWhereWithoutTrabajadores_cursosInput, trabajadoresUpdateWithoutTrabajadores_cursosInput>, trabajadoresUncheckedUpdateWithoutTrabajadores_cursosInput>
+  }
+
+  export type Enumrol_usuarioFieldUpdateOperationsInput = {
+    set?: $Enums.rol_usuario
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -18767,7 +18529,7 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
-  export type NestedJsonNullableFilter<$PrismaModel = never> = 
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
         Required<NestedJsonNullableFilterBase<$PrismaModel>>
@@ -18888,23 +18650,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type NestedEnumcurso_status_domainNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.curso_status_domain | Enumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    in?: $Enums.curso_status_domain[] | ListEnumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.curso_status_domain[] | ListEnumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumcurso_status_domainNullableFilter<$PrismaModel> | $Enums.curso_status_domain | null
-  }
-
-  export type NestedEnumcurso_status_domainNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.curso_status_domain | Enumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    in?: $Enums.curso_status_domain[] | ListEnumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.curso_status_domain[] | ListEnumcurso_status_domainFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumcurso_status_domainNullableWithAggregatesFilter<$PrismaModel> | $Enums.curso_status_domain | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumcurso_status_domainNullableFilter<$PrismaModel>
-    _max?: NestedEnumcurso_status_domainNullableFilter<$PrismaModel>
-  }
-
   export type NestedBigIntFilter<$PrismaModel = never> = {
     equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
     in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
@@ -18945,40 +18690,6 @@ export namespace Prisma {
     _max?: NestedBoolNullableFilter<$PrismaModel>
   }
 
-  export type NestedEnumsexo_domainFilter<$PrismaModel = never> = {
-    equals?: $Enums.sexo_domain | Enumsexo_domainFieldRefInput<$PrismaModel>
-    in?: $Enums.sexo_domain[] | ListEnumsexo_domainFieldRefInput<$PrismaModel>
-    notIn?: $Enums.sexo_domain[] | ListEnumsexo_domainFieldRefInput<$PrismaModel>
-    not?: NestedEnumsexo_domainFilter<$PrismaModel> | $Enums.sexo_domain
-  }
-
-  export type NestedEnumsituacion_sentimental_domainNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.situacion_sentimental_domain | Enumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    in?: $Enums.situacion_sentimental_domain[] | ListEnumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.situacion_sentimental_domain[] | ListEnumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumsituacion_sentimental_domainNullableFilter<$PrismaModel> | $Enums.situacion_sentimental_domain | null
-  }
-
-  export type NestedEnumsexo_domainWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.sexo_domain | Enumsexo_domainFieldRefInput<$PrismaModel>
-    in?: $Enums.sexo_domain[] | ListEnumsexo_domainFieldRefInput<$PrismaModel>
-    notIn?: $Enums.sexo_domain[] | ListEnumsexo_domainFieldRefInput<$PrismaModel>
-    not?: NestedEnumsexo_domainWithAggregatesFilter<$PrismaModel> | $Enums.sexo_domain
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumsexo_domainFilter<$PrismaModel>
-    _max?: NestedEnumsexo_domainFilter<$PrismaModel>
-  }
-
-  export type NestedEnumsituacion_sentimental_domainNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.situacion_sentimental_domain | Enumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    in?: $Enums.situacion_sentimental_domain[] | ListEnumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    notIn?: $Enums.situacion_sentimental_domain[] | ListEnumsituacion_sentimental_domainFieldRefInput<$PrismaModel> | null
-    not?: NestedEnumsituacion_sentimental_domainNullableWithAggregatesFilter<$PrismaModel> | $Enums.situacion_sentimental_domain | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumsituacion_sentimental_domainNullableFilter<$PrismaModel>
-    _max?: NestedEnumsituacion_sentimental_domainNullableFilter<$PrismaModel>
-  }
-
   export type NestedDecimalNullableFilter<$PrismaModel = never> = {
     equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
     in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
@@ -19004,6 +18715,23 @@ export namespace Prisma {
     _sum?: NestedDecimalNullableFilter<$PrismaModel>
     _min?: NestedDecimalNullableFilter<$PrismaModel>
     _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumrol_usuarioFilter<$PrismaModel = never> = {
+    equals?: $Enums.rol_usuario | Enumrol_usuarioFieldRefInput<$PrismaModel>
+    in?: $Enums.rol_usuario[] | ListEnumrol_usuarioFieldRefInput<$PrismaModel>
+    notIn?: $Enums.rol_usuario[] | ListEnumrol_usuarioFieldRefInput<$PrismaModel>
+    not?: NestedEnumrol_usuarioFilter<$PrismaModel> | $Enums.rol_usuario
+  }
+
+  export type NestedEnumrol_usuarioWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.rol_usuario | Enumrol_usuarioFieldRefInput<$PrismaModel>
+    in?: $Enums.rol_usuario[] | ListEnumrol_usuarioFieldRefInput<$PrismaModel>
+    notIn?: $Enums.rol_usuario[] | ListEnumrol_usuarioFieldRefInput<$PrismaModel>
+    not?: NestedEnumrol_usuarioWithAggregatesFilter<$PrismaModel> | $Enums.rol_usuario
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumrol_usuarioFilter<$PrismaModel>
+    _max?: NestedEnumrol_usuarioFilter<$PrismaModel>
   }
 
   export type documentosCreateWithoutCambiosadscripcionInput = {
@@ -19093,18 +18821,18 @@ export namespace Prisma {
   }
 
   export type trabajadores_cursosCreateWithoutCursosInput = {
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
-    trabajadores: trabajadoresCreateNestedOneWithoutTrabajadores_cursosInput
     documentos?: documentosCreateNestedOneWithoutTrabajadores_cursosInput
+    trabajadores: trabajadoresCreateNestedOneWithoutTrabajadores_cursosInput
   }
 
   export type trabajadores_cursosUncheckedCreateWithoutCursosInput = {
     id_trabajador_curso?: number
     id_trabajador: number
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
@@ -19144,11 +18872,42 @@ export namespace Prisma {
     id_trabajador_curso?: IntFilter<"trabajadores_cursos"> | number
     id_trabajador?: IntFilter<"trabajadores_cursos"> | number
     id_curso?: IntFilter<"trabajadores_cursos"> | number
-    fecha_inscripcion?: DateTimeNullableFilter<"trabajadores_cursos"> | Date | string | null
+    fecha_inscripcion?: DateTimeFilter<"trabajadores_cursos"> | Date | string
     calificacion?: DecimalNullableFilter<"trabajadores_cursos"> | Decimal | DecimalJsLike | number | string | null
     completado?: BoolNullableFilter<"trabajadores_cursos"> | boolean | null
     fecha_completado?: DateTimeNullableFilter<"trabajadores_cursos"> | Date | string | null
     certificado_id?: IntNullableFilter<"trabajadores_cursos"> | number | null
+  }
+
+  export type cambiosadscripcionCreateWithoutDocumentosInput = {
+    id_trabajador: number
+    adscripcion_anterior: string
+    adscripcion_nueva: string
+    fecha_cambio: Date | string
+    motivo: string
+    usuario_registro?: string | null
+    fecha_registro?: Date | string | null
+  }
+
+  export type cambiosadscripcionUncheckedCreateWithoutDocumentosInput = {
+    id_cambio?: number
+    id_trabajador: number
+    adscripcion_anterior: string
+    adscripcion_nueva: string
+    fecha_cambio: Date | string
+    motivo: string
+    usuario_registro?: string | null
+    fecha_registro?: Date | string | null
+  }
+
+  export type cambiosadscripcionCreateOrConnectWithoutDocumentosInput = {
+    where: cambiosadscripcionWhereUniqueInput
+    create: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput>
+  }
+
+  export type cambiosadscripcionCreateManyDocumentosInputEnvelope = {
+    data: cambiosadscripcionCreateManyDocumentosInput | cambiosadscripcionCreateManyDocumentosInput[]
+    skipDuplicates?: boolean
   }
 
   export type hijosCreateWithoutDocumentosInput = {
@@ -19207,51 +18966,20 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type cambiosadscripcionCreateWithoutDocumentosInput = {
-    id_trabajador: number
-    adscripcion_anterior: string
-    adscripcion_nueva: string
-    fecha_cambio: Date | string
-    motivo: string
-    usuario_registro?: string | null
-    fecha_registro?: Date | string | null
-  }
-
-  export type cambiosadscripcionUncheckedCreateWithoutDocumentosInput = {
-    id_cambio?: number
-    id_trabajador: number
-    adscripcion_anterior: string
-    adscripcion_nueva: string
-    fecha_cambio: Date | string
-    motivo: string
-    usuario_registro?: string | null
-    fecha_registro?: Date | string | null
-  }
-
-  export type cambiosadscripcionCreateOrConnectWithoutDocumentosInput = {
-    where: cambiosadscripcionWhereUniqueInput
-    create: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput>
-  }
-
-  export type cambiosadscripcionCreateManyDocumentosInputEnvelope = {
-    data: cambiosadscripcionCreateManyDocumentosInput | cambiosadscripcionCreateManyDocumentosInput[]
-    skipDuplicates?: boolean
-  }
-
   export type trabajadores_cursosCreateWithoutDocumentosInput = {
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
-    trabajadores: trabajadoresCreateNestedOneWithoutTrabajadores_cursosInput
     cursos: cursosCreateNestedOneWithoutTrabajadores_cursosInput
+    trabajadores: trabajadoresCreateNestedOneWithoutTrabajadores_cursosInput
   }
 
   export type trabajadores_cursosUncheckedCreateWithoutDocumentosInput = {
     id_trabajador_curso?: number
     id_trabajador: number
     id_curso: number
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
@@ -19265,6 +18993,37 @@ export namespace Prisma {
   export type trabajadores_cursosCreateManyDocumentosInputEnvelope = {
     data: trabajadores_cursosCreateManyDocumentosInput | trabajadores_cursosCreateManyDocumentosInput[]
     skipDuplicates?: boolean
+  }
+
+  export type cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput = {
+    where: cambiosadscripcionWhereUniqueInput
+    update: XOR<cambiosadscripcionUpdateWithoutDocumentosInput, cambiosadscripcionUncheckedUpdateWithoutDocumentosInput>
+    create: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput>
+  }
+
+  export type cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput = {
+    where: cambiosadscripcionWhereUniqueInput
+    data: XOR<cambiosadscripcionUpdateWithoutDocumentosInput, cambiosadscripcionUncheckedUpdateWithoutDocumentosInput>
+  }
+
+  export type cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput = {
+    where: cambiosadscripcionScalarWhereInput
+    data: XOR<cambiosadscripcionUpdateManyMutationInput, cambiosadscripcionUncheckedUpdateManyWithoutDocumentosInput>
+  }
+
+  export type cambiosadscripcionScalarWhereInput = {
+    AND?: cambiosadscripcionScalarWhereInput | cambiosadscripcionScalarWhereInput[]
+    OR?: cambiosadscripcionScalarWhereInput[]
+    NOT?: cambiosadscripcionScalarWhereInput | cambiosadscripcionScalarWhereInput[]
+    id_cambio?: IntFilter<"cambiosadscripcion"> | number
+    id_trabajador?: IntFilter<"cambiosadscripcion"> | number
+    adscripcion_anterior?: StringFilter<"cambiosadscripcion"> | string
+    adscripcion_nueva?: StringFilter<"cambiosadscripcion"> | string
+    fecha_cambio?: DateTimeFilter<"cambiosadscripcion"> | Date | string
+    motivo?: StringFilter<"cambiosadscripcion"> | string
+    documento_respaldo_id?: IntNullableFilter<"cambiosadscripcion"> | number | null
+    usuario_registro?: StringNullableFilter<"cambiosadscripcion"> | string | null
+    fecha_registro?: DateTimeNullableFilter<"cambiosadscripcion"> | Date | string | null
   }
 
   export type hijosUpsertWithWhereUniqueWithoutDocumentosInput = {
@@ -19326,37 +19085,6 @@ export namespace Prisma {
     fecha_registro?: DateTimeNullableFilter<"permisos"> | Date | string | null
   }
 
-  export type cambiosadscripcionUpsertWithWhereUniqueWithoutDocumentosInput = {
-    where: cambiosadscripcionWhereUniqueInput
-    update: XOR<cambiosadscripcionUpdateWithoutDocumentosInput, cambiosadscripcionUncheckedUpdateWithoutDocumentosInput>
-    create: XOR<cambiosadscripcionCreateWithoutDocumentosInput, cambiosadscripcionUncheckedCreateWithoutDocumentosInput>
-  }
-
-  export type cambiosadscripcionUpdateWithWhereUniqueWithoutDocumentosInput = {
-    where: cambiosadscripcionWhereUniqueInput
-    data: XOR<cambiosadscripcionUpdateWithoutDocumentosInput, cambiosadscripcionUncheckedUpdateWithoutDocumentosInput>
-  }
-
-  export type cambiosadscripcionUpdateManyWithWhereWithoutDocumentosInput = {
-    where: cambiosadscripcionScalarWhereInput
-    data: XOR<cambiosadscripcionUpdateManyMutationInput, cambiosadscripcionUncheckedUpdateManyWithoutDocumentosInput>
-  }
-
-  export type cambiosadscripcionScalarWhereInput = {
-    AND?: cambiosadscripcionScalarWhereInput | cambiosadscripcionScalarWhereInput[]
-    OR?: cambiosadscripcionScalarWhereInput[]
-    NOT?: cambiosadscripcionScalarWhereInput | cambiosadscripcionScalarWhereInput[]
-    id_cambio?: IntFilter<"cambiosadscripcion"> | number
-    id_trabajador?: IntFilter<"cambiosadscripcion"> | number
-    adscripcion_anterior?: StringFilter<"cambiosadscripcion"> | string
-    adscripcion_nueva?: StringFilter<"cambiosadscripcion"> | string
-    fecha_cambio?: DateTimeFilter<"cambiosadscripcion"> | Date | string
-    motivo?: StringFilter<"cambiosadscripcion"> | string
-    documento_respaldo_id?: IntNullableFilter<"cambiosadscripcion"> | number | null
-    usuario_registro?: StringNullableFilter<"cambiosadscripcion"> | string | null
-    fecha_registro?: DateTimeNullableFilter<"cambiosadscripcion"> | Date | string | null
-  }
-
   export type trabajadores_cursosUpsertWithWhereUniqueWithoutDocumentosInput = {
     where: trabajadores_cursosWhereUniqueInput
     update: XOR<trabajadores_cursosUpdateWithoutDocumentosInput, trabajadores_cursosUncheckedUpdateWithoutDocumentosInput>
@@ -19385,8 +19113,8 @@ export namespace Prisma {
     fecha_subida?: Date | string | null
     tamano_bytes: bigint | number
     es_publico?: boolean | null
-    permisos?: permisosCreateNestedManyWithoutDocumentosInput
     cambiosadscripcion?: cambiosadscripcionCreateNestedManyWithoutDocumentosInput
+    permisos?: permisosCreateNestedManyWithoutDocumentosInput
     trabajadores_cursos?: trabajadores_cursosCreateNestedManyWithoutDocumentosInput
   }
 
@@ -19403,8 +19131,8 @@ export namespace Prisma {
     fecha_subida?: Date | string | null
     tamano_bytes: bigint | number
     es_publico?: boolean | null
-    permisos?: permisosUncheckedCreateNestedManyWithoutDocumentosInput
     cambiosadscripcion?: cambiosadscripcionUncheckedCreateNestedManyWithoutDocumentosInput
+    permisos?: permisosUncheckedCreateNestedManyWithoutDocumentosInput
     trabajadores_cursos?: trabajadores_cursosUncheckedCreateNestedManyWithoutDocumentosInput
   }
 
@@ -19436,8 +19164,8 @@ export namespace Prisma {
     fecha_subida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tamano_bytes?: BigIntFieldUpdateOperationsInput | bigint | number
     es_publico?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    permisos?: permisosUpdateManyWithoutDocumentosNestedInput
     cambiosadscripcion?: cambiosadscripcionUpdateManyWithoutDocumentosNestedInput
+    permisos?: permisosUpdateManyWithoutDocumentosNestedInput
     trabajadores_cursos?: trabajadores_cursosUpdateManyWithoutDocumentosNestedInput
   }
 
@@ -19454,8 +19182,8 @@ export namespace Prisma {
     fecha_subida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tamano_bytes?: BigIntFieldUpdateOperationsInput | bigint | number
     es_publico?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    permisos?: permisosUncheckedUpdateManyWithoutDocumentosNestedInput
     cambiosadscripcion?: cambiosadscripcionUncheckedUpdateManyWithoutDocumentosNestedInput
+    permisos?: permisosUncheckedUpdateManyWithoutDocumentosNestedInput
     trabajadores_cursos?: trabajadores_cursosUncheckedUpdateManyWithoutDocumentosNestedInput
   }
 
@@ -19471,8 +19199,8 @@ export namespace Prisma {
     fecha_subida?: Date | string | null
     tamano_bytes: bigint | number
     es_publico?: boolean | null
-    hijos?: hijosCreateNestedManyWithoutDocumentosInput
     cambiosadscripcion?: cambiosadscripcionCreateNestedManyWithoutDocumentosInput
+    hijos?: hijosCreateNestedManyWithoutDocumentosInput
     trabajadores_cursos?: trabajadores_cursosCreateNestedManyWithoutDocumentosInput
   }
 
@@ -19489,8 +19217,8 @@ export namespace Prisma {
     fecha_subida?: Date | string | null
     tamano_bytes: bigint | number
     es_publico?: boolean | null
-    hijos?: hijosUncheckedCreateNestedManyWithoutDocumentosInput
     cambiosadscripcion?: cambiosadscripcionUncheckedCreateNestedManyWithoutDocumentosInput
+    hijos?: hijosUncheckedCreateNestedManyWithoutDocumentosInput
     trabajadores_cursos?: trabajadores_cursosUncheckedCreateNestedManyWithoutDocumentosInput
   }
 
@@ -19522,8 +19250,8 @@ export namespace Prisma {
     fecha_subida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tamano_bytes?: BigIntFieldUpdateOperationsInput | bigint | number
     es_publico?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    hijos?: hijosUpdateManyWithoutDocumentosNestedInput
     cambiosadscripcion?: cambiosadscripcionUpdateManyWithoutDocumentosNestedInput
+    hijos?: hijosUpdateManyWithoutDocumentosNestedInput
     trabajadores_cursos?: trabajadores_cursosUpdateManyWithoutDocumentosNestedInput
   }
 
@@ -19540,8 +19268,8 @@ export namespace Prisma {
     fecha_subida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tamano_bytes?: BigIntFieldUpdateOperationsInput | bigint | number
     es_publico?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    hijos?: hijosUncheckedUpdateManyWithoutDocumentosNestedInput
     cambiosadscripcion?: cambiosadscripcionUncheckedUpdateManyWithoutDocumentosNestedInput
+    hijos?: hijosUncheckedUpdateManyWithoutDocumentosNestedInput
     trabajadores_cursos?: trabajadores_cursosUncheckedUpdateManyWithoutDocumentosNestedInput
   }
 
@@ -19550,11 +19278,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -19571,7 +19299,6 @@ export namespace Prisma {
     fecha_actualizacion?: Date | string | null
     seccion: seccionesCreateNestedOneWithoutTrabajadoresInput
     trabajadores_cursos?: trabajadores_cursosCreateNestedManyWithoutTrabajadoresInput
-    usuarios?: usuariosCreateNestedOneWithoutTrabajadoresInput
   }
 
   export type trabajadoresUncheckedCreateWithoutSancionesInput = {
@@ -19580,11 +19307,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -19601,7 +19328,6 @@ export namespace Prisma {
     plaza_base?: string | null
     fecha_actualizacion?: Date | string | null
     trabajadores_cursos?: trabajadores_cursosUncheckedCreateNestedManyWithoutTrabajadoresInput
-    usuarios?: usuariosUncheckedCreateNestedOneWithoutTrabajadoresInput
   }
 
   export type trabajadoresCreateOrConnectWithoutSancionesInput = {
@@ -19625,11 +19351,11 @@ export namespace Prisma {
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -19646,7 +19372,6 @@ export namespace Prisma {
     fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     seccion?: seccionesUpdateOneRequiredWithoutTrabajadoresNestedInput
     trabajadores_cursos?: trabajadores_cursosUpdateManyWithoutTrabajadoresNestedInput
-    usuarios?: usuariosUpdateOneWithoutTrabajadoresNestedInput
   }
 
   export type trabajadoresUncheckedUpdateWithoutSancionesInput = {
@@ -19655,11 +19380,11 @@ export namespace Prisma {
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -19676,7 +19401,6 @@ export namespace Prisma {
     plaza_base?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     trabajadores_cursos?: trabajadores_cursosUncheckedUpdateManyWithoutTrabajadoresNestedInput
-    usuarios?: usuariosUncheckedUpdateOneWithoutTrabajadoresNestedInput
   }
 
   export type trabajadoresCreateWithoutSeccionInput = {
@@ -19684,11 +19408,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -19705,7 +19429,6 @@ export namespace Prisma {
     fecha_actualizacion?: Date | string | null
     sanciones?: sancionesCreateNestedManyWithoutTrabajadoresInput
     trabajadores_cursos?: trabajadores_cursosCreateNestedManyWithoutTrabajadoresInput
-    usuarios?: usuariosCreateNestedOneWithoutTrabajadoresInput
   }
 
   export type trabajadoresUncheckedCreateWithoutSeccionInput = {
@@ -19714,11 +19437,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -19735,7 +19458,6 @@ export namespace Prisma {
     fecha_actualizacion?: Date | string | null
     sanciones?: sancionesUncheckedCreateNestedManyWithoutTrabajadoresInput
     trabajadores_cursos?: trabajadores_cursosUncheckedCreateNestedManyWithoutTrabajadoresInput
-    usuarios?: usuariosUncheckedCreateNestedOneWithoutTrabajadoresInput
   }
 
   export type trabajadoresCreateOrConnectWithoutSeccionInput = {
@@ -19773,11 +19495,11 @@ export namespace Prisma {
     apellido_paterno?: StringFilter<"trabajadores"> | string
     apellido_materno?: StringNullableFilter<"trabajadores"> | string | null
     fecha_nacimiento?: DateTimeFilter<"trabajadores"> | Date | string
-    sexo?: Enumsexo_domainFilter<"trabajadores"> | $Enums.sexo_domain
+    sexo?: StringFilter<"trabajadores"> | string
     curp?: StringFilter<"trabajadores"> | string
     rfc?: StringFilter<"trabajadores"> | string
     email?: StringFilter<"trabajadores"> | string
-    situacion_sentimental?: Enumsituacion_sentimental_domainNullableFilter<"trabajadores"> | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: StringNullableFilter<"trabajadores"> | string | null
     numero_hijos?: IntFilter<"trabajadores"> | number
     numero_empleado?: StringFilter<"trabajadores"> | string
     numero_plaza?: StringFilter<"trabajadores"> | string
@@ -19793,22 +19515,6 @@ export namespace Prisma {
     certificado_estudios?: BoolNullableFilter<"trabajadores"> | boolean | null
     plaza_base?: StringNullableFilter<"trabajadores"> | string | null
     fecha_actualizacion?: DateTimeNullableFilter<"trabajadores"> | Date | string | null
-  }
-
-  export type seccionesCreateWithoutTrabajadoresInput = {
-    nombre_seccion: string
-    descripcion?: string | null
-  }
-
-  export type seccionesUncheckedCreateWithoutTrabajadoresInput = {
-    id_seccion?: number
-    nombre_seccion: string
-    descripcion?: string | null
-  }
-
-  export type seccionesCreateOrConnectWithoutTrabajadoresInput = {
-    where: seccionesWhereUniqueInput
-    create: XOR<seccionesCreateWithoutTrabajadoresInput, seccionesUncheckedCreateWithoutTrabajadoresInput>
   }
 
   export type sancionesCreateWithoutTrabajadoresInput = {
@@ -19842,19 +19548,35 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type seccionesCreateWithoutTrabajadoresInput = {
+    nombre_seccion: string
+    descripcion?: string | null
+  }
+
+  export type seccionesUncheckedCreateWithoutTrabajadoresInput = {
+    id_seccion?: number
+    nombre_seccion: string
+    descripcion?: string | null
+  }
+
+  export type seccionesCreateOrConnectWithoutTrabajadoresInput = {
+    where: seccionesWhereUniqueInput
+    create: XOR<seccionesCreateWithoutTrabajadoresInput, seccionesUncheckedCreateWithoutTrabajadoresInput>
+  }
+
   export type trabajadores_cursosCreateWithoutTrabajadoresInput = {
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
-    cursos: cursosCreateNestedOneWithoutTrabajadores_cursosInput
     documentos?: documentosCreateNestedOneWithoutTrabajadores_cursosInput
+    cursos: cursosCreateNestedOneWithoutTrabajadores_cursosInput
   }
 
   export type trabajadores_cursosUncheckedCreateWithoutTrabajadoresInput = {
     id_trabajador_curso?: number
     id_curso: number
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
@@ -19869,54 +19591,6 @@ export namespace Prisma {
   export type trabajadores_cursosCreateManyTrabajadoresInputEnvelope = {
     data: trabajadores_cursosCreateManyTrabajadoresInput | trabajadores_cursosCreateManyTrabajadoresInput[]
     skipDuplicates?: boolean
-  }
-
-  export type usuariosCreateWithoutTrabajadoresInput = {
-    identificador: string
-    contraseña_hash: string
-    intentos_fallidos?: number | null
-    bloqueado?: boolean | null
-    fecha_creacion?: Date | string | null
-    ultimo_login?: Date | string | null
-    ultimo_cambio_password?: Date | string | null
-  }
-
-  export type usuariosUncheckedCreateWithoutTrabajadoresInput = {
-    id_usuario?: number
-    identificador: string
-    contraseña_hash: string
-    intentos_fallidos?: number | null
-    bloqueado?: boolean | null
-    fecha_creacion?: Date | string | null
-    ultimo_login?: Date | string | null
-    ultimo_cambio_password?: Date | string | null
-  }
-
-  export type usuariosCreateOrConnectWithoutTrabajadoresInput = {
-    where: usuariosWhereUniqueInput
-    create: XOR<usuariosCreateWithoutTrabajadoresInput, usuariosUncheckedCreateWithoutTrabajadoresInput>
-  }
-
-  export type seccionesUpsertWithoutTrabajadoresInput = {
-    update: XOR<seccionesUpdateWithoutTrabajadoresInput, seccionesUncheckedUpdateWithoutTrabajadoresInput>
-    create: XOR<seccionesCreateWithoutTrabajadoresInput, seccionesUncheckedCreateWithoutTrabajadoresInput>
-    where?: seccionesWhereInput
-  }
-
-  export type seccionesUpdateToOneWithWhereWithoutTrabajadoresInput = {
-    where?: seccionesWhereInput
-    data: XOR<seccionesUpdateWithoutTrabajadoresInput, seccionesUncheckedUpdateWithoutTrabajadoresInput>
-  }
-
-  export type seccionesUpdateWithoutTrabajadoresInput = {
-    nombre_seccion?: StringFieldUpdateOperationsInput | string
-    descripcion?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type seccionesUncheckedUpdateWithoutTrabajadoresInput = {
-    id_seccion?: IntFieldUpdateOperationsInput | number
-    nombre_seccion?: StringFieldUpdateOperationsInput | string
-    descripcion?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type sancionesUpsertWithWhereUniqueWithoutTrabajadoresInput = {
@@ -19950,6 +19624,28 @@ export namespace Prisma {
     fecha_registro?: DateTimeNullableFilter<"sanciones"> | Date | string | null
   }
 
+  export type seccionesUpsertWithoutTrabajadoresInput = {
+    update: XOR<seccionesUpdateWithoutTrabajadoresInput, seccionesUncheckedUpdateWithoutTrabajadoresInput>
+    create: XOR<seccionesCreateWithoutTrabajadoresInput, seccionesUncheckedCreateWithoutTrabajadoresInput>
+    where?: seccionesWhereInput
+  }
+
+  export type seccionesUpdateToOneWithWhereWithoutTrabajadoresInput = {
+    where?: seccionesWhereInput
+    data: XOR<seccionesUpdateWithoutTrabajadoresInput, seccionesUncheckedUpdateWithoutTrabajadoresInput>
+  }
+
+  export type seccionesUpdateWithoutTrabajadoresInput = {
+    nombre_seccion?: StringFieldUpdateOperationsInput | string
+    descripcion?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type seccionesUncheckedUpdateWithoutTrabajadoresInput = {
+    id_seccion?: IntFieldUpdateOperationsInput | number
+    nombre_seccion?: StringFieldUpdateOperationsInput | string
+    descripcion?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type trabajadores_cursosUpsertWithWhereUniqueWithoutTrabajadoresInput = {
     where: trabajadores_cursosWhereUniqueInput
     update: XOR<trabajadores_cursosUpdateWithoutTrabajadoresInput, trabajadores_cursosUncheckedUpdateWithoutTrabajadoresInput>
@@ -19966,36 +19662,64 @@ export namespace Prisma {
     data: XOR<trabajadores_cursosUpdateManyMutationInput, trabajadores_cursosUncheckedUpdateManyWithoutTrabajadoresInput>
   }
 
-  export type usuariosUpsertWithoutTrabajadoresInput = {
-    update: XOR<usuariosUpdateWithoutTrabajadoresInput, usuariosUncheckedUpdateWithoutTrabajadoresInput>
-    create: XOR<usuariosCreateWithoutTrabajadoresInput, usuariosUncheckedCreateWithoutTrabajadoresInput>
-    where?: usuariosWhereInput
+  export type documentosCreateWithoutTrabajadores_cursosInput = {
+    id_trabajador: number
+    tipo_documento: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    hash_archivo: string
+    nombre_archivo: string
+    descripcion?: string | null
+    tipo_archivo?: string | null
+    ruta_almacenamiento: string
+    fecha_subida?: Date | string | null
+    tamano_bytes: bigint | number
+    es_publico?: boolean | null
+    cambiosadscripcion?: cambiosadscripcionCreateNestedManyWithoutDocumentosInput
+    hijos?: hijosCreateNestedManyWithoutDocumentosInput
+    permisos?: permisosCreateNestedManyWithoutDocumentosInput
   }
 
-  export type usuariosUpdateToOneWithWhereWithoutTrabajadoresInput = {
-    where?: usuariosWhereInput
-    data: XOR<usuariosUpdateWithoutTrabajadoresInput, usuariosUncheckedUpdateWithoutTrabajadoresInput>
+  export type documentosUncheckedCreateWithoutTrabajadores_cursosInput = {
+    id_documento?: number
+    id_trabajador: number
+    tipo_documento: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    hash_archivo: string
+    nombre_archivo: string
+    descripcion?: string | null
+    tipo_archivo?: string | null
+    ruta_almacenamiento: string
+    fecha_subida?: Date | string | null
+    tamano_bytes: bigint | number
+    es_publico?: boolean | null
+    cambiosadscripcion?: cambiosadscripcionUncheckedCreateNestedManyWithoutDocumentosInput
+    hijos?: hijosUncheckedCreateNestedManyWithoutDocumentosInput
+    permisos?: permisosUncheckedCreateNestedManyWithoutDocumentosInput
   }
 
-  export type usuariosUpdateWithoutTrabajadoresInput = {
-    identificador?: StringFieldUpdateOperationsInput | string
-    contraseña_hash?: StringFieldUpdateOperationsInput | string
-    intentos_fallidos?: NullableIntFieldUpdateOperationsInput | number | null
-    bloqueado?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    fecha_creacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    ultimo_login?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    ultimo_cambio_password?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  export type documentosCreateOrConnectWithoutTrabajadores_cursosInput = {
+    where: documentosWhereUniqueInput
+    create: XOR<documentosCreateWithoutTrabajadores_cursosInput, documentosUncheckedCreateWithoutTrabajadores_cursosInput>
   }
 
-  export type usuariosUncheckedUpdateWithoutTrabajadoresInput = {
-    id_usuario?: IntFieldUpdateOperationsInput | number
-    identificador?: StringFieldUpdateOperationsInput | string
-    contraseña_hash?: StringFieldUpdateOperationsInput | string
-    intentos_fallidos?: NullableIntFieldUpdateOperationsInput | number | null
-    bloqueado?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    fecha_creacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    ultimo_login?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    ultimo_cambio_password?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  export type cursosCreateWithoutTrabajadores_cursosInput = {
+    codigo_curso: string
+    nombre_curso: string
+    horas_duracion: number
+    estatus?: string | null
+  }
+
+  export type cursosUncheckedCreateWithoutTrabajadores_cursosInput = {
+    id_curso?: number
+    codigo_curso: string
+    nombre_curso: string
+    horas_duracion: number
+    estatus?: string | null
+  }
+
+  export type cursosCreateOrConnectWithoutTrabajadores_cursosInput = {
+    where: cursosWhereUniqueInput
+    create: XOR<cursosCreateWithoutTrabajadores_cursosInput, cursosUncheckedCreateWithoutTrabajadores_cursosInput>
   }
 
   export type trabajadoresCreateWithoutTrabajadores_cursosInput = {
@@ -20003,11 +19727,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -20022,9 +19746,8 @@ export namespace Prisma {
     certificado_estudios?: boolean | null
     plaza_base?: string | null
     fecha_actualizacion?: Date | string | null
-    seccion: seccionesCreateNestedOneWithoutTrabajadoresInput
     sanciones?: sancionesCreateNestedManyWithoutTrabajadoresInput
-    usuarios?: usuariosCreateNestedOneWithoutTrabajadoresInput
+    seccion: seccionesCreateNestedOneWithoutTrabajadoresInput
   }
 
   export type trabajadoresUncheckedCreateWithoutTrabajadores_cursosInput = {
@@ -20033,11 +19756,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -20054,168 +19777,11 @@ export namespace Prisma {
     plaza_base?: string | null
     fecha_actualizacion?: Date | string | null
     sanciones?: sancionesUncheckedCreateNestedManyWithoutTrabajadoresInput
-    usuarios?: usuariosUncheckedCreateNestedOneWithoutTrabajadoresInput
   }
 
   export type trabajadoresCreateOrConnectWithoutTrabajadores_cursosInput = {
     where: trabajadoresWhereUniqueInput
     create: XOR<trabajadoresCreateWithoutTrabajadores_cursosInput, trabajadoresUncheckedCreateWithoutTrabajadores_cursosInput>
-  }
-
-  export type cursosCreateWithoutTrabajadores_cursosInput = {
-    codigo_curso: string
-    nombre_curso: string
-    horas_duracion: number
-    estatus?: $Enums.curso_status_domain | null
-  }
-
-  export type cursosUncheckedCreateWithoutTrabajadores_cursosInput = {
-    id_curso?: number
-    codigo_curso: string
-    nombre_curso: string
-    horas_duracion: number
-    estatus?: $Enums.curso_status_domain | null
-  }
-
-  export type cursosCreateOrConnectWithoutTrabajadores_cursosInput = {
-    where: cursosWhereUniqueInput
-    create: XOR<cursosCreateWithoutTrabajadores_cursosInput, cursosUncheckedCreateWithoutTrabajadores_cursosInput>
-  }
-
-  export type documentosCreateWithoutTrabajadores_cursosInput = {
-    id_trabajador: number
-    tipo_documento: string
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    hash_archivo: string
-    nombre_archivo: string
-    descripcion?: string | null
-    tipo_archivo?: string | null
-    ruta_almacenamiento: string
-    fecha_subida?: Date | string | null
-    tamano_bytes: bigint | number
-    es_publico?: boolean | null
-    hijos?: hijosCreateNestedManyWithoutDocumentosInput
-    permisos?: permisosCreateNestedManyWithoutDocumentosInput
-    cambiosadscripcion?: cambiosadscripcionCreateNestedManyWithoutDocumentosInput
-  }
-
-  export type documentosUncheckedCreateWithoutTrabajadores_cursosInput = {
-    id_documento?: number
-    id_trabajador: number
-    tipo_documento: string
-    metadata?: NullableJsonNullValueInput | InputJsonValue
-    hash_archivo: string
-    nombre_archivo: string
-    descripcion?: string | null
-    tipo_archivo?: string | null
-    ruta_almacenamiento: string
-    fecha_subida?: Date | string | null
-    tamano_bytes: bigint | number
-    es_publico?: boolean | null
-    hijos?: hijosUncheckedCreateNestedManyWithoutDocumentosInput
-    permisos?: permisosUncheckedCreateNestedManyWithoutDocumentosInput
-    cambiosadscripcion?: cambiosadscripcionUncheckedCreateNestedManyWithoutDocumentosInput
-  }
-
-  export type documentosCreateOrConnectWithoutTrabajadores_cursosInput = {
-    where: documentosWhereUniqueInput
-    create: XOR<documentosCreateWithoutTrabajadores_cursosInput, documentosUncheckedCreateWithoutTrabajadores_cursosInput>
-  }
-
-  export type trabajadoresUpsertWithoutTrabajadores_cursosInput = {
-    update: XOR<trabajadoresUpdateWithoutTrabajadores_cursosInput, trabajadoresUncheckedUpdateWithoutTrabajadores_cursosInput>
-    create: XOR<trabajadoresCreateWithoutTrabajadores_cursosInput, trabajadoresUncheckedCreateWithoutTrabajadores_cursosInput>
-    where?: trabajadoresWhereInput
-  }
-
-  export type trabajadoresUpdateToOneWithWhereWithoutTrabajadores_cursosInput = {
-    where?: trabajadoresWhereInput
-    data: XOR<trabajadoresUpdateWithoutTrabajadores_cursosInput, trabajadoresUncheckedUpdateWithoutTrabajadores_cursosInput>
-  }
-
-  export type trabajadoresUpdateWithoutTrabajadores_cursosInput = {
-    nombre?: StringFieldUpdateOperationsInput | string
-    apellido_paterno?: StringFieldUpdateOperationsInput | string
-    apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
-    fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
-    curp?: StringFieldUpdateOperationsInput | string
-    rfc?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
-    numero_hijos?: IntFieldUpdateOperationsInput | number
-    numero_empleado?: StringFieldUpdateOperationsInput | string
-    numero_plaza?: StringFieldUpdateOperationsInput | string
-    fecha_ingreso?: DateTimeFieldUpdateOperationsInput | Date | string
-    fecha_ingreso_gobierno?: DateTimeFieldUpdateOperationsInput | Date | string
-    nivel_puesto?: StringFieldUpdateOperationsInput | string
-    nombre_puesto?: StringFieldUpdateOperationsInput | string
-    puesto_inpi?: NullableStringFieldUpdateOperationsInput | string | null
-    adscripcion?: StringFieldUpdateOperationsInput | string
-    nivel_estudios?: NullableStringFieldUpdateOperationsInput | string | null
-    institucion_estudios?: NullableStringFieldUpdateOperationsInput | string | null
-    certificado_estudios?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    plaza_base?: NullableStringFieldUpdateOperationsInput | string | null
-    fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    seccion?: seccionesUpdateOneRequiredWithoutTrabajadoresNestedInput
-    sanciones?: sancionesUpdateManyWithoutTrabajadoresNestedInput
-    usuarios?: usuariosUpdateOneWithoutTrabajadoresNestedInput
-  }
-
-  export type trabajadoresUncheckedUpdateWithoutTrabajadores_cursosInput = {
-    id_trabajador?: IntFieldUpdateOperationsInput | number
-    nombre?: StringFieldUpdateOperationsInput | string
-    apellido_paterno?: StringFieldUpdateOperationsInput | string
-    apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
-    fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
-    curp?: StringFieldUpdateOperationsInput | string
-    rfc?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
-    numero_hijos?: IntFieldUpdateOperationsInput | number
-    numero_empleado?: StringFieldUpdateOperationsInput | string
-    numero_plaza?: StringFieldUpdateOperationsInput | string
-    fecha_ingreso?: DateTimeFieldUpdateOperationsInput | Date | string
-    fecha_ingreso_gobierno?: DateTimeFieldUpdateOperationsInput | Date | string
-    nivel_puesto?: StringFieldUpdateOperationsInput | string
-    nombre_puesto?: StringFieldUpdateOperationsInput | string
-    puesto_inpi?: NullableStringFieldUpdateOperationsInput | string | null
-    adscripcion?: StringFieldUpdateOperationsInput | string
-    id_seccion?: IntFieldUpdateOperationsInput | number
-    nivel_estudios?: NullableStringFieldUpdateOperationsInput | string | null
-    institucion_estudios?: NullableStringFieldUpdateOperationsInput | string | null
-    certificado_estudios?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    plaza_base?: NullableStringFieldUpdateOperationsInput | string | null
-    fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    sanciones?: sancionesUncheckedUpdateManyWithoutTrabajadoresNestedInput
-    usuarios?: usuariosUncheckedUpdateOneWithoutTrabajadoresNestedInput
-  }
-
-  export type cursosUpsertWithoutTrabajadores_cursosInput = {
-    update: XOR<cursosUpdateWithoutTrabajadores_cursosInput, cursosUncheckedUpdateWithoutTrabajadores_cursosInput>
-    create: XOR<cursosCreateWithoutTrabajadores_cursosInput, cursosUncheckedCreateWithoutTrabajadores_cursosInput>
-    where?: cursosWhereInput
-  }
-
-  export type cursosUpdateToOneWithWhereWithoutTrabajadores_cursosInput = {
-    where?: cursosWhereInput
-    data: XOR<cursosUpdateWithoutTrabajadores_cursosInput, cursosUncheckedUpdateWithoutTrabajadores_cursosInput>
-  }
-
-  export type cursosUpdateWithoutTrabajadores_cursosInput = {
-    codigo_curso?: StringFieldUpdateOperationsInput | string
-    nombre_curso?: StringFieldUpdateOperationsInput | string
-    horas_duracion?: IntFieldUpdateOperationsInput | number
-    estatus?: NullableEnumcurso_status_domainFieldUpdateOperationsInput | $Enums.curso_status_domain | null
-  }
-
-  export type cursosUncheckedUpdateWithoutTrabajadores_cursosInput = {
-    id_curso?: IntFieldUpdateOperationsInput | number
-    codigo_curso?: StringFieldUpdateOperationsInput | string
-    nombre_curso?: StringFieldUpdateOperationsInput | string
-    horas_duracion?: IntFieldUpdateOperationsInput | number
-    estatus?: NullableEnumcurso_status_domainFieldUpdateOperationsInput | $Enums.curso_status_domain | null
   }
 
   export type documentosUpsertWithoutTrabajadores_cursosInput = {
@@ -20241,9 +19807,9 @@ export namespace Prisma {
     fecha_subida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tamano_bytes?: BigIntFieldUpdateOperationsInput | bigint | number
     es_publico?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    cambiosadscripcion?: cambiosadscripcionUpdateManyWithoutDocumentosNestedInput
     hijos?: hijosUpdateManyWithoutDocumentosNestedInput
     permisos?: permisosUpdateManyWithoutDocumentosNestedInput
-    cambiosadscripcion?: cambiosadscripcionUpdateManyWithoutDocumentosNestedInput
   }
 
   export type documentosUncheckedUpdateWithoutTrabajadores_cursosInput = {
@@ -20259,96 +19825,58 @@ export namespace Prisma {
     fecha_subida?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tamano_bytes?: BigIntFieldUpdateOperationsInput | bigint | number
     es_publico?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    cambiosadscripcion?: cambiosadscripcionUncheckedUpdateManyWithoutDocumentosNestedInput
     hijos?: hijosUncheckedUpdateManyWithoutDocumentosNestedInput
     permisos?: permisosUncheckedUpdateManyWithoutDocumentosNestedInput
-    cambiosadscripcion?: cambiosadscripcionUncheckedUpdateManyWithoutDocumentosNestedInput
   }
 
-  export type trabajadoresCreateWithoutUsuariosInput = {
-    nombre: string
-    apellido_paterno: string
-    apellido_materno?: string | null
-    fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
-    curp: string
-    rfc: string
-    email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
-    numero_hijos?: number
-    numero_empleado: string
-    numero_plaza: string
-    fecha_ingreso: Date | string
-    fecha_ingreso_gobierno: Date | string
-    nivel_puesto: string
-    nombre_puesto: string
-    puesto_inpi?: string | null
-    adscripcion: string
-    nivel_estudios?: string | null
-    institucion_estudios?: string | null
-    certificado_estudios?: boolean | null
-    plaza_base?: string | null
-    fecha_actualizacion?: Date | string | null
-    seccion: seccionesCreateNestedOneWithoutTrabajadoresInput
-    sanciones?: sancionesCreateNestedManyWithoutTrabajadoresInput
-    trabajadores_cursos?: trabajadores_cursosCreateNestedManyWithoutTrabajadoresInput
+  export type cursosUpsertWithoutTrabajadores_cursosInput = {
+    update: XOR<cursosUpdateWithoutTrabajadores_cursosInput, cursosUncheckedUpdateWithoutTrabajadores_cursosInput>
+    create: XOR<cursosCreateWithoutTrabajadores_cursosInput, cursosUncheckedCreateWithoutTrabajadores_cursosInput>
+    where?: cursosWhereInput
   }
 
-  export type trabajadoresUncheckedCreateWithoutUsuariosInput = {
-    id_trabajador?: number
-    nombre: string
-    apellido_paterno: string
-    apellido_materno?: string | null
-    fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
-    curp: string
-    rfc: string
-    email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
-    numero_hijos?: number
-    numero_empleado: string
-    numero_plaza: string
-    fecha_ingreso: Date | string
-    fecha_ingreso_gobierno: Date | string
-    nivel_puesto: string
-    nombre_puesto: string
-    puesto_inpi?: string | null
-    adscripcion: string
-    id_seccion: number
-    nivel_estudios?: string | null
-    institucion_estudios?: string | null
-    certificado_estudios?: boolean | null
-    plaza_base?: string | null
-    fecha_actualizacion?: Date | string | null
-    sanciones?: sancionesUncheckedCreateNestedManyWithoutTrabajadoresInput
-    trabajadores_cursos?: trabajadores_cursosUncheckedCreateNestedManyWithoutTrabajadoresInput
+  export type cursosUpdateToOneWithWhereWithoutTrabajadores_cursosInput = {
+    where?: cursosWhereInput
+    data: XOR<cursosUpdateWithoutTrabajadores_cursosInput, cursosUncheckedUpdateWithoutTrabajadores_cursosInput>
   }
 
-  export type trabajadoresCreateOrConnectWithoutUsuariosInput = {
-    where: trabajadoresWhereUniqueInput
-    create: XOR<trabajadoresCreateWithoutUsuariosInput, trabajadoresUncheckedCreateWithoutUsuariosInput>
+  export type cursosUpdateWithoutTrabajadores_cursosInput = {
+    codigo_curso?: StringFieldUpdateOperationsInput | string
+    nombre_curso?: StringFieldUpdateOperationsInput | string
+    horas_duracion?: IntFieldUpdateOperationsInput | number
+    estatus?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type trabajadoresUpsertWithoutUsuariosInput = {
-    update: XOR<trabajadoresUpdateWithoutUsuariosInput, trabajadoresUncheckedUpdateWithoutUsuariosInput>
-    create: XOR<trabajadoresCreateWithoutUsuariosInput, trabajadoresUncheckedCreateWithoutUsuariosInput>
+  export type cursosUncheckedUpdateWithoutTrabajadores_cursosInput = {
+    id_curso?: IntFieldUpdateOperationsInput | number
+    codigo_curso?: StringFieldUpdateOperationsInput | string
+    nombre_curso?: StringFieldUpdateOperationsInput | string
+    horas_duracion?: IntFieldUpdateOperationsInput | number
+    estatus?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type trabajadoresUpsertWithoutTrabajadores_cursosInput = {
+    update: XOR<trabajadoresUpdateWithoutTrabajadores_cursosInput, trabajadoresUncheckedUpdateWithoutTrabajadores_cursosInput>
+    create: XOR<trabajadoresCreateWithoutTrabajadores_cursosInput, trabajadoresUncheckedCreateWithoutTrabajadores_cursosInput>
     where?: trabajadoresWhereInput
   }
 
-  export type trabajadoresUpdateToOneWithWhereWithoutUsuariosInput = {
+  export type trabajadoresUpdateToOneWithWhereWithoutTrabajadores_cursosInput = {
     where?: trabajadoresWhereInput
-    data: XOR<trabajadoresUpdateWithoutUsuariosInput, trabajadoresUncheckedUpdateWithoutUsuariosInput>
+    data: XOR<trabajadoresUpdateWithoutTrabajadores_cursosInput, trabajadoresUncheckedUpdateWithoutTrabajadores_cursosInput>
   }
 
-  export type trabajadoresUpdateWithoutUsuariosInput = {
+  export type trabajadoresUpdateWithoutTrabajadores_cursosInput = {
     nombre?: StringFieldUpdateOperationsInput | string
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -20363,22 +19891,21 @@ export namespace Prisma {
     certificado_estudios?: NullableBoolFieldUpdateOperationsInput | boolean | null
     plaza_base?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    seccion?: seccionesUpdateOneRequiredWithoutTrabajadoresNestedInput
     sanciones?: sancionesUpdateManyWithoutTrabajadoresNestedInput
-    trabajadores_cursos?: trabajadores_cursosUpdateManyWithoutTrabajadoresNestedInput
+    seccion?: seccionesUpdateOneRequiredWithoutTrabajadoresNestedInput
   }
 
-  export type trabajadoresUncheckedUpdateWithoutUsuariosInput = {
+  export type trabajadoresUncheckedUpdateWithoutTrabajadores_cursosInput = {
     id_trabajador?: IntFieldUpdateOperationsInput | number
     nombre?: StringFieldUpdateOperationsInput | string
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -20395,13 +19922,12 @@ export namespace Prisma {
     plaza_base?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sanciones?: sancionesUncheckedUpdateManyWithoutTrabajadoresNestedInput
-    trabajadores_cursos?: trabajadores_cursosUncheckedUpdateManyWithoutTrabajadoresNestedInput
   }
 
   export type trabajadores_cursosCreateManyCursosInput = {
     id_trabajador_curso?: number
     id_trabajador: number
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
@@ -20409,18 +19935,18 @@ export namespace Prisma {
   }
 
   export type trabajadores_cursosUpdateWithoutCursosInput = {
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    trabajadores?: trabajadoresUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
     documentos?: documentosUpdateOneWithoutTrabajadores_cursosNestedInput
+    trabajadores?: trabajadoresUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
   }
 
   export type trabajadores_cursosUncheckedUpdateWithoutCursosInput = {
     id_trabajador_curso?: IntFieldUpdateOperationsInput | number
     id_trabajador?: IntFieldUpdateOperationsInput | number
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20430,11 +19956,22 @@ export namespace Prisma {
   export type trabajadores_cursosUncheckedUpdateManyWithoutCursosInput = {
     id_trabajador_curso?: IntFieldUpdateOperationsInput | number
     id_trabajador?: IntFieldUpdateOperationsInput | number
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certificado_id?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type cambiosadscripcionCreateManyDocumentosInput = {
+    id_cambio?: number
+    id_trabajador: number
+    adscripcion_anterior: string
+    adscripcion_nueva: string
+    fecha_cambio: Date | string
+    motivo: string
+    usuario_registro?: string | null
+    fecha_registro?: Date | string | null
   }
 
   export type hijosCreateManyDocumentosInput = {
@@ -20456,25 +19993,46 @@ export namespace Prisma {
     fecha_registro?: Date | string | null
   }
 
-  export type cambiosadscripcionCreateManyDocumentosInput = {
-    id_cambio?: number
-    id_trabajador: number
-    adscripcion_anterior: string
-    adscripcion_nueva: string
-    fecha_cambio: Date | string
-    motivo: string
-    usuario_registro?: string | null
-    fecha_registro?: Date | string | null
-  }
-
   export type trabajadores_cursosCreateManyDocumentosInput = {
     id_trabajador_curso?: number
     id_trabajador: number
     id_curso: number
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
+  }
+
+  export type cambiosadscripcionUpdateWithoutDocumentosInput = {
+    id_trabajador?: IntFieldUpdateOperationsInput | number
+    adscripcion_anterior?: StringFieldUpdateOperationsInput | string
+    adscripcion_nueva?: StringFieldUpdateOperationsInput | string
+    fecha_cambio?: DateTimeFieldUpdateOperationsInput | Date | string
+    motivo?: StringFieldUpdateOperationsInput | string
+    usuario_registro?: NullableStringFieldUpdateOperationsInput | string | null
+    fecha_registro?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type cambiosadscripcionUncheckedUpdateWithoutDocumentosInput = {
+    id_cambio?: IntFieldUpdateOperationsInput | number
+    id_trabajador?: IntFieldUpdateOperationsInput | number
+    adscripcion_anterior?: StringFieldUpdateOperationsInput | string
+    adscripcion_nueva?: StringFieldUpdateOperationsInput | string
+    fecha_cambio?: DateTimeFieldUpdateOperationsInput | Date | string
+    motivo?: StringFieldUpdateOperationsInput | string
+    usuario_registro?: NullableStringFieldUpdateOperationsInput | string | null
+    fecha_registro?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type cambiosadscripcionUncheckedUpdateManyWithoutDocumentosInput = {
+    id_cambio?: IntFieldUpdateOperationsInput | number
+    id_trabajador?: IntFieldUpdateOperationsInput | number
+    adscripcion_anterior?: StringFieldUpdateOperationsInput | string
+    adscripcion_nueva?: StringFieldUpdateOperationsInput | string
+    fecha_cambio?: DateTimeFieldUpdateOperationsInput | Date | string
+    motivo?: StringFieldUpdateOperationsInput | string
+    usuario_registro?: NullableStringFieldUpdateOperationsInput | string | null
+    fecha_registro?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type hijosUpdateWithoutDocumentosInput = {
@@ -20532,52 +20090,20 @@ export namespace Prisma {
     fecha_registro?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type cambiosadscripcionUpdateWithoutDocumentosInput = {
-    id_trabajador?: IntFieldUpdateOperationsInput | number
-    adscripcion_anterior?: StringFieldUpdateOperationsInput | string
-    adscripcion_nueva?: StringFieldUpdateOperationsInput | string
-    fecha_cambio?: DateTimeFieldUpdateOperationsInput | Date | string
-    motivo?: StringFieldUpdateOperationsInput | string
-    usuario_registro?: NullableStringFieldUpdateOperationsInput | string | null
-    fecha_registro?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type cambiosadscripcionUncheckedUpdateWithoutDocumentosInput = {
-    id_cambio?: IntFieldUpdateOperationsInput | number
-    id_trabajador?: IntFieldUpdateOperationsInput | number
-    adscripcion_anterior?: StringFieldUpdateOperationsInput | string
-    adscripcion_nueva?: StringFieldUpdateOperationsInput | string
-    fecha_cambio?: DateTimeFieldUpdateOperationsInput | Date | string
-    motivo?: StringFieldUpdateOperationsInput | string
-    usuario_registro?: NullableStringFieldUpdateOperationsInput | string | null
-    fecha_registro?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type cambiosadscripcionUncheckedUpdateManyWithoutDocumentosInput = {
-    id_cambio?: IntFieldUpdateOperationsInput | number
-    id_trabajador?: IntFieldUpdateOperationsInput | number
-    adscripcion_anterior?: StringFieldUpdateOperationsInput | string
-    adscripcion_nueva?: StringFieldUpdateOperationsInput | string
-    fecha_cambio?: DateTimeFieldUpdateOperationsInput | Date | string
-    motivo?: StringFieldUpdateOperationsInput | string
-    usuario_registro?: NullableStringFieldUpdateOperationsInput | string | null
-    fecha_registro?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
   export type trabajadores_cursosUpdateWithoutDocumentosInput = {
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    trabajadores?: trabajadoresUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
     cursos?: cursosUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
+    trabajadores?: trabajadoresUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
   }
 
   export type trabajadores_cursosUncheckedUpdateWithoutDocumentosInput = {
     id_trabajador_curso?: IntFieldUpdateOperationsInput | number
     id_trabajador?: IntFieldUpdateOperationsInput | number
     id_curso?: IntFieldUpdateOperationsInput | number
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20587,7 +20113,7 @@ export namespace Prisma {
     id_trabajador_curso?: IntFieldUpdateOperationsInput | number
     id_trabajador?: IntFieldUpdateOperationsInput | number
     id_curso?: IntFieldUpdateOperationsInput | number
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20599,11 +20125,11 @@ export namespace Prisma {
     apellido_paterno: string
     apellido_materno?: string | null
     fecha_nacimiento: Date | string
-    sexo: $Enums.sexo_domain
+    sexo: string
     curp: string
     rfc: string
     email: string
-    situacion_sentimental?: $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: string | null
     numero_hijos?: number
     numero_empleado: string
     numero_plaza: string
@@ -20625,11 +20151,11 @@ export namespace Prisma {
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -20646,7 +20172,6 @@ export namespace Prisma {
     fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sanciones?: sancionesUpdateManyWithoutTrabajadoresNestedInput
     trabajadores_cursos?: trabajadores_cursosUpdateManyWithoutTrabajadoresNestedInput
-    usuarios?: usuariosUpdateOneWithoutTrabajadoresNestedInput
   }
 
   export type trabajadoresUncheckedUpdateWithoutSeccionInput = {
@@ -20655,11 +20180,11 @@ export namespace Prisma {
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -20676,7 +20201,6 @@ export namespace Prisma {
     fecha_actualizacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sanciones?: sancionesUncheckedUpdateManyWithoutTrabajadoresNestedInput
     trabajadores_cursos?: trabajadores_cursosUncheckedUpdateManyWithoutTrabajadoresNestedInput
-    usuarios?: usuariosUncheckedUpdateOneWithoutTrabajadoresNestedInput
   }
 
   export type trabajadoresUncheckedUpdateManyWithoutSeccionInput = {
@@ -20685,11 +20209,11 @@ export namespace Prisma {
     apellido_paterno?: StringFieldUpdateOperationsInput | string
     apellido_materno?: NullableStringFieldUpdateOperationsInput | string | null
     fecha_nacimiento?: DateTimeFieldUpdateOperationsInput | Date | string
-    sexo?: Enumsexo_domainFieldUpdateOperationsInput | $Enums.sexo_domain
+    sexo?: StringFieldUpdateOperationsInput | string
     curp?: StringFieldUpdateOperationsInput | string
     rfc?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    situacion_sentimental?: NullableEnumsituacion_sentimental_domainFieldUpdateOperationsInput | $Enums.situacion_sentimental_domain | null
+    situacion_sentimental?: NullableStringFieldUpdateOperationsInput | string | null
     numero_hijos?: IntFieldUpdateOperationsInput | number
     numero_empleado?: StringFieldUpdateOperationsInput | string
     numero_plaza?: StringFieldUpdateOperationsInput | string
@@ -20720,7 +20244,7 @@ export namespace Prisma {
   export type trabajadores_cursosCreateManyTrabajadoresInput = {
     id_trabajador_curso?: number
     id_curso: number
-    fecha_inscripcion?: Date | string | null
+    fecha_inscripcion?: Date | string
     calificacion?: Decimal | DecimalJsLike | number | string | null
     completado?: boolean | null
     fecha_completado?: Date | string | null
@@ -20760,18 +20284,18 @@ export namespace Prisma {
   }
 
   export type trabajadores_cursosUpdateWithoutTrabajadoresInput = {
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    cursos?: cursosUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
     documentos?: documentosUpdateOneWithoutTrabajadores_cursosNestedInput
+    cursos?: cursosUpdateOneRequiredWithoutTrabajadores_cursosNestedInput
   }
 
   export type trabajadores_cursosUncheckedUpdateWithoutTrabajadoresInput = {
     id_trabajador_curso?: IntFieldUpdateOperationsInput | number
     id_curso?: IntFieldUpdateOperationsInput | number
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -20781,7 +20305,7 @@ export namespace Prisma {
   export type trabajadores_cursosUncheckedUpdateManyWithoutTrabajadoresInput = {
     id_trabajador_curso?: IntFieldUpdateOperationsInput | number
     id_curso?: IntFieldUpdateOperationsInput | number
-    fecha_inscripcion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fecha_inscripcion?: DateTimeFieldUpdateOperationsInput | Date | string
     calificacion?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     completado?: NullableBoolFieldUpdateOperationsInput | boolean | null
     fecha_completado?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

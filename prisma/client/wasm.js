@@ -17,11 +17,11 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.5.0
+ * Prisma Client JS version: 6.6.0
  * Query Engine version: 173f8d54f8d52e692c7e27e72a88314ec7aeff60
  */
 Prisma.prismaVersion = {
-  client: "6.5.0",
+  client: "6.6.0",
   engine: "173f8d54f8d52e692c7e27e72a88314ec7aeff60"
 }
 
@@ -250,7 +250,8 @@ exports.Prisma.UsuariosScalarFieldEnum = {
   bloqueado: 'bloqueado',
   fecha_creacion: 'fecha_creacion',
   ultimo_login: 'ultimo_login',
-  ultimo_cambio_password: 'ultimo_cambio_password'
+  ultimo_cambio_password: 'ultimo_cambio_password',
+  rol: 'rol'
 };
 
 exports.Prisma.SortOrder = {
@@ -278,21 +279,10 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-exports.curso_status_domain = exports.$Enums.curso_status_domain = {
-  En_curso: 'En_curso'
-};
-
-exports.sexo_domain = exports.$Enums.sexo_domain = {
-  M: 'M',
-  F: 'F'
-};
-
-exports.situacion_sentimental_domain = exports.$Enums.situacion_sentimental_domain = {
-  Soltero: 'Soltero',
-  Casado: 'Casado',
-  Divorciado: 'Divorciado',
-  Viudo: 'Viudo',
-  Union_Libre: 'Union_Libre'
+exports.rol_usuario = exports.$Enums.rol_usuario = {
+  Administrador: 'Administrador',
+  Recursos_Humanos: 'Recursos_Humanos',
+  Empleado: 'Empleado'
 };
 
 exports.Prisma.ModelName = {
@@ -326,7 +316,7 @@ class PrismaClient {
         } else {
           message = 'PrismaClient is unable to run in this browser environment, or has been bundled for the browser (running in `' + runtime.prettyName + '`).'
         }
-        
+
         message += `
 If this is unexpected, please open an issue: https://pris.ly/prisma-prisma-bug-report`
 

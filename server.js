@@ -9,6 +9,7 @@ const swaggerUi = require('swagger-ui-express');
 const { PrismaClient } = require('@prisma/client');
 const { errorHandler } = require('./middleware');
 const routes = require('./routes');
+const userRoutes = require('./routes/userRoutes');
 
 
 const authRoutes = require('./routes/authRoutes'); // Ajusta la ruta si es necesario
@@ -29,7 +30,7 @@ const swaggerOptions = {
       description: 'Documentación de la API del Sistema Nacional de Trabajadores INPI',
       contact: {
         name: 'Equipo de Desarrollo',
-        email: 'desarrollo@ejemplo.com', // Reemplaza con tu email
+        email: 'desarrollo@ejemplo.com',
       },
     },
     servers: [
@@ -38,8 +39,17 @@ const swaggerOptions = {
         description: 'Servidor de desarrollo',
       },
     ],
+    components: { // <-- Asegúrate de tener la sección 'components'
+      securitySchemes: { // <-- Aquí va securitySchemes
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
   },
-  apis: ['./controllers/*.js', './routes/*.js'], // Archivos a escanear
+  apis: ['./controllers/*.js', './routes/*.js'],
 };
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
@@ -54,7 +64,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: true }));
 
 // Rutas de la API
-app.use('/api', routes);
+app.use('/api', routes, userRoutes);
 app.use('/api/auth', authRoutes); // Monta el enrutador con el prefijo /api/auth
 
 // Ruta base (opcional, si es necesario)
