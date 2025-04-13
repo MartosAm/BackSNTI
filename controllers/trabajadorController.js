@@ -11,7 +11,7 @@ const validarTrabajador = [
   body('fecha_nacimiento').notEmpty().withMessage('La fecha de nacimiento es obligatoria')
     .isISO8601().withMessage('Formato de fecha inválido (YYYY-MM-DD)'),
   body('sexo').notEmpty().withMessage('El sexo es obligatorio')
-    .isIn(['MASCULINO', 'FEMENINO', 'OTRO']).withMessage('Valor de sexo no válido'),
+    .isIn(['M', 'F']).withMessage('Valor de sexo no válido'), // ¡AJUSTADO!
   body('curp').notEmpty().withMessage('El CURP es obligatorio')
     .isLength({ min: 18, max: 18 }).withMessage('El CURP debe tener 18 caracteres')
     .matches(/^[A-Z]{4}\d{6}[HM][A-Z]{5}[0-9A-Z]\d$/).withMessage('Formato de CURP inválido'),
@@ -21,7 +21,7 @@ const validarTrabajador = [
   body('email').notEmpty().withMessage('El email es obligatorio')
     .isEmail().withMessage('Formato de email inválido').isLength({ max: 150 }),
   body('situacion_sentimental').optional()
-    .isIn(['SOLTERO', 'CASADO', 'DIVORCIADO', 'VIUDO', 'UNION LIBRE']).withMessage('Valor de situación sentimental no válido'),
+    .isIn(['Soltero', 'Casado', 'Divorciado', 'Viudo', 'Union Libre']).withMessage('Valor de situación sentimental no válido'), // ¡AJUSTADO!
   body('numero_hijos').optional().isInt({ min: 0 }).withMessage('Número de hijos inválido'),
   body('numero_empleado').notEmpty().withMessage('El número de empleado es obligatorio')
     .isLength({ min: 10, max: 10 }).withMessage('El número de empleado debe tener 10 caracteres'),
@@ -41,7 +41,6 @@ const validarTrabajador = [
   body('certificado_estudios').optional().isBoolean().withMessage('Valor de certificado inválido'),
   body('plaza_base').optional().isLength({ max: 10 })
 ];
-
 /**
  * @swagger
  * components:
@@ -83,7 +82,7 @@ const validarTrabajador = [
  *           description: Fecha de nacimiento (YYYY-MM-DD)
  *         sexo:
  *           type: string
- *           enum: [MASCULINO, FEMENINO, OTRO]
+ *           enum: [M, F]
  *           description: Sexo del trabajador
  *         curp:
  *           type: string
@@ -97,7 +96,7 @@ const validarTrabajador = [
  *           description: Correo electrónico
  *         situacion_sentimental:
  *           type: string
- *           enum: [SOLTERO, CASADO, DIVORCIADO, VIUDO, UNION LIBRE]
+ *           enum: [Soltero, Casado, Divorciado, Viudo, Union Libre]
  *           description: Situación sentimental
  *         numero_hijos:
  *           type: integer
@@ -190,8 +189,7 @@ const validarTrabajador = [
  *         description: Conflicto (datos duplicados)
  *       500:
  *         description: Error del servidor
- */
-const crearTrabajador = async (req, res, next) => {
+ */const crearTrabajador = async (req, res, next) => {
   try {
     // Validar datos de entrada
     const errors = validationResult(req);
@@ -204,12 +202,17 @@ const crearTrabajador = async (req, res, next) => {
     }
 
     const {
-      nombre, apellido_paterno, apellido_materno, fecha_nacimiento, sexo, curp, rfc, 
-      email, situacion_sentimental, numero_hijos, numero_empleado, numero_plaza, 
-      fecha_ingreso, fecha_ingreso_gobierno, nivel_puesto, nombre_puesto, puesto_inpi, 
-      adscripcion, id_seccion, nivel_estudios, institucion_estudios, certificado_estudios, 
+      nombre, apellido_paterno, apellido_materno, fecha_nacimiento, sexo, curp, rfc,
+      email, situacion_sentimental, numero_hijos, numero_empleado, numero_plaza,
+      fecha_ingreso, fecha_ingreso_gobierno, nivel_puesto, nombre_puesto, puesto_inpi,
+      adscripcion, id_seccion, nivel_estudios, institucion_estudios, certificado_estudios,
       plaza_base
     } = req.body;
+
+    // ¡CONVERSIÓN DE FECHAS!
+    const fechaNacimientoDate = new Date(fecha_nacimiento);
+    const fechaIngresoDate = new Date(fecha_ingreso);
+    const fechaIngresoGobiernoDate = new Date(fecha_ingreso_gobierno);
 
     // Verificar si ya existe un trabajador con datos únicos
     const existente = await prisma.trabajador.findFirst({
@@ -239,46 +242,43 @@ const crearTrabajador = async (req, res, next) => {
       });
     }
 
-    // Crear el trabajador
     const nuevoTrabajador = await prisma.trabajador.create({
       data: {
         nombre,
         apellido_paterno,
         apellido_materno,
-        fecha_nacimiento: new Date(fecha_nacimiento),
+        fecha_nacimiento: fechaNacimientoDate, // ¡USANDO EL OBJETO DATE!
         sexo,
         curp,
         rfc,
         email,
         situacion_sentimental,
-        numero_hijos: parseInt(numero_hijos) || 0,
+        numero_hijos,
         numero_empleado,
         numero_plaza,
-        fecha_ingreso: new Date(fecha_ingreso),
-        fecha_ingreso_gobierno: new Date(fecha_ingreso_gobierno),
+        fecha_ingreso: fechaIngresoDate, // ¡USANDO EL OBJETO DATE!
+        fecha_ingreso_gobierno: fechaIngresoGobiernoDate, // ¡USANDO EL OBJETO DATE!
         nivel_puesto,
         nombre_puesto,
         puesto_inpi,
         adscripcion,
-        id_seccion: parseInt(id_seccion),
+        id_seccion,
         nivel_estudios,
         institucion_estudios,
-        certificado_estudios: certificado_estudios === true,
+        certificado_estudios,
         plaza_base
       }
     });
 
-    res.status(201).json({
-      success: true,
-      message: 'Trabajador creado exitosamente',
-      data: nuevoTrabajador
-    });
+    return res.status(201).json({ success: true, message: 'Trabajador creado exitosamente', data: nuevoTrabajador });
+
   } catch (error) {
-    next(error);
+    console.error('Error al crear el trabajador:', error);
+    return res.status(500).json({ success: false, message: 'Error del servidor', error: error.message });
   }
 };
 
 module.exports = {
-  validarTrabajador,
-  crearTrabajador
+  crearTrabajador,
+  validarTrabajador
 };

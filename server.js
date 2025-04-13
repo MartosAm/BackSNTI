@@ -10,6 +10,10 @@ const { PrismaClient } = require('@prisma/client');
 const { errorHandler } = require('./middleware');
 const routes = require('./routes');
 
+
+const authRoutes = require('./routes/authRoutes'); // Ajusta la ruta si es necesario
+const trabajadorRoutes = require('./routes/trabajadorRoutes'); // Ajusta la ruta si es necesario
+const authMiddleware = require('./middleware/auth'); // Ajusta la ruta si es necesario
 // Inicializar app y prisma
 const app = express();
 const prisma = new PrismaClient();
@@ -51,6 +55,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: t
 
 // Rutas de la API
 app.use('/api', routes);
+app.use('/api/auth', authRoutes); // Monta el enrutador con el prefijo /api/auth
 
 // Ruta base (opcional, si es necesario)
 app.get('/', (req, res) => {

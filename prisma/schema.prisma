@@ -1,310 +1,182 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["multiSchema"]  // Habilita la función experimental
-
+  output   = "./client" // Puedes ajustar la ruta de salida si lo deseas
 }
-
-// This is your Prisma schema file for bdsnti database
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["public", "snti"]
 }
 
-// Custom enums based on your domain types
-enum SexoDomain {
-  Masculino
-  Femenino
-  Otro
-  @@schema("public") // Added schema definition
+model auditoria {
+  id_auditoria   Int       @id @default(autoincrement())
+  tabla_afectada String    @db.VarChar(100)
+  id_registro    Int
+  accion         String    @db.VarChar(10)
+  datos_anteriores Json?   @db.JsonB
+  datos_nuevos     Json?   @db.JsonB
+  usuario        String    @db.VarChar(100)
+  fecha_registro   DateTime? @default(now()) @db.Timestamp(6)
 }
 
-enum SituacionSentimentalDomain {
+model cambiosadscripcion {
+  id_cambio           Int       @id @default(autoincrement())
+  id_trabajador       Int
+  adscripcion_anterior String    @db.VarChar(100)
+  adscripcion_nueva    String    @db.VarChar(100)
+  fecha_cambio        DateTime  @db.Date
+  motivo              String
+  documento_respaldo_id Int?
+  usuario_registro    String?   @default(dbgenerated("CURRENT_USER")) @db.VarChar(100)
+  fecha_registro      DateTime? @default(now()) @db.Timestamp(6)
+  documentos          documentos? @relation(fields: [documento_respaldo_id], references: [id_documento])
+}
+
+enum curso_status_domain {
+  En_curso
+}
+
+model cursos {
+  id_curso       Int                 @id @default(autoincrement())
+  codigo_curso   String              @unique @db.VarChar(20)
+  nombre_curso   String              @db.VarChar(255)
+  horas_duracion Int
+  estatus curso_status_domain? @default(En_curso)
+  trabajadores_cursos trabajadores_cursos[]
+}
+
+model documentos {
+  id_documento        Int                @id @default(autoincrement())
+  id_trabajador       Int
+  tipo_documento      String             @db.VarChar(50)
+  metadata            Json?            @db.JsonB
+  hash_archivo        String             @db.VarChar(64)
+  nombre_archivo      String             @db.VarChar(255)
+  descripcion         String?
+  tipo_archivo        String?            @db.VarChar(10)
+  ruta_almacenamiento String
+  fecha_subida        DateTime?          @default(now()) @db.Timestamp(6)
+  tamano_bytes        BigInt
+  es_publico          Boolean?           @default(false)
+  hijos               hijos[]
+  permisos            permisos[]
+  cambiosadscripcion  cambiosadscripcion[]
+  trabajadores_cursos trabajadores_cursos[]
+}
+
+model hijos {
+  id_hijo          Int       @id @default(autoincrement())
+  id_trabajador    Int
+  nombre_completo  String    @db.VarChar(255)
+  fecha_nacimiento DateTime  @db.Date
+  acta_nacimiento_id Int?
+  vigente          Boolean?  @default(true)
+  documentos       documentos? @relation(fields: [acta_nacimiento_id], references: [id_documento])
+}
+
+model permisos {
+  id_permiso             Int       @id @default(autoincrement())
+  id_trabajador         Int
+  tipo_permiso          String?   @db.VarChar(20)
+  fecha_inicio          DateTime  @db.Date
+  fecha_fin             DateTime  @db.Date
+  motivo                String
+  estatus               String?   @default("Pendiente") @db.VarChar(20)
+  documento_aprobacion_id Int?
+  fecha_registro        DateTime? @default(now()) @db.Timestamp(6)
+  documentos            documentos? @relation(fields: [documento_aprobacion_id], references: [id_documento])
+}
+
+model sanciones {
+  id_sancion      Int       @id @default(autoincrement())
+  id_trabajador   Int
+  tipo_sancion    String    @db.VarChar(50)
+  descripcion     String
+  fecha_aplicacion DateTime  @db.Date
+  fecha_fin       DateTime? @db.Date
+  estatus         String?   @default("No") @db.VarChar(20)
+  usuario_registro String?   @default(dbgenerated("CURRENT_USER")) @db.VarChar(100)
+  fecha_registro    DateTime? @default(now()) @db.Timestamp(6)
+  trabajadores    trabajadores @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
+}
+
+model secciones {
+  id_seccion    Int       @id @default(autoincrement())
+  nombre_seccion String    @db.VarChar(100)
+  descripcion  String?
+  trabajadores   trabajadores[]
+}
+
+enum sexo_domain {
+  M
+  F
+}
+
+enum situacion_sentimental_domain {
   Soltero
   Casado
   Divorciado
-  UnionLibre
   Viudo
-  @@schema("public") // Added schema definition
+  Union_Libre
 }
 
-enum CursoStatusDomain {
-  EnCurso
-  Completado
-  Cancelado
-  Pendiente
-  @@schema("public") // Added schema definition
+model trabajadores {
+  id_trabajador        Int                          @id @default(autoincrement())
+  nombre             String                       @db.VarChar(100)
+  apellido_paterno   String                       @db.VarChar(100)
+  apellido_materno   String?                      @db.VarChar(100)
+  fecha_nacimiento   DateTime                     @db.Date
+  sexo               sexo_domain
+  curp               String                       @unique @db.Char(18)
+  rfc                String                       @unique @db.Char(13)
+  email              String                       @unique @db.VarChar(150)
+  situacion_sentimental situacion_sentimental_domain?
+  numero_hijos       Int                          @default(0)
+  numero_empleado    String                       @unique @db.Char(10)
+  numero_plaza       String                       @unique @db.Char(8)
+  fecha_ingreso      DateTime                     @db.Date
+  fecha_ingreso_gobierno DateTime                   @db.Date
+  nivel_puesto       String                       @db.VarChar(50)
+  nombre_puesto      String                       @db.VarChar(100)
+  puesto_inpi        String?                      @db.VarChar(100)
+  adscripcion        String                       @db.VarChar(100)
+  id_seccion         Int
+  nivel_estudios     String?                      @db.VarChar(100)
+  institucion_estudios String?                      @db.VarChar(200)
+  certificado_estudios Boolean?
+  plaza_base         String?                      @db.VarChar(10)
+  fecha_actualizacion  DateTime?                    @default(now()) @db.Timestamp(6)
+  seccion            secciones                    @relation(fields: [id_seccion], references: [id_seccion])
+  sanciones          sanciones[]
+  trabajadores_cursos trabajadores_cursos[]
+  usuarios           usuarios?
 }
 
-enum RolUsuario {
-  Administrador
-  Supervisor
-  Empleado
-  @@schema("snti") // Added schema definition
-}
-
-// Public schema models
-model Curso {
-  id_curso         Int     @id @default(autoincrement())
-  codigo_curso     String  @unique @db.VarChar(20)
-  nombre_curso     String  @db.VarChar(255)
-  horas_duracion   Int
-  estatus          String? @default("En curso") @db.VarChar(20)
-
-  @@map("cursos")
-  @@schema("public")
-}
-
-model Sancion {
-  id_sancion        Int      @id @default(autoincrement())
+model trabajadores_cursos {
+  id_trabajador_curso Int       @id @default(autoincrement())
   id_trabajador     Int
-  tipo_sancion      String   @db.VarChar(50)
-  descripcion       String   @db.Text
-  fecha_aplicacion  DateTime @db.Date
-  fecha_fin         DateTime? @db.Date
-  estatus           String   @default("No") @db.VarChar(20)
-  usuario_registro  String?  @default(dbgenerated("CURRENT_USER")) @db.VarChar(100)
-  fecha_registro    DateTime? @default(now()) @db.Timestamp(6)
+  id_curso          Int
+  fecha_inscripcion DateTime? @default(now()) @db.Date
+  calificacion      Decimal?  @db.Decimal(5, 2)
+  completado        Boolean?  @default(false)
+  fecha_completado  DateTime? @db.Date
+  certificado_id    Int?
+  trabajadores      trabajadores @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade, onUpdate: Cascade)
+  cursos            cursos       @relation(fields: [id_curso], references: [id_curso], onDelete: Cascade, onUpdate: Cascade)
+  documentos        documentos?  @relation(fields: [certificado_id], references: [id_documento])
 
-  trabajador        Trabajador @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
-
-  @@map("sanciones")
-  @@schema("public")
+  @@unique([id_trabajador, id_curso], name: "trabajadores_cursos_unique")
 }
 
-model Seccion {
-  id_seccion        Int     @id @default(autoincrement())
-  nombre_seccion    String  @db.VarChar(100)
-  descripcion       String? @db.Text
-
-  trabajadores      Trabajador[]
-
-  @@map("secciones")
-  @@schema("public")
-}
-
-model Trabajador {
-  id_trabajador           Int       @id @default(autoincrement())
-  nombre                  String    @db.VarChar(100)
-  apellido_paterno        String    @db.VarChar(100)
-  apellido_materno        String?   @db.VarChar(100)
-  fecha_nacimiento        DateTime  @db.Date
-  sexo                    String    @db.VarChar(10)
-  curp                    String    @unique @db.Char(18)
-  rfc                     String    @unique @db.Char(13)
-  email                   String    @unique @db.VarChar(150)
-  situacion_sentimental   String?   @db.VarChar(20)
-  numero_hijos            Int       @default(0)
-  numero_empleado         String    @unique @db.Char(10)
-  numero_plaza            String    @unique @db.Char(8)
-  fecha_ingreso           DateTime  @db.Date
-  fecha_ingreso_gobierno  DateTime  @db.Date
-  nivel_puesto            String    @db.VarChar(50)
-  nombre_puesto           String    @db.VarChar(100)
-  puesto_inpi             String?   @db.VarChar(100)
-  adscripcion             String    @db.VarChar(100)
-  id_seccion              Int
-  nivel_estudios          String?   @db.VarChar(100)
-  institucion_estudios    String?   @db.VarChar(200)
-  certificado_estudios    Boolean?
-  plaza_base              String?   @db.VarChar(10)
-  fecha_actualizacion     DateTime? @default(now()) @db.Timestamp(6)
-
-  seccion                 Seccion   @relation(fields: [id_seccion], references: [id_seccion])
-  sanciones               Sancion[]
-
-  @@map("trabajadores")
-  @@schema("public")
-}
-
-// SNTI schema models
-model Auditoria {
-  id_auditoria     Int       @id @default(autoincrement())
-  tabla_afectada   String    @db.VarChar(100)
-  id_registro      Int
-  accion           String    @db.VarChar(10)
-  datos_anteriores Json?
-  datos_nuevos     Json?
-  usuario          String    @db.VarChar(100)
-  fecha_registro   DateTime? @default(now()) @db.Timestamp(6)
-
-  @@map("auditoria")
-  @@schema("snti")
-}
-
-model CambioAdscripcion {
-  id_cambio             Int          @id @default(autoincrement())
-  id_trabajador         Int
-  adscripcion_anterior  String       @db.VarChar(100)
-  adscripcion_nueva     String       @db.VarChar(100)
-  fecha_cambio          DateTime     @db.Date
-  motivo                String       @db.Text
-  documento_respaldo_id Int?
-  usuario_registro      String?      @default(dbgenerated("CURRENT_USER")) @db.VarChar(100)
-  fecha_registro        DateTime?    @default(now()) @db.Timestamp(6)
-
-  trabajador            TrabajadorSnti @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
-  documento_respaldo    Documento?     @relation(fields: [documento_respaldo_id], references: [id_documento])
-
-  @@map("cambiosadscripcion")
-  @@schema("snti")
-}
-
-model CursoSnti {
-  id_curso       Int    @id @default(autoincrement())
-  codigo_curso   String @unique @db.VarChar(20)
-  nombre_curso   String @db.VarChar(255)
-  horas_duracion Int
-
-  @@map("cursos")
-  @@schema("snti")
-}
-
-model Documento {
-  id_documento          Int          @id @default(autoincrement())
-  id_trabajador         Int
-  tipo_documento        String       @db.VarChar(50)
-  metadata              Json?
-  hash_archivo          String       @db.VarChar(64)
-  nombre_archivo        String       @db.VarChar(255)
-  descripcion           String?      @db.Text
-  tipo_archivo          String?      @db.VarChar(10)
-  ruta_almacenamiento   String       @db.Text
-  fecha_subida          DateTime?    @default(now()) @db.Timestamp(6)
-  tamano_bytes          BigInt
-  es_publico            Boolean?     @default(false)
-
-  trabajador            TrabajadorSnti   @relation(fields: [id_trabajador], references: [id_trabajador])
-  hijos                 Hijo[]
-  permisos              Permiso[]
-  cambios_adscripcion   CambioAdscripcion[]
-
-  @@map("documentos")
-  @@schema("snti")
-}
-
-model Hijo {
-  id_hijo             Int          @id @default(autoincrement())
-  id_trabajador       Int
-  nombre_completo     String       @db.VarChar(255)
-  fecha_nacimiento    DateTime     @db.Date
-  acta_nacimiento_id  Int?
-  vigente             Boolean?     @default(true)
-
-  trabajador          TrabajadorSnti @relation(fields: [id_trabajador], references: [id_trabajador])
-  acta_nacimiento     Documento?     @relation(fields: [acta_nacimiento_id], references: [id_documento])
-
-  @@map("hijos")
-  @@schema("snti")
-}
-
-model Permiso {
-  id_permiso            Int          @id @default(autoincrement())
-  id_trabajador         Int
-  tipo_permiso          String?      @db.VarChar(20)
-  fecha_inicio          DateTime     @db.Date
-  fecha_fin             DateTime     @db.Date
-  motivo                String       @db.Text
-  estatus               String?      @default("Pendiente") @db.VarChar(20)
-  documento_aprobacion_id Int?
-  fecha_registro        DateTime?    @default(now()) @db.Timestamp(6)
-
-  trabajador            TrabajadorSnti @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
-  documento_aprobacion  Documento?     @relation(fields: [documento_aprobacion_id], references: [id_documento])
-
-  @@map("permisos")
-  @@schema("snti")
-}
-
-model SancionSnti {
-  id_sancion        Int          @id @default(autoincrement())
-  id_trabajador     Int
-  tipo_sancion      String       @db.VarChar(50)
-  descripcion       String       @db.Text
-  fecha_aplicacion  DateTime     @db.Date
-  fecha_fin         DateTime?    @db.Date
-  estatus           String?      @default("Activa") @db.VarChar(20)
-  usuario_registro  String?      @default(dbgenerated("CURRENT_USER")) @db.VarChar(100)
-  fecha_registro    DateTime?    @default(now()) @db.Timestamp(6)
-
-  trabajador        TrabajadorSnti @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
-
-  @@map("sanciones")
-  @@schema("snti")
-}
-
-model SeccionSnti {
-  id_seccion        Int     @id @default(autoincrement())
-  nombre_seccion    String  @db.VarChar(100)
-  descripcion       String? @db.Text
-
-  trabajadores      TrabajadorSnti[]
-
-  @@map("secciones")
-  @@schema("snti")
-}
-
-model TrabajadorSnti {
-  id_trabajador           Int          @id @default(autoincrement())
-  nombre                  String       @db.VarChar(100)
-  apellido_paterno        String       @db.VarChar(100)
-  apellido_materno        String?      @db.VarChar(100)
-  fecha_nacimiento        DateTime     @db.Date
-  sexo                    String       @db.VarChar(10)
-  curp                    String       @unique @db.Char(18)
-  rfc                     String       @unique @db.Char(13)
-  email                   String       @unique @db.VarChar(150)
-  situacion_sentimental   String?      @db.VarChar(20)
-  numero_hijos            Int          @default(0)
-  numero_empleado         String       @unique @db.Char(10)
-  numero_plaza            String       @unique @db.Char(8)
-  fecha_ingreso           DateTime     @db.Date
-  fecha_ingreso_gobierno  DateTime     @db.Date
-  nivel_puesto            String       @db.VarChar(50)
-  nombre_puesto           String       @db.VarChar(100)
-  puesto_inpi             String?      @db.VarChar(100)
-  adscripcion             String       @db.VarChar(100)
-  id_seccion              Int
-  nivel_estudios          String?      @db.VarChar(100)
-  institucion_estudios    String?      @db.VarChar(200)
-  certificado_estudios    Boolean?
-  plaza_base              String?      @db.VarChar(10)
-  fecha_actualizacion     DateTime?    @default(now()) @db.Timestamp(6)
-
-  seccion                 SeccionSnti    @relation(fields: [id_seccion], references: [id_seccion])
-  cambios_adscripcion     CambioAdscripcion[]
-  documentos              Documento[]
-  hijos                   Hijo[]
-  permisos                Permiso[]
-  sanciones               SancionSnti[]
-  usuarios                Usuario[]
-
-  @@map("trabajadores")
-  @@schema("snti")
-}
-
-model Usuario {
-  id_usuario              Int           @id @default(autoincrement())
-  id_trabajador           Int?          @unique
-  identificador           String        @unique @db.VarChar(150)
-  contraseña_hash         String        @db.VarChar(255)
-  rol                     String        @default("Empleado") @db.VarChar(20)
-  intentos_fallidos       Int?          @default(0)
-  bloqueado               Boolean?      @default(false)
-  fecha_creacion          DateTime?     @default(now()) @db.Timestamp(6)
-  ultimo_login            DateTime?     @db.Timestamp(6)
-  ultimo_cambio_password  DateTime?     @db.Timestamp(6)
-
-  trabajador              TrabajadorSnti? @relation(fields: [id_trabajador], references: [id_trabajador])
-
-  @@map("usuarios")
-  @@index([id_trabajador])
-  @@schema("snti")
+model usuarios {
+  id_usuario             Int       @id @default(autoincrement())
+  id_trabajador         Int?      @unique
+  identificador          String    @unique @db.VarChar(150)
+  contraseña_hash        String    @db.VarChar(255)
+  intentos_fallidos      Int?      @default(0)
+  bloqueado              Boolean?  @default(false)
+  fecha_creacion         DateTime? @default(now()) @db.Timestamp(6)
+  ultimo_login           DateTime? @db.Timestamp(6)
+  ultimo_cambio_password DateTime? @db.Timestamp(6)
+  trabajadores           trabajadores? @relation(fields: [id_trabajador], references: [id_trabajador])
 }
