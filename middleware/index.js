@@ -4,7 +4,11 @@ const authorization = require('./authorization');
 const errorHandler = require('./error-handler');
 
 module.exports = {
-  auth,
-  authorization,
+  authMiddleware: auth,
+  verifyToken: auth.verifyToken, // ✅ AÑADIR esta línea correctamente
+  authorizationMiddleware: authorization,
   errorHandler
+
+
+  
 };

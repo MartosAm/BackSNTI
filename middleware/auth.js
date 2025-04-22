@@ -2,32 +2,39 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-  const bearerHeader = req.headers['authorization'];
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
   
-  if (!bearerHeader) {
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({
+      success: false,
+      message: 'Acceso no autorizado. Formato de token inválido'
+    });
+  }
+
+  const token = authHeader.split(' ')[1];
+  
+  if (!token) {
     return res.status(401).json({
       success: false,
       message: 'Acceso no autorizado. Token requerido'
     });
   }
 
-  try {
-    // Formato: "Bearer TOKEN"
-    const bearer = bearerHeader.split(' ');
-    const token = bearer[1];
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      const message = err.name === 'TokenExpiredError' 
+        ? 'Token expirado' 
+        : 'Token inválido';
+      
+      return res.status(401).json({
+        success: false,
+        message: `Error de autenticación: ${message}`
+      });
+    }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: 'Token inválido o expirado',
-      error: error.message
-    });
-  }
+  });
 };
 
-module.exports = {
-  verifyToken
-};
+module.exports = { verifyToken };

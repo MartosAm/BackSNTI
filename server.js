@@ -8,7 +8,7 @@ const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const { PrismaClient } = require('@prisma/client');
 const { errorHandler } = require('./middleware');
-const routes = require('./routes');
+const indexRoutes = require('./routes'); // Aquí están agrupadas ya
 const userRoutes = require('./routes/userRoutes');
 
 
@@ -64,8 +64,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: true }));
 
 // Rutas de la API
-app.use('/api', routes, userRoutes);
+app.use('/api', indexRoutes,);
 app.use('/api/auth', authRoutes); // Monta el enrutador con el prefijo /api/auth
+app.use('/trabajadores', trabajadorRoutes);
 
 // Ruta base (opcional, si es necesario)
 app.get('/', (req, res) => {
@@ -103,3 +104,13 @@ process.on('SIGINT', async () => {
   console.log('Conexión a la base de datos cerrada');
   process.exit(0);
 });
+
+
+
+
+
+
+
+
+
+

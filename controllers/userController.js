@@ -118,7 +118,3 @@ module.exports = {
     crearUsuario,
 };
 
-console.log('¿Prisma client inicializado?', !!prisma);
-console.log('¿Contiene modelo usuarios?', typeof prisma.usuarios);
-console.log('Modelos disponibles:', Object.keys(prisma));
-console.log('¿Modelo usuarios disponible?', prisma.usuarios ? 'Sí' : 'No');

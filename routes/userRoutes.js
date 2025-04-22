@@ -1,8 +1,9 @@
+//routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { body, validationResult } = require('express-validator');
-const { auth } = require('../middleware'); // Importa el middleware de autenticación
+const {  verifyToken } = require('../middleware');
 
 // Validaciones para la creación de usuario
 const validarUsuario = [
@@ -121,7 +122,7 @@ const validarUsuario = [
  *         description: Error del servidor.
  */
 router.post('/users',
-    auth.verifyToken, // Primero, verificar el token
+    verifyToken, // Primero, verificar el token
     // authorization(['ADMIN']), // ¡EL MIDDLEWARE DE AUTORIZACIÓN ESTÁ EN EL CONTROLADOR!
     validarUsuario,
     userController.crearUsuario
