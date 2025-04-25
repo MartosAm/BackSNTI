@@ -1,8 +1,8 @@
 // File: routes/trabajadorRoutes.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const trabajadorController = require('../controllers/trabajadorController');
-const { authMiddleware } = require('../middleware'); // Asegúrate de importar con el nombre correcto
+const trabajadorController = require("../controllers/trabajadorController");
+const { authMiddleware } = require("../middleware"); // Asegúrate de importar con el nombre correcto
 
 /**
  * @swagger
@@ -34,11 +34,12 @@ const { authMiddleware } = require('../middleware'); // Asegúrate de importar c
  *         description: No autorizado
  */
 router.post(
-  '/',
+  "/",
   authMiddleware.verifyToken,
   trabajadorController.validarTrabajador,
   trabajadorController.crearTrabajador
 );
+
 /**
  * @swagger
  * /trabajadores/{id}:
@@ -81,9 +82,67 @@ router.post(
  */
 
 router.delete(
-  '/:id',
+  "/:id",
   authMiddleware.verifyToken,
   trabajadorController.eliminarTrabajador
+);
+
+/**
+ * @swagger
+ * /trabajadores/{id}:
+ *  get:
+ *    summary: Obtener un trabajador por su ID
+ *    description: Retorna la información de un trabajador específico basado en su ID.
+ *    tags: [Trabajadores]
+ *    security:
+ *      - bearerAuth: []
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        required: true
+ *        schema:
+ *          type: integer
+ *        description: ID del trabajador a obtener
+ *    responses:
+ *      200:
+ *        description: Trabajador encontrado
+ *        content:
+ *          application/json:
+ *            schema:
+ *             type: object
+ *      401:
+ *        description: No autorizado, token JWT requerido
+ *      404:
+ *        description: Trabajador no encontrado
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: "Trabajador con ID 123 no encontrado"
+ *      500:
+ *        description: Error del servidor
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                  example: false
+ *                message:
+ *                  type: string
+ *                  example: "Error al obtener el trabajador"
+ */
+router.get(
+  "/:id",
+  authMiddleware.verifyToken,
+  trabajadorController.obtenerTrabajadorPorId
 );
 
 /**
@@ -186,7 +245,7 @@ router.delete(
  *           type: boolean
  *         plaza_base:
  *           type: string
- *           example: "BASE001"
+ *           example: "Temporal o Permanente"
  */
 
 module.exports = router;

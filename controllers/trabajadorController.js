@@ -170,8 +170,53 @@ const eliminarTrabajador = async (req, res) => {
   }
 };
 
+//GET 
+
+
+/**
+ * Obtener un trabajador por su ID utilizando la función almacenada
+ * @param {object} req - Objeto de solicitud de Express
+ * @param {object} res - Objeto de respuesta de Express
+ * @param {function} next - Función siguiente de Express
+ */
+const obtenerTrabajadorPorId = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const trabajadorId = parseInt(id);
+
+    if (isNaN(trabajadorId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'El ID del trabajador debe ser un número válido'
+      });
+    }
+
+    const trabajador = await prisma.$queryRaw`SELECT * FROM sp_obtener_trabajador_por_id(${trabajadorId}::integer)`;
+
+
+    if (!trabajador || trabajador.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Trabajador no encontrado'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: trabajador[0]
+    });
+
+  } catch (error) {
+    console.error('Error al obtener el trabajador:', error);
+    return res.status(500).json({ success: false, message: 'Error del servidor', error: error.message });
+  }
+};
+
+
 module.exports = {
   validarTrabajador, // Exporta el middleware de validación
   crearTrabajador,
-  eliminarTrabajador
+  eliminarTrabajador,
+  obtenerTrabajadorPorId
+
 };
