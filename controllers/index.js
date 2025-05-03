@@ -1,13 +1,15 @@
 // controllers/index.js
 
-const trabajadorController = require('./trabajadorController');
-const userController = require('./userController');
-// Si tienes un seccionController, asegúrate de que la ruta sea correcta
-const seccionController = require('./seccionController');
 
+import { PrismaClient } from '@prisma/client';  
+import trabajadorController from './trabajadorController';
+import documentoController from './documentoController';
+import userController from './userController'; 
+import seccionController from './seccionController';
 
 module.exports = {
   trabajadorController,
   userController,
-  seccionController
+  seccionController,
+  documentoController
 };

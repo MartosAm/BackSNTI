@@ -4,6 +4,7 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { body, validationResult } = require('express-validator');
 const { verifyToken } = require('../middleware');
+const { hasRole } = require('../middleware/authorization');
 // Validaciones para la creación de usuario
 const validarUsuario = [
   body('id_trabajador')

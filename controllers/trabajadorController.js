@@ -2,7 +2,6 @@ const { PrismaClient } = require('@prisma/client');
 const { body, validationResult } = require('express-validator');
 const prisma = new PrismaClient();
 
-// Middleware de validación (¡MOVIDO AQUÍ DESDE EL INICIO DEL ARCHIVO!)
 const validarTrabajador = [
   body('nombre').notEmpty().withMessage('El nombre es obligatorio').isLength({ max: 100 }),
   body('apellido_paterno').notEmpty().withMessage('El apellido paterno es obligatorio').isLength({ max: 100 }),
