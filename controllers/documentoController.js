@@ -1,9 +1,11 @@
-// file: controllers/documentocontroller.js
+// file: controllers/documentoController.js
 const { PrismaClient } = require('@prisma/client');
 const crypto = require('crypto');
 const path = require('path');
-const fs = require('fs/promises');
+const fs = require('node:fs/promises');
+const fsSync = require('node:fs'); // Necesario para verificar si existe el directorio
 const { MAPEO_TIPOS_DOCUMENTOS } = require('../config/multerConfig');
+const { v4: uuidv4 } = require('uuid'); // Importa uuid para nombres de archivo únicos
 const prisma = new PrismaClient();
 
 /**
@@ -16,29 +18,40 @@ const subirDocumento = async (req, res) => {
     try {
         // Verificar que se haya subido un archivo
         if (!req.file) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'No se proporcionó ningún archivo.' 
+            return res.status(400).json({
+                success: false,
+                message: 'No se proporcionó ningún archivo.'
             });
         }
 
         const { id_trabajador, tipo_documento, descripcion } = req.body;
         const es_publico = req.body.es_publico === 'true' || req.body.es_publico === true;
-        
-        const { filename, path: rutaTemporal, originalname, mimetype, size } = req.file;
+
+        const { originalname, mimetype, size, path: rutaTemporal } = req.file;
 
         try {
-            // Calcula el hash del archivo para verificar duplicados y garantizar integridad
-            const fileBuffer = await fs.readFile(rutaTemporal);
-            const hashArchivo = crypto.createHash('sha256').update(fileBuffer).digest('hex');
-            
             // Determina ruta de almacenamiento usando el mapeo de tipos
             const tipoDocumentoKey = MAPEO_TIPOS_DOCUMENTOS[tipo_documento] || MAPEO_TIPOS_DOCUMENTOS['Otro'];
-            const rutaAlmacenamiento = path.join(tipoDocumentoKey, filename);
-            
+            const generatedFilename = `${uuidv4()}${path.extname(originalname).toLowerCase()}`;
+            const rutaAlmacenamiento = path.join(tipoDocumentoKey, generatedFilename);
+            const rutaAbsoluta = path.join(__dirname, '../../uploads', rutaAlmacenamiento);
+
+            // Asegúrate de que el directorio de destino exista
+            const directorioDestino = path.dirname(rutaAbsoluta);
+            if (!fsSync.existsSync(directorioDestino)) {
+                await fs.mkdir(directorioDestino, { recursive: true });
+            }
+
+            // Mover el archivo desde la ubicación temporal de Multer a la ubicación final
+            await fs.rename(rutaTemporal, rutaAbsoluta);
+
+            // Calcula el hash del archivo para verificar duplicados y garantizar integridad
+            const fileBuffer = await fs.readFile(rutaAbsoluta);
+            const hashArchivo = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
             // Extrae el tipo de archivo desde el MIME
             const tipoArchivo = mimetype.split('/')[1];
-            
+
             // Metadata básica del archivo
             const metadata = JSON.stringify({
                 mime_type: mimetype,
@@ -50,35 +63,35 @@ const subirDocumento = async (req, res) => {
             try {
                 // Llamar a la función de PostgreSQL correctamente con Prisma
                 await prisma.$executeRaw`
-    SELECT public.sp_subir_documento(
-        ${parseInt(id_trabajador)}::INTEGER, 
-        ${tipo_documento}::VARCHAR, 
-        ${metadata}::JSONB, 
-        ${hashArchivo}::VARCHAR, 
-        ${originalname}::VARCHAR, 
-        ${descripcion || null}::TEXT, 
-        ${tipoArchivo}::VARCHAR, 
-        ${rutaAlmacenamiento}::TEXT, 
-        ${size}::BIGINT, 
-        ${es_publico}::BOOLEAN
-    );
-`;
+                    SELECT public.sp_subir_documento(
+                        ${parseInt(id_trabajador)}::INTEGER,
+                        ${tipo_documento}::VARCHAR,
+                        ${metadata}::JSONB,
+                        ${hashArchivo}::VARCHAR,
+                        ${originalname}::VARCHAR,
+                        ${descripcion || null}::TEXT,
+                        ${tipoArchivo}::VARCHAR,
+                        ${rutaAlmacenamiento}::TEXT,
+                        ${size}::BIGINT,
+                        ${es_publico}::BOOLEAN
+                    );
+                `;
 
             } catch (dbError) {
                 console.error('Error al llamar la función de PostgreSQL:', dbError);
-                // Asegurarse de que eliminamos el archivo temporal
-                await fs.unlink(rutaTemporal).catch(e => console.error('Error eliminando archivo temporal:', e));
-                return res.status(500).json({ 
-                    success: false, 
-                    message: 'Error al registrar el documento en la base de datos', 
-                    error: dbError.message 
+                // Asegurarse de que eliminamos el archivo que movimos
+                await fs.unlink(rutaAbsoluta).catch(e => console.error('Error eliminando archivo movido:', e));
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error al registrar el documento en la base de datos',
+                    error: dbError.message
                 });
             }
 
             // Verificar que el documento se guardó correctamente
             const documentoSubido = await prisma.documentos.findFirst({
-                where: { 
-                    hash_archivo: hashArchivo, 
+                where: {
+                    hash_archivo: hashArchivo,
                     id_trabajador: parseInt(id_trabajador)
                 },
                 select: {
@@ -92,18 +105,12 @@ const subirDocumento = async (req, res) => {
 
             if (!documentoSubido) {
                 // Si no encontramos el documento, puede que la función haya fallado silenciosamente
-                await fs.unlink(rutaTemporal).catch(e => console.error('Error eliminando archivo temporal:', e));
+                await fs.unlink(rutaAbsoluta).catch(e => console.error('Error eliminando archivo movido (no encontrado en BD):', e));
                 return res.status(500).json({
                     success: false,
                     message: 'El documento se procesó pero no se encontró en la base de datos'
                 });
             }
-
-            // Eliminar el archivo temporal después de procesarlo
-            await fs.unlink(rutaTemporal).catch(e => {
-                console.error('Error al eliminar archivo temporal:', e);
-                // No interrumpimos el flujo por un error al eliminar el temporal
-            });
 
             // Responder al cliente indicando éxito
             return res.status(201).json({
@@ -111,20 +118,20 @@ const subirDocumento = async (req, res) => {
                 message: 'Documento subido exitosamente',
                 data: documentoSubido
             });
-            
+
         } catch (processError) {
             console.error('Error al procesar el archivo:', processError);
             // Intenta eliminar el archivo temporal si hubo error procesándolo
             await fs.unlink(rutaTemporal).catch(e => console.error('Error eliminando archivo temporal:', e));
-            return res.status(500).json({ 
-                success: false, 
-                message: 'Error al procesar el archivo', 
-                error: processError.message 
+            return res.status(500).json({
+                success: false,
+                message: 'Error al procesar el archivo',
+                error: processError.message
             });
         }
     } catch (error) {
         console.error('Error general al subir el documento:', error);
-        
+
         // Intentar eliminar el archivo temporal si existe y hubo un error
         if (req.file && req.file.path) {
             try {
@@ -135,10 +142,10 @@ const subirDocumento = async (req, res) => {
         }
 
         // Asegurarse de enviar respuesta al cliente incluso en caso de error
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Error al guardar el documento', 
-            error: error.message 
+        return res.status(500).json({
+            success: false,
+            message: 'Error al guardar el documento',
+            error: error.message
         });
     }
 };
@@ -167,9 +174,9 @@ const obtenerDocumentosPorTrabajador = async (req, res) => {
 
         // Obtener documentos asociados al trabajador
         const documentos = await prisma.documentos.findMany({
-            where: { 
+            where: {
                 id_trabajador: parseInt(id_trabajador),
-                activo: true
+                es_publico: true // Usar es_publico en lugar de activo
             },
             select: {
                 id_documento: true,
@@ -198,7 +205,6 @@ const obtenerDocumentosPorTrabajador = async (req, res) => {
         });
     }
 };
-
 module.exports = {
     subirDocumento,
     obtenerDocumentosPorTrabajador
