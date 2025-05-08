@@ -96,6 +96,8 @@ const uploadDocumento = multer({
   }
 });
 
+
+
 // Exportar constantes y configuración para uso en otros módulos
 module.exports = { 
   uploadDocumento,

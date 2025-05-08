@@ -12,7 +12,6 @@ const indexRoutes = require('./routes'); // Aquí están agrupadas ya
 const userRoutes = require('./routes/userRoutes');
 const seccionRoutes = require('./routes/seccionRoutes'); // Ajusta la ruta si es necesario
 const documentoRoutes = require('./routes/documentoRoutes'); // Ajusta la ruta si es necesario
-const multer = require('multer');
 
 const authRoutes = require('./routes/authRoutes'); // Ajusta la ruta si es necesario
 const trabajadorRoutes = require('./routes/trabajadorRoutes'); // Ajusta la ruta si es necesario
@@ -94,7 +93,7 @@ app.use('*', (req, res) => {
 app.listen(PORT, async () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
   console.log(`Documentación Swagger disponible en http://localhost:${PORT}/api-docs`);
-
+  console.log(`echale ganas pitu2`);
   try {
     await prisma.$connect();
     console.log('Conexión a la base de datos establecida');
