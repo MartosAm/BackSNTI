@@ -1,0 +1,151 @@
+<!-- 
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h3>Menú</h3>
+  </div>
+  <nav class="sidebar-nav">
+    <ul>
+      <li>
+        <a routerLink="/documentos" routerLinkActive="active">
+          <mat-icon>description</mat-icon>
+          <span>  Documentos</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/auditorias" routerLinkActive="active">
+          <mat-icon>list_alt</mat-icon>
+          <span>  Auditorias</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/trabajadores" routerLinkActive="active">
+          <mat-icon>groups</mat-icon>
+          <span>  Trabajadores</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/permisos" routerLinkActive="active">
+          <mat-icon>assignment</mat-icon> 
+          <span>  Permisos</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/sanciones" routerLinkActive="active">
+          <mat-icon>gavel</mat-icon>
+          <span>  Sanciones</span>
+        </a>
+      </li>
+      <li>
+       
+        <mat-accordion class="custom-accordion">
+          <mat-expansion-panel class="custom-panel">
+            <mat-expansion-panel-header class="custom-header">
+              <mat-panel-title>
+                <mat-icon class="white-icon">admin_panel_settings</mat-icon>
+                <span class="white-text">Secretarías</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            
+            <mat-nav-list class="custom-nav-list">
+              <a mat-list-item routerLink="/secretarias/general" routerLinkActive="active" class="white-text">
+              
+                Secretaría General
+              </a>
+              <a mat-list-item routerLink="/secretarias/academica" routerLinkActive="active" class="white-text">
+               
+                Secretaría Académica
+              </a>
+              <a mat-list-item routerLink="/secretarias/administrativa" routerLinkActive="active" class="white-text">
+                
+                Secretaría Administrativa
+              </a>
+            </mat-nav-list>
+          </mat-expansion-panel>
+        </mat-accordion>
+        
+      </li>
+      <li>
+        <a routerLink="/cerrarsesion" routerLinkActive="active">
+          <mat-icon>logout</mat-icon>
+          <span>  Cerrar sesión</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div> -->
+
+<div class="sidebar-container">
+  <!-- Botón de toggle para móviles -->
+  <button class="sidebar-toggle d-lg-none" (click)="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <div class="sidebar" [class.active]="sidebarActive" 
+       style="background-color: rgb(174, 169, 27); color: white;">
+    <div class="sidebar-header p-3">
+      <h4 class="text-center text-white">Panel de Administración</h4>
+      <hr class="bg-white">
+    </div>
+    
+    <ul class="nav flex-column px-3">
+      <!-- Documentos -->
+      <li class="nav-item mb-2">
+        <a class="nav-link text-white d-flex align-items-center" routerLink="/documentos" routerLinkActive="active">
+          <mat-icon>description</mat-icon>
+          <span class="ms-2">Documentos</span>
+        </a>
+      </li>
+      
+      <!-- Trabajadores -->
+      <li class="nav-item mb-2">
+        <a class="nav-link text-white d-flex align-items-center" routerLink="/trabajadores" routerLinkActive="active">
+          <mat-icon>groups</mat-icon>
+          <span class="ms-2">Trabajadores</span>
+        </a>
+      </li>
+      
+      <!-- Secretarias - con desplegable -->
+      <li class="nav-item mb-2">
+        <a class="nav-link text-white d-flex align-items-center" 
+           (click)="toggleSecretarias()"
+           [attr.aria-expanded]="secretariasAbiertas">
+          <mat-icon>account_balance</mat-icon>
+          <span class="ms-2">Secretarias</span>
+          <i class="fas ms-auto" [class.fa-angle-down]="!secretariasAbiertas" [class.fa-angle-up]="secretariasAbiertas"></i>
+        </a>
+        <div class="collapse" [class.show]="secretariasAbiertas">
+          <ul class="nav flex-column ps-4">
+            <li class="nav-item mb-1">
+              <a class="nav-link text-white d-flex align-items-center" routerLink="/secretaria-educacion" routerLinkActive="active">
+                <mat-icon>school</mat-icon>
+                <span class="ms-2">Educación</span>
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a class="nav-link text-white d-flex align-items-center" routerLink="/secretaria-general" routerLinkActive="active">
+                <mat-icon>business</mat-icon>
+                <span class="ms-2">General</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+      
+      <!-- Sanciones -->
+      <li class="nav-item mb-2">
+        <a class="nav-link text-white d-flex align-items-center" routerLink="/sanciones" routerLinkActive="active">
+          <mat-icon>gavel</mat-icon>
+          <span class="ms-2">Sanciones</span>
+        </a>
+      </li>
+      
+      <!-- Permisos -->
+      <li class="nav-item mb-2">
+        <a class="nav-link text-white d-flex align-items-center" routerLink="/permisos" routerLinkActive="active">
+          <mat-icon>assignment</mat-icon>
+          <span class="ms-2">Permisos</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>

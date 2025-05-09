@@ -1,0 +1,41 @@
+<div class="sidebar-container">
+    <div class="user-info">
+      <h3>{{usuario.nombre}}</h3>
+      <p>{{usuario.rol}}</p>
+    </div>
+  
+    <ul class="menu">
+      <!-- Editar Perfil -->
+      <li 
+        class="menu-item" 
+        [routerLink]="['/perfil']" 
+        routerLinkActive="active">
+        <mat-icon>edit</mat-icon>
+        Editar Perfil
+      </li>
+      
+      <!-- Solicitar Permiso -->
+      <li 
+        class="menu-item" 
+        [routerLink]="['/userpermiso']" 
+        routerLinkActive="active">
+        <mat-icon>schedule</mat-icon>
+        Solicitar Permiso
+      </li>
+      
+      <!-- Mis Sanciones -->
+      <li 
+        class="menu-item" 
+        [routerLink]="['/usersanciones']" 
+        routerLinkActive="active">
+        <mat-icon>warning</mat-icon>
+        Mis Sanciones
+      </li>
+    </ul>
+  
+    <!-- Cerrar Sesión -->
+    <div class="logout menu-item">
+      <mat-icon>logout</mat-icon>
+      Cerrar Sesión
+    </div>
+  </div>

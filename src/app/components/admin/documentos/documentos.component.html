@@ -1,0 +1,106 @@
+<div class="app-container">
+
+    
+  <div class="main-content-wrapper">
+    <app-adminbarra class="sidebar"></app-adminbarra>
+
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Gestión de Documentos</h2>
+    <button class="btn btn-purple" >
+      <i class="fas fa-plus me-2"></i> Añadir Documento
+    </button>
+  </div>
+
+  <div class="card shadow">
+    <div class="card-header bg-purple text-white">
+      <h5 class="mb-0">Documentos Existentes</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>Fecha</th>
+              <th>Tamaño</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- <tr *ngFor="let documento of documentos">
+              <td>{{ documento.nombre }}</td>
+              <td>{{ documento.tipo }}</td>
+              <td>{{ documento.fecha | date:'dd/MM/yyyy' }}</td>
+              <td>{{ documento.tamanio }}</td>
+              <td> -->
+                <tr >
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>
+                <button class="btn btn-sm btn-outline-purple me-2">
+                  <i class="fas fa-download"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            <tr >
+              <td colspan="5" class="text-center">No hay documentos registrados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #añadirDocumentoModal let-modal>
+  <div class="modal-header bg-purple text-white">
+    <h5 class="modal-title">Subir Nuevo Documento</h5>
+    <button type="button" class="btn-close btn-close-white"  aria-label="Close"></button>
+    <!-- <button type="button" class="btn-close btn-close-white" (click)="modal.dismiss()" aria-label="Close"></button> -->
+  </div>
+  <div class="modal-body">
+    <form #documentoForm="ngForm" >
+      <!-- <form #documentoForm="ngForm" (ngSubmit)="subirDocumento(modal)"></form> -->
+      <div class="mb-3">
+        <label for="nombreDocumento" class="form-label">Nombre del Documento</label>
+        <input type="text" class="form-control" id="nombreDocumento" 
+                name="nombre" required>
+      </div>
+      
+      <div class="mb-3">
+        <label for="tipoDocumento" class="form-label">Tipo de Documento</label>
+        <select class="form-select" id="tipoDocumento" 
+                name="tipo" required>
+          <option value="">Seleccione un tipo</option>
+          <option value="PDF">PDF</option>
+          <option value="Word">Word</option>
+          <option value="Excel">Excel</option>
+          <option value="Imagen">Imagen</option>
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label for="archivoDocumento" class="form-label">Seleccionar Archivo</label>
+        <input type="file" class="form-control" id="archivoDocumento" 
+              required>
+      </div>
+      
+      <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-secondary me-2" >Cancelar</button>
+        <button type="submit" class="btn btn-purple" [disabled]="!documentoForm.form.valid ">
+          <!-- <button type="submit" class="btn btn-purple" [disabled]="!documentoForm.form.valid || !nuevoDocumento.archivo"></button> -->
+          Subir Documento
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+</div>
+</div>

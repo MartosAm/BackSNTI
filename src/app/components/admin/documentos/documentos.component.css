@@ -1,0 +1,47 @@
+.btn-purple {
+  background-color: #6f42c1;
+  color: white;
+  border-color: #5a32a3;
+}
+
+.btn-purple:hover {
+  background-color: #5a32a3;
+  color: white;
+}
+
+.btn-outline-purple {
+  color: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.btn-outline-purple:hover {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(111, 66, 193, 0.1);
+}
+
+.modal-header.bg-purple {
+  background-color: #6f42c1;
+}
+
+  /* Contenedor del contenido */
+  .main-content-wrapper {
+    display: flex;
+    flex: 1; /* Ocupa todo el espacio disponible */
+  }
+  
+  /* Barra lateral */
+  .sidebar {
+    width: 250px; /* Ancho de la barra */
+
+    position: sticky;
+    top: auto; /* Igual que la altura del header */
+    height: calc(150vh - 60px - 60px); /* 100vh - header - footer */
+    overflow-y: auto; /* Scroll si el contenido es largo */
+    flex-shrink: 0; /* Evita que se encoja */
+    padding: 1px 0;
+  }
+  
