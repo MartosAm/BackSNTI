@@ -177,8 +177,8 @@ const eliminarTrabajador = async (req, res) => {
  * @param {object} req - Objeto de solicitud de Express
  * @param {object} res - Objeto de respuesta de Express
  * @param {function} next - Función siguiente de Express
- */
-const obtenerTrabajadorPorId = async (req, res, next) => {
+ * 
+ */const obtenerTrabajadorPorId = async (req, res) => {
   try {
     const { id } = req.params;
     const trabajadorId = parseInt(id);
@@ -190,10 +190,18 @@ const obtenerTrabajadorPorId = async (req, res, next) => {
       });
     }
 
-    const trabajador = await prisma.$queryRaw`SELECT * FROM sp_obtener_trabajador_por_id(${trabajadorId}::integer)`;
+    const trabajador = await prisma.trabajadores.findUnique({
+      where: {
+        id_trabajador: trabajadorId
+      },
+      include: {
+        seccion: true, // Esto carga la tabla relacionada "secciones"
+        sanciones: true, // También puedes incluir otras relaciones
+        trabajadores_cursos: true
+      }
+    });
 
-
-    if (!trabajador || trabajador.length === 0) {
+    if (!trabajador) {
       return res.status(404).json({
         success: false,
         message: 'Trabajador no encontrado'
@@ -202,79 +210,96 @@ const obtenerTrabajadorPorId = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      data: trabajador[0]
+      data: trabajador
     });
 
   } catch (error) {
     console.error('Error al obtener el trabajador:', error);
-    return res.status(500).json({ success: false, message: 'Error del servidor', error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: 'Error del servidor',
+      error: error.message
+    });
   }
 };
-
 
 const actualizarTrabajador = async (req, res) => {
   const { id } = req.params;
   const trabajadorId = parseInt(id);
-  const datosActualizar = req.body; // Obtenemos directamente el objeto con los datos a actualizar
+  const datosActualizar = req.body;
 
   try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-          return res.status(400).json({ success: false, message: 'Error de validación', errors: errors.array() });
-      }
-
-      const trabajadorExistente = await prisma.trabajadores.findUnique({
-          where: { id_trabajador: trabajadorId },
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Error de validación',
+        errors: errors.array()
       });
+    }
 
-      if (!trabajadorExistente) {
-          return res.status(404).json({ success: false, message: `Trabajador con ID ${trabajadorId} no encontrado` });
+    // Verifica si el trabajador existe
+    const trabajadorExistente = await prisma.trabajadores.findUnique({
+      where: { id_trabajador: trabajadorId }
+    });
+
+    if (!trabajadorExistente) {
+      return res.status(404).json({
+        success: false,
+        message: `Trabajador con ID ${trabajadorId} no encontrado`
+      });
+    }
+
+    // Actualiza los campos que fueron enviados (PATCH parcial)
+
+    //      await prisma.$queryRaw`SELECT public.sp_descargar_documento(${parseInt( ORM 
+
+    const trabajadorActualizado = await prisma.trabajadores.update({
+      where: { id_trabajador: trabajadorId },
+      data: {
+        nombre: datosActualizar.nombre,
+        apellido_paterno: datosActualizar.apellido_paterno,
+        apellido_materno: datosActualizar.apellido_materno,
+        fecha_nacimiento: datosActualizar.fecha_nacimiento ? new Date(datosActualizar.fecha_nacimiento) : undefined,
+        sexo: datosActualizar.sexo,
+        curp: datosActualizar.curp,
+        rfc: datosActualizar.rfc,
+        email: datosActualizar.email,
+        situacion_sentimental: datosActualizar.situacion_sentimental,
+        numero_hijos: datosActualizar.numero_hijos,
+        numero_empleado: datosActualizar.numero_empleado,
+        numero_plaza: datosActualizar.numero_plaza,
+        fecha_ingreso: datosActualizar.fecha_ingreso ? new Date(datosActualizar.fecha_ingreso) : undefined,
+        fecha_ingreso_gobierno: datosActualizar.fecha_ingreso_gobierno ? new Date(datosActualizar.fecha_ingreso_gobierno) : undefined,
+        nivel_puesto: datosActualizar.nivel_puesto,
+        nombre_puesto: datosActualizar.nombre_puesto,
+        puesto_inpi: datosActualizar.puesto_inpi,
+        adscripcion: datosActualizar.adscripcion,
+        id_seccion: datosActualizar.id_seccion,
+        nivel_estudios: datosActualizar.nivel_estudios,
+        institucion_estudios: datosActualizar.institucion_estudios,
+        certificado_estudios: datosActualizar.certificado_estudios,
+        plaza_base: datosActualizar.plaza_base,
+        fecha_actualizacion: new Date()
       }
+    });
 
-      // Llamamos a la función almacenada. Asumimos que devuelve un booleano 'exito'
-      const [resultado] = await prisma.$queryRaw`
-          SELECT sp_actualizar_trabajador(
-              ${trabajadorId}::integer,
-              ${datosActualizar.nombre},
-              ${datosActualizar.apellido_paterno},
-              ${datosActualizar.apellido_materno},
-              ${datosActualizar.fecha_nacimiento ? new Date(datosActualizar.fecha_nacimiento) : null}::date,
-              ${datosActualizar.sexo},
-              ${datosActualizar.curp},
-              ${datosActualizar.rfc},
-              ${datosActualizar.email},
-              ${datosActualizar.situacion_sentimental},
-              ${datosActualizar.numero_hijos},
-              ${datosActualizar.numero_empleado},
-              ${datosActualizar.numero_plaza},
-              ${datosActualizar.fecha_ingreso ? new Date(datosActualizar.fecha_ingreso) : null}::date,
-              ${datosActualizar.fecha_ingreso_gobierno ? new Date(datosActualizar.fecha_ingreso_gobierno) : null}::date,
-              ${datosActualizar.nivel_puesto},
-              ${datosActualizar.nombre_puesto},
-              ${datosActualizar.puesto_inpi},
-              ${datosActualizar.adscripcion},
-              ${datosActualizar.id_seccion},
-              ${datosActualizar.nivel_estudios},
-              ${datosActualizar.institucion_estudios},
-              ${datosActualizar.certificado_estudios},
-              ${datosActualizar.plaza_base}
-          ) as exito;
-      `;
-
-      if (resultado && resultado.exito === true) {
-          const trabajadorActualizado = await prisma.trabajadores.findUnique({
-              where: { id_trabajador: trabajadorId },
-          });
-          return res.status(200).json({ success: true, message: 'Trabajador actualizado exitosamente', data: trabajadorActualizado });
-      } else {
-          return res.status(500).json({ success: false, message: 'Error al actualizar el trabajador' });
-      }
+    return res.status(200).json({
+      success: true,
+      message: 'Trabajador actualizado exitosamente',
+      data: trabajadorActualizado
+    });
 
   } catch (error) {
-      console.error('Error al actualizar el trabajador:', error);
-      return res.status(500).json({ success: false, message: 'Error del servidor', error: error.message });
+    console.error('Error al actualizar el trabajador:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error del servidor',
+      error: error.message
+    });
   }
 };
+
 module.exports = {
   validarTrabajador, // Exporta el middleware de validación
   crearTrabajador,

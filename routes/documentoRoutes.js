@@ -2,9 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const documentoController = require('../controllers/documentoController');
-const { verifyToken, multerHandler } = require('../middleware');
+const { verifyToken, multerHandler, authorizationMiddleware  } = require('../middleware');
 const { uploadDocumento, MAPEO_TIPOS_DOCUMENTOS } = require('../config/multerConfig');
 const { check, validationResult } = require('express-validator');
+const { hasRole } = require('../middleware/authorization');
 
 /**
  * @swagger
@@ -187,5 +188,50 @@ router.get(
   ],
   documentoController.obtenerDocumentosPorTrabajador
 );
+
+/**
+ * @swagger
+ * /documentos/{id_documento}/descargar:
+ *   get:
+ *     summary: Descargar un documento
+ *     description: Permite a los administradores descargar un documento específico.
+ *     tags:
+ *       - Documentos
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id_documento
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del documento a descargar
+ *     responses:
+ *       200:
+ *         description: Documento descargado exitosamente
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       401:
+ *         description: No autorizado (solo administradores)
+ *       404:
+ *         description: Documento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/:id_documento/descargar', verifyToken, documentoController.descargarDocumento);
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports = router;
