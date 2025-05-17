@@ -41,34 +41,48 @@ model cursos {
 }
 
 model documentos {
-  id_documento        Int                   @id @default(autoincrement())
-  id_trabajador       Int
-  tipo_documento      String                @db.VarChar(50)
-  metadata            Json?
-  hash_archivo        String                @db.VarChar(64)
-  nombre_archivo      String                @db.VarChar(255)
-  descripcion         String?
-  tipo_archivo        String?               @db.VarChar(10)
-  ruta_almacenamiento String
-  fecha_subida        DateTime?             @default(now()) @db.Timestamp(6)
-  tamano_bytes        BigInt
-  es_publico          Boolean?              @default(false)
-  cambiosadscripcion  cambiosadscripcion[]
-  hijos               hijos[]
-  permisos            permisos[]
-  trabajadores_cursos trabajadores_cursos[]
+  id_documento             Int       @id @default(autoincrement())
+  id_trabajador            Int
+  tipo_documento           String    @db.VarChar(50)
+  metadata                 Json?
+  hash_archivo             String    @db.VarChar(64)
+  nombre_archivo           String    @db.VarChar(255)
+  descripcion              String?
+  tipo_archivo             String?   @db.VarChar(10)
+  ruta_almacenamiento    String
+  fecha_subida             DateTime? @default(now()) @db.Timestamp(6)
+  tamano_bytes             BigInt
+  es_publico               Boolean?  @default(false)
+  mimetype                 String?   // Agrega este campo
+  cambiosadscripcion cambiosadscripcion[]
+  hijos                hijos[]
+  permisos             permisos[]
+  trabajadores_cursos  trabajadores_cursos[]
 
   @@index([tipo_documento], map: "idx_documentos_tipo")
 }
 
 model hijos {
-  id_hijo            Int         @id @default(autoincrement())
+  id_hijo            Int          @id @default(autoincrement())
+
+  // Relación con trabajador
   id_trabajador      Int
-  nombre_completo    String      @db.VarChar(255)
-  fecha_nacimiento   DateTime    @db.Date
+
+  // Nombre separado en componentes
+  nombre             String       @db.VarChar(100)  // Ej: Luis Miguel
+  apellido_paterno   String       @db.VarChar(100)  // Ej: Rodríguez
+  apellido_materno   String       @db.VarChar(100)  // Ej: Sánchez
+
+  fecha_nacimiento   DateTime     @db.Date
+
+  // Relación con documento de acta de nacimiento
   acta_nacimiento_id Int?
-  vigente            Boolean?    @default(true)
-  documentos         documentos? @relation(fields: [acta_nacimiento_id], references: [id_documento], onDelete: NoAction, onUpdate: NoAction)
+  vigente            Boolean?     @default(true)
+
+  // Relaciones
+  documentos         documentos?  @relation(fields: [acta_nacimiento_id], references: [id_documento], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("hijos")
 }
 
 model permisos {
