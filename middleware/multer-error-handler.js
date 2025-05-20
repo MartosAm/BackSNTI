@@ -17,6 +17,7 @@ const multer = require('multer');
 const multerErrorHandler = (err, req, res, next) => {
   if (!err) {
     return next();
+    
   }
 
   // Manejar errores específicos de multer
