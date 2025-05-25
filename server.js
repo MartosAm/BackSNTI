@@ -15,12 +15,15 @@ const userRoutes = require('./routes/userRoutes');
 const seccionRoutes = require('./routes/seccionRoutes'); // Ajusta la ruta si es necesario
 const documentoRoutes = require('./routes/documentoRoutes'); // Ajusta la ruta si es necesario
 const hijosRoutes = require('./routes/hijosRoutes'); // Ajusta la ruta si es necesario
-
-
-
 const authRoutes = require('./routes/authRoutes'); // Ajusta la ruta si es necesario
+
+
+
+
+const bootstrapRoutes = require('./routes/bootstrapRoutes');
 const trabajadorRoutes = require('./routes/trabajadorRoutes'); // Ajusta la ruta si es necesario
 const authMiddleware = require('./middleware/auth'); // Ajusta la ruta si es necesario
+
 const { obtenerHijosPorTrabajador } = require('./controllers/hijosController');
 // Inicializar app y prisma
 const app = express();
@@ -66,6 +69,7 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/bootstrap', bootstrapRoutes);
 
 // Documentación Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: true }));
@@ -78,6 +82,7 @@ app.use('/users',userRoutes); // Monta el enrutador con el prefijo /api/users
 app.use('/secciones', seccionRoutes); // Monta el enrutador con el prefijo /api/secciones
 app.use('/documentos', documentoRoutes); 
 app.use('/hijos', hijosRoutes); // Monta el enrutador con el prefijo /api/hijos
+app.use('/auth', authRoutes); // Monta el enrutador con el prefijo /api/auth
 
 
 

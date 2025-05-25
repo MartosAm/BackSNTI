@@ -110,41 +110,52 @@ model secciones {
 }
 
 model trabajadores {
-  id_trabajador             Int        @id @default(autoincrement())
-  nombre                    String     @db.VarChar(100)
-  apellido_paterno          String     @db.VarChar(100)
-  apellido_materno          String?    @db.VarChar(100)
-  fecha_nacimiento          DateTime   @db.Date
-  sexo                      String     @db.Char(1)
-  curp                      String     @unique @db.Char(18)
-  rfc                       String     @unique @db.Char(13)
-  email                     String     @unique @db.VarChar(150)
-  situacion_sentimental     String?    @db.VarChar(20)
-  numero_hijos              Int        @default(0)
-  numero_empleado           String     @unique @db.Char(10)
-  numero_plaza              String     @unique @db.Char(8)
-  fecha_ingreso             DateTime   @db.Date
-  fecha_ingreso_gobierno    DateTime   @db.Date
-  nivel_puesto              String     @db.VarChar(50)
-  nombre_puesto             String     @db.VarChar(100)
-  puesto_inpi               String?    @db.VarChar(100)
-  adscripcion               String     @db.VarChar(100)
-  id_seccion                Int
-  nivel_estudios            String?    @db.VarChar(100)
-  institucion_estudios      String?    @db.VarChar(200)
-  certificado_estudios      Boolean?
-  plaza_base                String?    @db.VarChar(10)
-  fecha_actualizacion       DateTime?  @default(now()) @db.Timestamp(6)
+  id_trabajador             Int          @id @default(autoincrement())
 
+  // Autenticación y rol
+  identificador             String       @unique @db.VarChar(150) // puede ser CURP o email
+  contraseña_hash           String       @db.VarChar(255)
+  intentos_fallidos         Int?         @default(0)
+  bloqueado                 Boolean?     @default(false)
+  fecha_creacion            DateTime?    @default(now()) @db.Timestamp(6)
+  ultimo_login              DateTime?    @db.Timestamp(6)
+  ultimo_cambio_password    DateTime?    @db.Timestamp(6)
+  rol                       rol_usuario  @default(USUARIO)
+
+  // Datos personales/laborales
+  nombre                    String       @db.VarChar(100)
+  apellido_paterno          String       @db.VarChar(100)
+  apellido_materno          String?      @db.VarChar(100)
+  fecha_nacimiento          DateTime     @db.Date
+  sexo                      Sexo
+  curp                      String       @unique @db.Char(18)
+  rfc                       String       @unique @db.Char(13)
+  email                     String       @unique @db.VarChar(150)
+  situacion_sentimental     SituacionSentimental?
+  numero_hijos              Int          @default(0)
+  numero_empleado           String       @unique @db.Char(10)
+  numero_plaza              String       @unique @db.Char(8)
+  fecha_ingreso             DateTime     @db.Date
+  fecha_ingreso_gobierno    DateTime     @db.Date
+  nivel_puesto              String       @db.VarChar(50)
+  nombre_puesto             String       @db.VarChar(100)
+  puesto_inpi               String?      @db.VarChar(100)
+  adscripcion               String       @db.VarChar(100)
+  id_seccion                Int
+  nivel_estudios            String?      @db.VarChar(100)
+  institucion_estudios      String?      @db.VarChar(200)
+  certificado_estudios      Boolean?
+  plaza_base                String?      @db.VarChar(10)
+  fecha_actualizacion       DateTime?    @default(now()) @db.Timestamp(6)
+
+  // Relaciones
+  seccion                   secciones    @relation(fields: [id_seccion], references: [id_seccion])
   sanciones                 sanciones[]
-  seccion                   secciones  @relation(fields: [id_seccion], references: [id_seccion], onDelete: NoAction, onUpdate: NoAction)
   trabajadores_cursos       trabajadores_cursos[]
 
-  // Relación uno a uno con usuarios.
-  // Si cada trabajador DEBE tener un usuario, elimina el '?' de 'usuarios?'.
-  // Esto hará que la relación sea obligatoria a nivel de base de datos.
-  usuario                   usuarios?
+  @@index([identificador], map: "idx_trabajadores_identificador")
 }
+
 
 
 model trabajadores_cursos {
@@ -163,27 +174,6 @@ model trabajadores_cursos {
   @@unique([id_trabajador, id_curso], name: "trabajadores_cursos_unique", map: "trabajadores_cursos_unique")
 }
 
-model usuarios {
-  id_usuario                Int        @id @default(autoincrement())
-  // Quita el '?' de id_trabajador si cada usuario SIEMPRE debe estar ligado a un trabajador
-  id_trabajador             Int?       @unique // Se mantiene opcional por ahora si así lo tienes, pero considera quitarlo si es 1:1 estricto
-  identificador             String     @unique @db.VarChar(150) // Campo principal para login (email o CURP)
-  contraseña_hash           String     @db.VarChar(255)
-  intentos_fallidos         Int?       @default(0)
-  bloqueado                 Boolean?   @default(false)
-  fecha_creacion            DateTime?  @default(now()) @db.Timestamp(6)
-  ultimo_login              DateTime?  @db.Timestamp(6)
-  ultimo_cambio_password    DateTime?  @db.Timestamp(6)
-  rol                       rol_usuario @default(USUARIO) // Usa el enum 'rol_usuario' de PostgreSQL
-
-  // Relación con trabajadores
-  // onDelete: Cascade es crucial para que al eliminar un trabajador, su usuario asociado se elimine también.
-  trabajador                trabajadores @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
-
-  @@index([identificador], map: "idx_usuarios_identificador")
-}
-
-
 
 enum rol_usuario {
   ADMINISTRADOR
@@ -195,4 +185,18 @@ enum estatus_permiso {
   Pendiente
   Aprobado
   Denegado
+}
+
+
+enum SituacionSentimental {
+  Soltero
+  Casado
+  Divorciado
+  Viudo
+  UnionLibre  // En Prisma no se permiten espacios, usa camel case o guion bajo
+}
+
+enum Sexo {
+  M
+  F
 }

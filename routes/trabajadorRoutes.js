@@ -2,8 +2,13 @@
 const express = require("express");
 const router = express.Router();
 const trabajadorController = require("../controllers/trabajadorController");
-const { authMiddleware } = require("../middleware"); // Asegúrate de importar con el nombre correcto
+const { authMiddleware, authorizationMiddleware } = require("../middleware"); // Asegúrate de importar con el nombre correcto
 const { body, param, validationResult } = require('express-validator');
+const { PrismaClient, rol_usuario } = require('@prisma/client');
+
+
+const Roles = rol_usuario;
+
 /**
  * @swagger
  * tags:
@@ -34,11 +39,14 @@ const { body, param, validationResult } = require('express-validator');
  *         description: No autorizado
  */
 router.post(
-  "/",
+   "/",
   authMiddleware.verifyToken,
+  authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]), 
   trabajadorController.validarTrabajador,
   trabajadorController.crearTrabajador
 );
+
+// Versión temporal para registrar el primer admin:
 
 /**
  * @swagger

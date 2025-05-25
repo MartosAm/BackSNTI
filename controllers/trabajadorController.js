@@ -1,8 +1,19 @@
+//file: controllers/trabajadorController.js
+// Este archivo contiene la lógica para manejar las operaciones CRUD de los trabajadores
+
 const { PrismaClient } = require('@prisma/client');
 const { body, validationResult } = require('express-validator');
+const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 const validarTrabajador = [
+  // Campos de autenticación
+  body('identificador').notEmpty().withMessage('El identificador es obligatorio')
+    .isLength({ max: 150 }).withMessage('El identificador no puede exceder 150 caracteres'),
+  body('contraseña').optional().isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
+  body('rol').optional().isIn(['ADMINISTRADOR','USUARIO']).withMessage('Rol no válido'),
+  
+  // Datos personales/laborales (mantienen las validaciones originales)
   body('nombre').notEmpty().withMessage('El nombre es obligatorio').isLength({ max: 100 }),
   body('apellido_paterno').notEmpty().withMessage('El apellido paterno es obligatorio').isLength({ max: 100 }),
   body('apellido_materno').optional().isLength({ max: 100 }),
@@ -48,6 +59,7 @@ const crearTrabajador = async (req, res) => {
     }
 
     const {
+      identificador, contraseña, rol,
       nombre, apellido_paterno, apellido_materno, fecha_nacimiento, sexo, curp, rfc,
       email, situacion_sentimental, numero_hijos, numero_empleado, numero_plaza,
       fecha_ingreso, fecha_ingreso_gobierno, nivel_puesto, nombre_puesto, puesto_inpi,
@@ -55,13 +67,16 @@ const crearTrabajador = async (req, res) => {
       plaza_base
     } = req.body;
 
+    // Convertir fechas
     const fechaNacimientoDate = new Date(fecha_nacimiento);
     const fechaIngresoDate = new Date(fecha_ingreso);
     const fechaIngresoGobiernoDate = new Date(fecha_ingreso_gobierno);
 
+    // Verificar duplicados
     const existente = await prisma.trabajadores.findFirst({
       where: {
         OR: [
+          { identificador },
           { curp },
           { rfc },
           { email },
@@ -73,6 +88,7 @@ const crearTrabajador = async (req, res) => {
 
     if (existente) {
       let camposDuplicados = [];
+      if (existente.identificador === identificador) camposDuplicados.push('Identificador');
       if (existente.curp === curp) camposDuplicados.push('CURP');
       if (existente.rfc === rfc) camposDuplicados.push('RFC');
       if (existente.email === email) camposDuplicados.push('Email');
@@ -85,8 +101,22 @@ const crearTrabajador = async (req, res) => {
       });
     }
 
+    // Encriptar contraseña si se proporciona
+    let contraseñaHash = null;
+    if (contraseña) {
+      const saltRounds = 12;
+      contraseñaHash = await bcrypt.hash(contraseña, saltRounds);
+    }
+
     const nuevoTrabajador = await prisma.trabajadores.create({
       data: {
+        // Campos de autenticación
+        identificador,
+        contraseña_hash: contraseñaHash,
+        intentos_fallidos: 0,
+        bloqueado: false,
+        rol: rol || 'USUARIO',
+        // Datos personales/laborales
         nombre,
         apellido_paterno,
         apellido_materno,
@@ -96,7 +126,7 @@ const crearTrabajador = async (req, res) => {
         rfc,
         email,
         situacion_sentimental,
-        numero_hijos,
+        numero_hijos: numero_hijos || 0,
         numero_empleado,
         numero_plaza,
         fecha_ingreso: fechaIngresoDate,
@@ -113,7 +143,14 @@ const crearTrabajador = async (req, res) => {
       }
     });
 
-    return res.status(201).json({ success: true, message: 'Trabajador creado exitosamente', data: nuevoTrabajador });
+    // Omitir contraseña_hash en la respuesta
+    const { contraseña_hash, ...trabajadorSinPassword } = nuevoTrabajador;
+
+    return res.status(201).json({ 
+      success: true, 
+      message: 'Trabajador creado exitosamente', 
+      data: trabajadorSinPassword 
+    });
 
   } catch (error) {
     console.error('Error al crear el trabajador:', error);
@@ -169,16 +206,12 @@ const eliminarTrabajador = async (req, res) => {
   }
 };
 
-//GET 
-
-
 /**
- * Obtener un trabajador por su ID utilizando la función almacenada
+ * Obtener un trabajador por su ID
  * @param {object} req - Objeto de solicitud de Express
  * @param {object} res - Objeto de respuesta de Express
- * @param {function} next - Función siguiente de Express
- * 
- */const obtenerTrabajadorPorId = async (req, res) => {
+ */
+const obtenerTrabajadorPorId = async (req, res) => {
   try {
     const { id } = req.params;
     const trabajadorId = parseInt(id);
@@ -195,8 +228,8 @@ const eliminarTrabajador = async (req, res) => {
         id_trabajador: trabajadorId
       },
       include: {
-        seccion: true, // Esto carga la tabla relacionada "secciones"
-        sanciones: true, // También puedes incluir otras relaciones
+        seccion: true,
+        sanciones: true,
         trabajadores_cursos: true
       }
     });
@@ -208,9 +241,12 @@ const eliminarTrabajador = async (req, res) => {
       });
     }
 
+    // Omitir contraseña_hash en la respuesta
+    const { contraseña_hash, ...trabajadorSinPassword } = trabajador;
+
     return res.status(200).json({
       success: true,
-      data: trabajador
+      data: trabajadorSinPassword
     });
 
   } catch (error) {
@@ -229,6 +265,13 @@ const actualizarTrabajador = async (req, res) => {
   const datosActualizar = req.body;
 
   try {
+    if (isNaN(trabajadorId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'El ID del trabajador debe ser un número válido'
+      });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -250,47 +293,80 @@ const actualizarTrabajador = async (req, res) => {
       });
     }
 
-    // Actualiza los campos que fueron enviados (PATCH parcial)
+    // Preparar datos para actualización
+    const datosParaActualizar = {};
 
-    //      await prisma.$queryRaw`SELECT public.sp_descargar_documento(${parseInt( ORM 
+    // Campos de autenticación
+    if (datosActualizar.identificador !== undefined) {
+      datosParaActualizar.identificador = datosActualizar.identificador;
+    }
+    
+    if (datosActualizar.contraseña !== undefined && datosActualizar.contraseña !== '') {
+      const saltRounds = 12;
+      datosParaActualizar.contraseña_hash = await bcrypt.hash(datosActualizar.contraseña, saltRounds);
+      datosParaActualizar.ultimo_cambio_password = new Date();
+    }
+    
+    if (datosActualizar.rol !== undefined) {
+      datosParaActualizar.rol = datosActualizar.rol;
+    }
+
+    if (datosActualizar.bloqueado !== undefined) {
+      datosParaActualizar.bloqueado = datosActualizar.bloqueado;
+      if (!datosActualizar.bloqueado) {
+        datosParaActualizar.intentos_fallidos = 0;
+      }
+    }
+
+    // Datos personales/laborales
+    if (datosActualizar.nombre !== undefined) datosParaActualizar.nombre = datosActualizar.nombre;
+    if (datosActualizar.apellido_paterno !== undefined) datosParaActualizar.apellido_paterno = datosActualizar.apellido_paterno;
+    if (datosActualizar.apellido_materno !== undefined) datosParaActualizar.apellido_materno = datosActualizar.apellido_materno;
+    if (datosActualizar.fecha_nacimiento !== undefined) datosParaActualizar.fecha_nacimiento = new Date(datosActualizar.fecha_nacimiento);
+    if (datosActualizar.sexo !== undefined) datosParaActualizar.sexo = datosActualizar.sexo;
+    if (datosActualizar.curp !== undefined) datosParaActualizar.curp = datosActualizar.curp;
+    if (datosActualizar.rfc !== undefined) datosParaActualizar.rfc = datosActualizar.rfc;
+    if (datosActualizar.email !== undefined) datosParaActualizar.email = datosActualizar.email;
+    if (datosActualizar.situacion_sentimental !== undefined) datosParaActualizar.situacion_sentimental = datosActualizar.situacion_sentimental;
+    if (datosActualizar.numero_hijos !== undefined) datosParaActualizar.numero_hijos = datosActualizar.numero_hijos;
+    if (datosActualizar.numero_empleado !== undefined) datosParaActualizar.numero_empleado = datosActualizar.numero_empleado;
+    if (datosActualizar.numero_plaza !== undefined) datosParaActualizar.numero_plaza = datosActualizar.numero_plaza;
+    if (datosActualizar.fecha_ingreso !== undefined) datosParaActualizar.fecha_ingreso = new Date(datosActualizar.fecha_ingreso);
+    if (datosActualizar.fecha_ingreso_gobierno !== undefined) datosParaActualizar.fecha_ingreso_gobierno = new Date(datosActualizar.fecha_ingreso_gobierno);
+    if (datosActualizar.nivel_puesto !== undefined) datosParaActualizar.nivel_puesto = datosActualizar.nivel_puesto;
+    if (datosActualizar.nombre_puesto !== undefined) datosParaActualizar.nombre_puesto = datosActualizar.nombre_puesto;
+    if (datosActualizar.puesto_inpi !== undefined) datosParaActualizar.puesto_inpi = datosActualizar.puesto_inpi;
+    if (datosActualizar.adscripcion !== undefined) datosParaActualizar.adscripcion = datosActualizar.adscripcion;
+    if (datosActualizar.id_seccion !== undefined) datosParaActualizar.id_seccion = datosActualizar.id_seccion;
+    if (datosActualizar.nivel_estudios !== undefined) datosParaActualizar.nivel_estudios = datosActualizar.nivel_estudios;
+    if (datosActualizar.institucion_estudios !== undefined) datosParaActualizar.institucion_estudios = datosActualizar.institucion_estudios;
+    if (datosActualizar.certificado_estudios !== undefined) datosParaActualizar.certificado_estudios = datosActualizar.certificado_estudios;
+    if (datosActualizar.plaza_base !== undefined) datosParaActualizar.plaza_base = datosActualizar.plaza_base;
+
+    // Siempre actualizar fecha_actualizacion
+    datosParaActualizar.fecha_actualizacion = new Date();
 
     const trabajadorActualizado = await prisma.trabajadores.update({
       where: { id_trabajador: trabajadorId },
-      data: {
-        nombre: datosActualizar.nombre,
-        apellido_paterno: datosActualizar.apellido_paterno,
-        apellido_materno: datosActualizar.apellido_materno,
-        fecha_nacimiento: datosActualizar.fecha_nacimiento ? new Date(datosActualizar.fecha_nacimiento) : undefined,
-        sexo: datosActualizar.sexo,
-        curp: datosActualizar.curp,
-        rfc: datosActualizar.rfc,
-        email: datosActualizar.email,
-        situacion_sentimental: datosActualizar.situacion_sentimental,
-        numero_hijos: datosActualizar.numero_hijos,
-        numero_empleado: datosActualizar.numero_empleado,
-        numero_plaza: datosActualizar.numero_plaza,
-        fecha_ingreso: datosActualizar.fecha_ingreso ? new Date(datosActualizar.fecha_ingreso) : undefined,
-        fecha_ingreso_gobierno: datosActualizar.fecha_ingreso_gobierno ? new Date(datosActualizar.fecha_ingreso_gobierno) : undefined,
-        nivel_puesto: datosActualizar.nivel_puesto,
-        nombre_puesto: datosActualizar.nombre_puesto,
-        puesto_inpi: datosActualizar.puesto_inpi,
-        adscripcion: datosActualizar.adscripcion,
-        id_seccion: datosActualizar.id_seccion,
-        nivel_estudios: datosActualizar.nivel_estudios,
-        institucion_estudios: datosActualizar.institucion_estudios,
-        certificado_estudios: datosActualizar.certificado_estudios,
-        plaza_base: datosActualizar.plaza_base,
-        fecha_actualizacion: new Date()
-      }
+      data: datosParaActualizar
     });
+
+    // Omitir contraseña_hash en la respuesta
+    const { contraseña_hash, ...trabajadorSinPassword } = trabajadorActualizado;
 
     return res.status(200).json({
       success: true,
       message: 'Trabajador actualizado exitosamente',
-      data: trabajadorActualizado
+      data: trabajadorSinPassword
     });
 
   } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({
+        success: false,
+        message: 'Ya existe un trabajador con esos datos únicos (identificador, CURP, RFC, email, etc.)'
+      });
+    }
     console.error('Error al actualizar el trabajador:', error);
     return res.status(500).json({
       success: false,
@@ -300,10 +376,91 @@ const actualizarTrabajador = async (req, res) => {
   }
 };
 
+// Función adicional para actualizar último login
+const actualizarUltimoLogin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const trabajadorId = parseInt(id);
+
+    if (isNaN(trabajadorId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'El ID del trabajador debe ser un número válido'
+      });
+    }
+
+    await prisma.trabajadores.update({
+      where: { id_trabajador: trabajadorId },
+      data: { 
+        ultimo_login: new Date(),
+        intentos_fallidos: 0
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Último login actualizado exitosamente'
+    });
+
+  } catch (error) {
+    console.error('Error al actualizar último login:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error del servidor',
+      error: error.message
+    });
+  }
+};
+
+// Función para manejar intentos fallidos de login
+const registrarIntentoFallido = async (req, res) => {
+  try {
+    const { identificador } = req.body;
+
+    const trabajador = await prisma.trabajadores.findUnique({
+      where: { identificador }
+    });
+
+    if (!trabajador) {
+      return res.status(404).json({
+        success: false,
+        message: 'Trabajador no encontrado'
+      });
+    }
+
+    const intentosFallidos = (trabajador.intentos_fallidos || 0) + 1;
+    const bloqueado = intentosFallidos >= 5;
+
+    await prisma.trabajadores.update({
+      where: { identificador },
+      data: { 
+        intentos_fallidos: intentosFallidos,
+        bloqueado: bloqueado
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Intento fallido registrado',
+      data: { intentos_fallidos: intentosFallidos, bloqueado }
+    });
+
+  } catch (error) {
+    console.error('Error al registrar intento fallido:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error del servidor',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
-  validarTrabajador, // Exporta el middleware de validación
+  validarTrabajador,
   crearTrabajador,
   eliminarTrabajador,
   obtenerTrabajadorPorId,
-  actualizarTrabajador
+  actualizarTrabajador,
+  actualizarUltimoLogin,
+  registrarIntentoFallido
 };

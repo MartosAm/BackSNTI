@@ -1,9 +1,14 @@
+
 // enums/roles.enum.js
-const Roles = Object.freeze({
+/**
+ * Enumeración de roles de usuario
+ */
+const Roles = {
   ADMINISTRADOR: 'ADMINISTRADOR',
   USUARIO: 'USUARIO'
-  // Agregar segun se necesite
-});
+};
+
+// Congelar el objeto para evitar modificaciones
+Object.freeze(Roles);
 
 module.exports = Roles;
-

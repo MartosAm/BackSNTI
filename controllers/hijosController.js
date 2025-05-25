@@ -119,19 +119,6 @@ const registrarHijo = async (req, res) => {
     }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * Controlador para obtener la lista de hijos de un trabajador
  * @param {Object} req - Objeto de solicitud Express
