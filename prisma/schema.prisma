@@ -63,8 +63,10 @@ model documentos {
 }
 
 model hijos {
-  id_hijo            Int         @id @default(autoincrement())
-  id_trabajador      Int
+  id_hijo       Int          @id @default(autoincrement())
+  id_trabajador Int
+  trabajador    trabajadores @relation(fields: [id_trabajador], references: [id_trabajador])
+
   fecha_nacimiento   DateTime    @db.Date
   acta_nacimiento_id Int?
   vigente            Boolean?    @default(true)
@@ -77,16 +79,19 @@ model hijos {
 }
 
 model permisos {
-  id_permiso              Int         @id @default(autoincrement())
+  id_permiso              Int       @id @default(autoincrement())
   id_trabajador           Int
-  tipo_permiso            String?     @db.VarChar(20)
-  fecha_inicio            DateTime    @db.Date
-  fecha_fin               DateTime    @db.Date
+  tipo_permiso            String?   @db.VarChar(20)
+  fecha_inicio            DateTime  @db.Date
+  fecha_fin               DateTime  @db.Date
   motivo                  String
-  estatus                 String?     @default("Pendiente") @db.VarChar(20)
+  estatus                 String?   @default("Pendiente") @db.VarChar(20)
   documento_aprobacion_id Int?
-  fecha_registro          DateTime?   @default(now()) @db.Timestamp(6)
-  documentos              documentos? @relation(fields: [documento_aprobacion_id], references: [id_documento], onDelete: NoAction, onUpdate: NoAction)
+  fecha_registro          DateTime? @default(now()) @db.Timestamp(6)
+
+  // Relaciones
+  documentos   documentos?  @relation(fields: [documento_aprobacion_id], references: [id_documento], onDelete: NoAction, onUpdate: NoAction)
+  trabajadores trabajadores @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
 }
 
 model sanciones {
@@ -104,59 +109,59 @@ model sanciones {
 
 model secciones {
   id_seccion     Int            @id @default(autoincrement())
-  nombre_seccion String         @db.VarChar(100)
+  nombre_seccion String         @unique @db.VarChar(100) // ← Aquí el cambio
   descripcion    String?
   trabajadores   trabajadores[]
 }
 
 model trabajadores {
-  id_trabajador             Int          @id @default(autoincrement())
+  id_trabajador Int @id @default(autoincrement())
 
   // Autenticación y rol
-  identificador             String       @unique @db.VarChar(150) // puede ser CURP o email
-  contraseña_hash           String       @db.VarChar(255)
-  intentos_fallidos         Int?         @default(0)
-  bloqueado                 Boolean?     @default(false)
-  fecha_creacion            DateTime?    @default(now()) @db.Timestamp(6)
-  ultimo_login              DateTime?    @db.Timestamp(6)
-  ultimo_cambio_password    DateTime?    @db.Timestamp(6)
-  rol                       rol_usuario  @default(USUARIO)
+  identificador          String      @unique @db.VarChar(150) // puede ser CURP o email
+  contraseña_hash       String      @db.VarChar(255)
+  intentos_fallidos      Int?        @default(0)
+  bloqueado              Boolean?    @default(false)
+  fecha_creacion         DateTime?   @default(now()) @db.Timestamp(6)
+  ultimo_login           DateTime?   @db.Timestamp(6)
+  ultimo_cambio_password DateTime?   @db.Timestamp(6)
+  rol                    rol_usuario @default(USUARIO)
 
   // Datos personales/laborales
-  nombre                    String       @db.VarChar(100)
-  apellido_paterno          String       @db.VarChar(100)
-  apellido_materno          String?      @db.VarChar(100)
-  fecha_nacimiento          DateTime     @db.Date
-  sexo                      Sexo
-  curp                      String       @unique @db.Char(18)
-  rfc                       String       @unique @db.Char(13)
-  email                     String       @unique @db.VarChar(150)
-  situacion_sentimental     SituacionSentimental?
-  numero_hijos              Int          @default(0)
-  numero_empleado           String       @unique @db.Char(10)
-  numero_plaza              String       @unique @db.Char(8)
-  fecha_ingreso             DateTime     @db.Date
-  fecha_ingreso_gobierno    DateTime     @db.Date
-  nivel_puesto              String       @db.VarChar(50)
-  nombre_puesto             String       @db.VarChar(100)
-  puesto_inpi               String?      @db.VarChar(100)
-  adscripcion               String       @db.VarChar(100)
-  id_seccion                Int
-  nivel_estudios            String?      @db.VarChar(100)
-  institucion_estudios      String?      @db.VarChar(200)
-  certificado_estudios      Boolean?
-  plaza_base                String?      @db.VarChar(10)
-  fecha_actualizacion       DateTime?    @default(now()) @db.Timestamp(6)
+  nombre                 String                @db.VarChar(100)
+  apellido_paterno       String                @db.VarChar(100)
+  apellido_materno       String?               @db.VarChar(100)
+  fecha_nacimiento       DateTime              @db.Date
+  sexo                   Sexo
+  curp                   String                @unique @db.Char(18)
+  rfc                    String                @unique @db.Char(13)
+  email                  String                @unique @db.VarChar(150)
+  situacion_sentimental  SituacionSentimental?
+  numero_hijos           Int                   @default(0)
+  numero_empleado        String                @unique @db.Char(10)
+  numero_plaza           String                @unique @db.Char(8)
+  fecha_ingreso          DateTime              @db.Date
+  fecha_ingreso_gobierno DateTime              @db.Date
+  nivel_puesto           String                @db.VarChar(50)
+  nombre_puesto          String                @db.VarChar(100)
+  puesto_inpi            String?               @db.VarChar(100)
+  adscripcion            String                @db.VarChar(100)
+  id_seccion             Int
+  nivel_estudios         String?               @db.VarChar(100)
+  institucion_estudios   String?               @db.VarChar(200)
+  certificado_estudios   Boolean?
+  plaza_base             String?               @db.VarChar(10)
+  fecha_actualizacion    DateTime?             @default(now()) @db.Timestamp(6)
 
   // Relaciones
-  seccion                   secciones    @relation(fields: [id_seccion], references: [id_seccion])
-  sanciones                 sanciones[]
-  trabajadores_cursos       trabajadores_cursos[]
+  seccion             secciones             @relation(fields: [id_seccion], references: [id_seccion])
+  sanciones           sanciones[]
+  trabajadores_cursos trabajadores_cursos[]
+  permisos            permisos[] // Relación uno a muchos
+  hijos               hijos[] // 👈 relación inversa
 
   @@index([identificador], map: "idx_trabajadores_identificador")
 }
-
-
 
 model trabajadores_cursos {
   id_trabajador_curso Int          @id @default(autoincrement())
@@ -174,26 +179,24 @@ model trabajadores_cursos {
   @@unique([id_trabajador, id_curso], name: "trabajadores_cursos_unique", map: "trabajadores_cursos_unique")
 }
 
-
 enum rol_usuario {
   ADMINISTRADOR
   USUARIO
 }
 
-
 enum estatus_permiso {
   Pendiente
   Aprobado
   Denegado
+  NoSolicitado
 }
-
 
 enum SituacionSentimental {
   Soltero
   Casado
   Divorciado
   Viudo
-  UnionLibre  // En Prisma no se permiten espacios, usa camel case o guion bajo
+  UnionLibre // En Prisma no se permiten espacios, usa camel case o guion bajo
 }
 
 enum Sexo {

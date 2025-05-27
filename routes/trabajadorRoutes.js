@@ -1,26 +1,101 @@
-// File: routes/trabajadorRoutes.js
+// File: routes/trabajadoresRoutes.js
 const express = require("express");
 const router = express.Router();
-const trabajadorController = require("../controllers/trabajadorController");
-const { authMiddleware, authorizationMiddleware } = require("../middleware"); // Asegúrate de importar con el nombre correcto
-const { body, param, validationResult } = require('express-validator');
-const { PrismaClient, rol_usuario } = require('@prisma/client');
-
-
-const Roles = rol_usuario;
+const {
+    validarTrabajador,
+    crearTrabajador,
+    eliminarTrabajador,
+    obtenerTrabajadorPorId,
+    actualizarTrabajador,
+    listarTrabajadores,
+    miPerfil,
+    actualizarUltimoLogin,
+    registrarIntentoFallido
+} = require("../controllers/trabajadorController");
+const { verifyToken } = require("../middleware/auth");
+const { hasRole } = require("../middleware/authorization");
+const Roles = require('../enums/roles.enum');
 
 /**
  * @swagger
  * tags:
  *   - name: Trabajadores
- *     description: Endpoints para administrar trabajadores
+ *     description: Endpoints para administrar y consultar información de trabajadores
  */
 
 /**
  * @swagger
- * /trabajadores:
+ * /api/trabajadores:
+ *   get:
+ *     summary: Lista todos los trabajadores del sistema
+ *     description: Permite a los ADMINISTRADORES obtener un listado completo de todos los trabajadores registrados.
+ *     tags: [Trabajadores]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de trabajadores obtenida exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/TrabajadorOutput'
+ *       401:
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
+ *       500:
+ *         $ref: '#/components/responses/500Error'
+ */
+router.get(
+  "/",
+  verifyToken,
+  hasRole([Roles.ADMINISTRADOR]),
+  listarTrabajadores
+);
+
+/**
+ * @swagger
+ * /api/trabajadores/mi-perfil:
+ *   get:
+ *     summary: Obtiene el perfil del trabajador autenticado
+ *     description: Retorna la información detallada del trabajador que está actualmente autenticado, basado en el token JWT.
+ *     tags: [Trabajadores]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perfil del trabajador autenticado obtenido exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TrabajadorOutput'
+ *       401:
+ *         $ref: '#/components/responses/401Error'
+ *       404:
+ *         $ref: '#/components/responses/404Error'
+ *       500:
+ *         $ref: '#/components/responses/500Error'
+ */
+router.get(
+  "/mi-perfil",
+  verifyToken,
+  miPerfil
+);
+
+/**
+ * @swagger
+ * /api/trabajadores:
  *   post:
  *     summary: Crea un nuevo trabajador
+ *     description: Permite a un ADMINISTRADOR crear un nuevo registro de trabajador en el sistema.
  *     tags: [Trabajadores]
  *     security:
  *       - bearerAuth: []
@@ -32,286 +107,223 @@ const Roles = rol_usuario;
  *             $ref: '#/components/schemas/TrabajadorInput'
  *     responses:
  *       201:
- *         description: Trabajador creado exitosamente
- *       400:
- *         description: Datos de trabajador inválidos
- *       401:
- *         description: No autorizado
- */
-router.post(
-   "/",
-  authMiddleware.verifyToken,
-  authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]), 
-  trabajadorController.validarTrabajador,
-  trabajadorController.crearTrabajador
-);
-
-// Versión temporal para registrar el primer admin:
-
-/**
- * @swagger
- * /trabajadores/{id}:
- *   delete:
- *     summary: Elimina un trabajador por su ID
- *     tags: [Trabajadores]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: integer
- *         required: true
- *         description: ID del trabajador a eliminar
- *     responses:
- *       200:
- *         description: Trabajador eliminado exitosamente
+ *         description: Trabajador creado exitosamente.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Trabajador eliminado exitosamente"
+ *               $ref: '#/components/schemas/TrabajadorResponse'
  *       400:
- *         description: ID de trabajador inválido o el trabajador no puede ser eliminado por restricciones de integridad
+ *         $ref: '#/components/responses/400Error'
  *       401:
- *         description: No autorizado, token JWT requerido
+ *         $ref: '#/components/responses/401Error'
  *       403:
- *         description: Prohibido - No tiene permisos suficientes
- *       404:
- *         description: Trabajador no encontrado
+ *         $ref: '#/components/responses/403Error'
+ *       409:
+ *         $ref: '#/components/responses/409Error'
  *       500:
- *         description: Error del servidor
+ *         $ref: '#/components/responses/500Error'
  */
-
-router.delete(
-  "/:id",
-  authMiddleware.verifyToken,
-  trabajadorController.eliminarTrabajador
+router.post(
+  "/",
+  verifyToken,
+  hasRole([Roles.ADMINISTRADOR]),
+  validarTrabajador,
+  crearTrabajador
 );
 
 /**
  * @swagger
- * /trabajadores/{id}:
- *  get:
- *    summary: Obtener un trabajador por su ID
- *    description: Retorna la información de un trabajador específico basado en su ID.
- *    tags: [Trabajadores]
- *    security:
- *      - bearerAuth: []
- *    parameters:
- *      - in: path
- *        name: id
- *        required: true
- *        schema:
- *          type: integer
- *        description: ID del trabajador a obtener
- *    responses:
- *      200:
- *        description: Trabajador encontrado
- *        content:
- *          application/json:
- *            schema:
- *             type: object
- *      401:
- *        description: No autorizado, token JWT requerido
- *      404:
- *        description: Trabajador no encontrado
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                success:
- *                  type: boolean
- *                  example: false
- *                message:
- *                  type: string
- *                  example: "Trabajador con ID 123 no encontrado"
- *      500:
- *        description: Error del servidor
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                success:
- *                  type: boolean
- *                  example: false
- *                message:
- *                  type: string
- *                  example: "Error al obtener el trabajador"
- */
-router.get(
-  "/:id",
-  authMiddleware.verifyToken,
-  trabajadorController.obtenerTrabajadorPorId
-);
-
-/*
-
-RUTA HTTP PATCH PARA ACTUALIZAR
-
-*/
-
-/**
- * @swagger
- * /trabajadores/{id}:
- *   patch:
- *     summary: Actualizar un trabajador por su ID usando función almacenada
- *     description: Actualiza la información de un trabajador existente utilizando la función almacenada sp_actualizar_trabajador.
+ * /api/trabajadores/{id}:
+ *   get:
+ *     summary: Obtener un trabajador por su ID
+ *     description: Retorna la información de un trabajador específico basado en su ID. Solo accesible por ADMINISTRADORES.
  *     tags: [Trabajadores]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
  *         schema:
  *           type: integer
- *         description: ID del trabajador a actualizar
+ *         required: true
+ *         description: ID del trabajador a obtener.
+ *     responses:
+ *       200:
+ *         description: Trabajador encontrado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TrabajadorOutput'
+ *       401:
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
+ *       404:
+ *         $ref: '#/components/responses/404Error'
+ *       500:
+ *         $ref: '#/components/responses/500Error'
+ */
+router.get(
+  "/:id",
+  verifyToken,
+  hasRole([Roles.ADMINISTRADOR]),
+  obtenerTrabajadorPorId
+);
+
+/**
+ * @swagger
+ * /api/trabajadores/{id}:
+ *   put:
+ *     summary: Actualiza completamente un trabajador por su ID
+ *     description: Permite a un ADMINISTRADOR actualizar toda la información de un trabajador existente.
+ *     tags: [Trabajadores]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del trabajador a actualizar.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TrabajadorUpdateInput'
+ *     responses:
+ *       200:
+ *         description: Trabajador actualizado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TrabajadorResponse'
+ *       400:
+ *         $ref: '#/components/responses/400Error'
+ *       401:
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
+ *       404:
+ *         $ref: '#/components/responses/404Error'
+ *       409:
+ *         $ref: '#/components/responses/409Error'
+ *       500:
+ *         $ref: '#/components/responses/500Error'
+ */
+router.put(
+  '/:id',
+  verifyToken,
+  hasRole([Roles.ADMINISTRADOR]),
+  validarTrabajador,
+  actualizarTrabajador
+);
+
+/**
+ * @swagger
+ * /api/trabajadores/{id}:
+ *   delete:
+ *     summary: Elimina un trabajador por su ID
+ *     description: Permite a un ADMINISTRADOR eliminar un trabajador del sistema.
+ *     tags: [Trabajadores]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del trabajador a eliminar.
+ *     responses:
+ *       200:
+ *         description: Trabajador eliminado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         $ref: '#/components/responses/400Error'
+ *       401:
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
+ *       404:
+ *         $ref: '#/components/responses/404Error'
+ *       500:
+ *         $ref: '#/components/responses/500Error'
+ */
+router.delete(
+  "/:id",
+  verifyToken,
+  hasRole([Roles.ADMINISTRADOR]),
+  eliminarTrabajador
+);
+
+/**
+ * @swagger
+ * /api/trabajadores/update-last-login/{id}:
+ *   patch:
+ *     summary: Actualiza la marca de tiempo del último inicio de sesión de un trabajador
+ *     description: Ruta interna para actualizar último login después de autenticación exitosa.
+ *     tags: [Trabajadores]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Último login actualizado
+ *       401:
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
+ *       404:
+ *         $ref: '#/components/responses/404Error'
+ *       500:
+ *         $ref: '#/components/responses/500Error'
+ */
+router.patch(
+  "/update-last-login/:id",
+  verifyToken,
+  actualizarUltimoLogin
+);
+
+/**
+ * @swagger
+ * /api/trabajadores/register-failed-attempt:
+ *   post:
+ *     summary: Registra un intento de inicio de sesión fallido
+ *     description: Registra intentos fallidos para lógica de bloqueo de cuentas.
+ *     tags: [Trabajadores]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - identificador
  *             properties:
- *               nombre:
+ *               identificador:
  *                 type: string
- *                 example: "Nuevo Nombre"
- *               apellido_paterno:
- *                 type: string
- *                 example: "Nuevo Apellido"
- *               apellido_materno:
- *                 type: string
- *                 example: "Nuevo Materno"
- *               fecha_nacimiento:
- *                 type: string
- *                 format: date
- *                 example: "1995-03-10"
- *               sexo:
- *                 type: string
- *                 enum: [M, F]
- *                 example: "F"
- *               curp:
- *                 type: string
- *                 example: "NUEV123456ABCDEF01"
- *               rfc:
- *                 type: string
- *                 example: "NUEV123456XYZ"
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "nuevo.email@example.com"
- *               situacion_sentimental:
- *                 type: string
- *                 enum: [Soltero, Casado, Divorciado, Viudo, "Union Libre"]
- *                 example: "Casado"
- *               numero_hijos:
- *                 type: integer
- *                 example: 1
- *               numero_empleado:
- *                 type: string
- *                 example: "NEMP98765"
- *               numero_plaza:
- *                 type: string
- *                 example: "NPLAZA2"
- *               fecha_ingreso:
- *                 type: string
- *                 format: date
- *                 example: "2024-01-15"
- *               fecha_ingreso_gobierno:
- *                 type: string
- *                 format: date
- *                 example: "2020-05-20"
- *               nivel_puesto:
- *                 type: string
- *                 example: "Coordinador"
- *               nombre_puesto:
- *                 type: string
- *                 example: "Coordinador de Proyectos"
- *               puesto_inpi:
- *                 type: string
- *                 example: "Especialista Senior"
- *               adscripcion:
- *                 type: string
- *                 example: "Oficina Regional"
- *               id_seccion:
- *                 type: integer
- *                 example: 2
- *               nivel_estudios:
- *                 type: string
- *                 example: "Posgrado"
- *               institucion_estudios:
- *                 type: string
- *                 example: "Universidad Estatal"
- *               certificado_estudios:
- *                 type: boolean
- *                 example: true
- *               plaza_base:
- *                 type: string
- *                 enum: ["Temporal", "Definitiva"]
- *                 example: "Definitiva"
+ *                 example: "usuario.ejemplo"
  *     responses:
  *       200:
- *         description: Trabajador actualizado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Trabajador actualizado exitosamente"
- *                 data:
- *       400:
- *         description: Datos de actualización inválidos
- *       401:
- *         description: No autorizado
+ *         description: Intento registrado
  *       404:
- *         description: Trabajador no encontrado
+ *         $ref: '#/components/responses/404Error'
  *       500:
- *         description: Error del servidor
+ *         $ref: '#/components/responses/500Error'
  */
-router.patch(
-  '/:id',
-  authMiddleware.verifyToken,
-  [
-    param('id').isInt().withMessage('El ID del trabajador debe ser un número entero.'),
-    body('nombre').optional().isLength({ max: 100 }).withMessage('El nombre debe tener máximo 100 caracteres.'),
-    body('apellido_paterno').optional().isLength({ max: 100 }).withMessage('El apellido paterno debe tener máximo 100 caracteres.'),
-    body('apellido_materno').optional().isLength({ max: 100 }).withMessage('El apellido materno debe tener máximo 100 caracteres.'),
-    body('fecha_nacimiento').optional().isISO8601().withMessage('Formato de fecha de nacimiento inválido (YYYY-MM-DD).'),
-    body('sexo').optional().isIn(['M', 'F']).withMessage('Valor de sexo no válido (M o F).'),
-    body('curp').optional().isLength({ min: 18, max: 18 }).matches(/^[A-Z]{4}\d{6}[HM][A-Z]{5}[0-9A-Z]\d$/).withMessage('Formato de CURP inválido.'),
-    body('rfc').optional().isLength({ min: 13, max: 13 }).matches(/^[A-Z]{4}\d{6}[0-9A-Z]{3}$/).withMessage('Formato de RFC inválido.'),
-    body('email').optional().isEmail().isLength({ max: 150 }).withMessage('Formato de email inválido.'),
-    body('situacion_sentimental').optional().isIn(['Soltero', 'Casado', 'Divorciado', 'Viudo', 'Union Libre']).withMessage('Valor de situación sentimental no válido.'),
-    body('numero_hijos').optional().isInt({ min: 0 }).withMessage('El número de hijos debe ser un entero no negativo.'),
-    body('numero_empleado').optional().isLength({ min: 10, max: 10 }).withMessage('El número de empleado debe tener 10 caracteres.'),
-    body('numero_plaza').optional().isLength({ min: 8, max: 8 }).withMessage('El número de plaza debe tener 8 caracteres.'),
-    body('fecha_ingreso').optional().isISO8601().withMessage('Formato de fecha de ingreso inválido (YYYY-MM-DD).'),
-    body('fecha_ingreso_gobierno').optional().isISO8601().withMessage('Formato de fecha de ingreso al gobierno inválido (YYYY-MM-DD).'),
-    body('nivel_puesto').optional().isLength({ max: 50 }).withMessage('El nivel de puesto debe tener máximo 50 caracteres.'),
-    body('nombre_puesto').optional().isLength({ max: 100 }).withMessage('El nombre del puesto debe tener máximo 100 caracteres.'),
-    body('puesto_inpi').optional().isLength({ max: 100 }).withMessage('El puesto INPI debe tener máximo 100 caracteres.'),
-    body('adscripcion').optional().isLength({ max: 100 }).withMessage('La adscripción debe tener máximo 100 caracteres.'),
-    body('id_seccion').optional().isInt().withMessage('El ID de la sección debe ser un entero.'),
-    body('nivel_estudios').optional().isLength({ max: 100 }).withMessage('El nivel de estudios debe tener máximo 100 caracteres.'),
-    body('institucion_estudios').optional().isLength({ max: 200 }).withMessage('La institución de estudios debe tener máximo 200 caracteres.'),
-    body('certificado_estudios').optional().isBoolean().withMessage('El certificado de estudios debe ser un booleano.'),
-    body('plaza_base').optional().isIn(['Temporal', 'Definitiva']).withMessage('El tipo de plaza debe ser "Temporal" o "Definitiva".'),
-  ],
-  trabajadorController.actualizarTrabajador
+router.post(
+  "/register-failed-attempt",
+  registrarIntentoFallido
 );
 
 /**
@@ -322,10 +334,13 @@ router.patch(
  *       type: http
  *       scheme: bearer
  *       bearerFormat: JWT
+ * 
  *   schemas:
  *     TrabajadorInput:
  *       type: object
  *       required:
+ *         - identificador
+ *         - password
  *         - nombre
  *         - apellido_paterno
  *         - fecha_nacimiento
@@ -342,6 +357,16 @@ router.patch(
  *         - adscripcion
  *         - id_seccion
  *       properties:
+ *         identificador:
+ *           type: string
+ *           example: "juan.perez"
+ *         password:
+ *           type: string
+ *           format: password
+ *           example: "password123"
+ *         rol:
+ *           type: string
+ *           enum: [ADMINISTRADOR, USUARIO]
  *         nombre:
  *           type: string
  *           example: "Juan"
@@ -358,7 +383,6 @@ router.patch(
  *         sexo:
  *           type: string
  *           enum: [M, F]
- *           example: "M"
  *         curp:
  *           type: string
  *           example: "PEGJ800101HDFRSN01"
@@ -371,7 +395,7 @@ router.patch(
  *           example: "juan.perez@example.com"
  *         situacion_sentimental:
  *           type: string
- *           enum: [soltero, casado, divorciado, viudo]
+ *           enum: [Soltero, Casado, Divorciado, Viudo, "Union Libre"]
  *         numero_hijos:
  *           type: integer
  *           minimum: 0
@@ -414,7 +438,205 @@ router.patch(
  *           type: boolean
  *         plaza_base:
  *           type: string
- *           example: "Temporal o Permanente"
+ *           enum: [Temporal, Definitiva]
+ * 
+ *     TrabajadorUpdateInput:
+ *       type: object
+ *       properties:
+ *         identificador:
+ *           type: string
+ *         password:
+ *           type: string
+ *         rol:
+ *           type: string
+ *           enum: [ADMINISTRADOR, USUARIO]
+ *         nombre:
+ *           type: string
+ *         apellido_paterno:
+ *           type: string
+ *         apellido_materno:
+ *           type: string
+ *         fecha_nacimiento:
+ *           type: string
+ *           format: date
+ *         sexo:
+ *           type: string
+ *           enum: [M, F]
+ *         curp:
+ *           type: string
+ *         rfc:
+ *           type: string
+ *         email:
+ *           type: string
+ *           format: email
+ *         situacion_sentimental:
+ *           type: string
+ *           enum: [Soltero, Casado, Divorciado, Viudo, "Union Libre"]
+ *         numero_hijos:
+ *           type: integer
+ *         numero_empleado:
+ *           type: string
+ *         numero_plaza:
+ *           type: string
+ *         fecha_ingreso:
+ *           type: string
+ *           format: date
+ *         fecha_ingreso_gobierno:
+ *           type: string
+ *           format: date
+ *         nivel_puesto:
+ *           type: string
+ *         nombre_puesto:
+ *           type: string
+ *         puesto_inpi:
+ *           type: string
+ *         adscripcion:
+ *           type: string
+ *         id_seccion:
+ *           type: integer
+ *         nivel_estudios:
+ *           type: string
+ *         institucion_estudios:
+ *           type: string
+ *         certificado_estudios:
+ *           type: boolean
+ *         plaza_base:
+ *           type: string
+ *           enum: [Temporal, Definitiva]
+ * 
+ *     TrabajadorOutput:
+ *       type: object
+ *       properties:
+ *         id_trabajador:
+ *           type: integer
+ *           readOnly: true
+ *         identificador:
+ *           type: string
+ *         rol:
+ *           type: string
+ *         nombre:
+ *           type: string
+ *         apellido_paterno:
+ *           type: string
+ *         apellido_materno:
+ *           type: string
+ *         fecha_nacimiento:
+ *           type: string
+ *           format: date
+ *         sexo:
+ *           type: string
+ *         curp:
+ *           type: string
+ *         rfc:
+ *           type: string
+ *         email:
+ *           type: string
+ *         situacion_sentimental:
+ *           type: string
+ *         numero_hijos:
+ *           type: integer
+ *         numero_empleado:
+ *           type: string
+ *         numero_plaza:
+ *           type: string
+ *         fecha_ingreso:
+ *           type: string
+ *           format: date
+ *         fecha_ingreso_gobierno:
+ *           type: string
+ *           format: date
+ *         nivel_puesto:
+ *           type: string
+ *         nombre_puesto:
+ *           type: string
+ *         puesto_inpi:
+ *           type: string
+ *         adscripcion:
+ *           type: string
+ *         id_seccion:
+ *           type: integer
+ *         nivel_estudios:
+ *           type: string
+ *         institucion_estudios:
+ *           type: string
+ *         certificado_estudios:
+ *           type: boolean
+ *         plaza_base:
+ *           type: string
+ *         ultimo_login:
+ *           type: string
+ *           format: date-time
+ *         intentos_fallidos:
+ *           type: integer
+ *         bloqueado:
+ *           type: boolean
+ * 
+ *     TrabajadorResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *         data:
+ *           $ref: '#/components/schemas/TrabajadorOutput'
+ * 
+ *     SuccessResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ * 
+ *   responses:
+ *     400Error:
+ *       description: Error de validación
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ *     401Error:
+ *       description: No autorizado
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ *     403Error:
+ *       description: Acceso prohibido
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ *     404Error:
+ *       description: Recurso no encontrado
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ *     409Error:
+ *       description: Conflicto de datos
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ *     500Error:
+ *       description: Error interno del servidor
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ * 
+ *     ApiError:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         error:
+ *           type: string
  */
 
 module.exports = router;

@@ -1,4 +1,3 @@
-// routes/hijosRoutes.js
 const express = require('express');
 const router = express.Router();
 const { check, param } = require('express-validator');
@@ -6,9 +5,9 @@ const path = require('path');
 const fs = require('fs');
 const { multerErrorHandler } = require('../middleware/multer-error-handler');
 const hijosController = require('../controllers/hijosController');
-const { verifyToken } = require('../middleware');
+const { authMiddleware, authorizationMiddleware } = require('../middleware');
 const { uploadActaNacimiento, TIPOS_DOCUMENTOS } = require('../config/multerConfig');
-
+const Roles = require('../enums/roles.enum');
 
 // Asegurar que el directorio para actas de nacimiento exista
 const actasDir = path.join(__dirname, '../uploads', TIPOS_DOCUMENTOS.ACTA_NACIMIENTO);
@@ -18,9 +17,178 @@ if (!fs.existsSync(actasDir)) {
 
 /**
  * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *   schemas:
+ *     Hijo:
+ *       type: object
+ *       properties:
+ *         id_hijo:
+ *           type: integer
+ *           description: Identificador único del hijo.
+ *           example: 1
+ *         nombre:
+ *           type: string
+ *           description: Nombre del hijo.
+ *           example: "Juan"
+ *         apellido_paterno:
+ *           type: string
+ *           description: Apellido paterno del hijo.
+ *           example: "Pérez"
+ *         apellido_materno:
+ *           type: string
+ *           description: Apellido materno del hijo.
+ *           example: "Gómez"
+ *         fecha_nacimiento:
+ *           type: string
+ *           format: date
+ *           description: Fecha de nacimiento del hijo en formato YYYY-MM-DD.
+ *           example: "2020-01-15"
+ *         vigente:
+ *           type: boolean
+ *           description: Indica si el registro del hijo está activo.
+ *           example: true
+ *         id_trabajador:
+ *           type: integer
+ *           description: ID del trabajador al que pertenece el hijo.
+ *           example: 101
+ * 
+ *     DocumentoHijo:
+ *       type: object
+ *       properties:
+ *         id_documento:
+ *           type: integer
+ *           description: ID del documento (acta de nacimiento).
+ *           example: 5
+ *         nombre_archivo:
+ *           type: string
+ *           description: Nombre original del archivo.
+ *           example: "acta_juan_perez.pdf"
+ *         tipo_documento:
+ *           type: string
+ *           description: Tipo de documento.
+ *           example: "ACTA_NACIMIENTO"
+ *         fecha_subida:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha y hora de subida del documento.
+ *           example: "2023-10-27T10:00:00.000Z"
+ *         ruta_almacenamiento:
+ *           type: string
+ *           description: Ruta donde se almacena el archivo.
+ *           example: "actas_nacimiento/unique-filename.pdf"
+ *         mimetype:
+ *           type: string
+ *           description: Tipo MIME del archivo.
+ *           example: "application/pdf"
+ *         tamano_bytes:
+ *           type: string
+ *           description: Tamaño del archivo en bytes (como string para manejar BigInt).
+ *           example: "102456"
+ * 
+ *     HijoWithDocumento:
+ *       allOf:
+ *         - $ref: '#/components/schemas/Hijo'
+ *         - type: object
+ *           properties:
+ *             documentos:
+ *               $ref: '#/components/schemas/DocumentoHijo'
+ * 
+ *     HijoResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: "Hijo y acta de nacimiento registrados exitosamente"
+ *         data:
+ *           type: object
+ *           properties:
+ *             hijo:
+ *               $ref: '#/components/schemas/Hijo'
+ *             documento:
+ *               $ref: '#/components/schemas/DocumentoHijo'
+ * 
+ *     ApiResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *         message:
+ *           type: string
+ * 
+ *     ApiError:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: false
+ *         message:
+ *           type: string
+ *           example: "Error interno del servidor"
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               msg:
+ *                 type: string
+ *                 example: "El nombre del hijo es obligatorio"
+ *               param:
+ *                 type: string
+ *                 example: "nombre"
+ *               location:
+ *                 type: string
+ *                 example: "body"
+ *               error:
+ *                 type: string
+ *                 example: "Detalles técnicos del error"
+ * 
+ *   responses:
+ *     400Error:
+ *       description: Error de validación o solicitud inválida.
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ *     401Error:
+ *       description: No autorizado - Token inválido o expirado.
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ *     403Error:
+ *       description: Acceso denegado - El usuario no tiene el rol o permiso requerido.
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ *     404Error:
+ *       description: Recurso no encontrado.
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ *     500Error:
+ *       description: Error interno del servidor.
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ApiError'
+ */
+
+/**
+ * @swagger
  * /hijos:
  *   post:
- *     summary: Registrar un nuevo hijo y subir su acta de nacimiento (solo en PDF)
+ *     summary: Registrar un nuevo hijo y subir su acta de nacimiento (solo para USUARIO)
+ *     description: Permite a un trabajador con rol 'USUARIO' registrar un nuevo hijo, incluyendo la subida de su acta de nacimiento. Automáticamente actualiza el contador 'numero_hijos' del trabajador.
  *     tags: [Hijos]
  *     security:
  *       - bearerAuth: []
@@ -31,17 +199,12 @@ if (!fs.existsSync(actasDir)) {
  *           schema:
  *             type: object
  *             required:
- *               - id_trabajador
  *               - nombre
  *               - apellido_paterno
  *               - apellido_materno
  *               - fecha_nacimiento
  *               - acta_nacimiento
  *             properties:
- *               id_trabajador:
- *                 type: integer
- *                 example: 123
- *                 description: ID del trabajador
  *               nombre:
  *                 type: string
  *                 example: "Juan"
@@ -71,7 +234,7 @@ if (!fs.existsSync(actasDir)) {
  *                 description: Archivo del acta de nacimiento (PDF, JPEG, PNG, WEBP)
  *     responses:
  *       201:
- *         description: Hijo registrado exitosamente
+ *         description: Hijo y acta de nacimiento registrados exitosamente.
  *         content:
  *           application/json:
  *             schema:
@@ -80,132 +243,27 @@ if (!fs.existsSync(actasDir)) {
  *         $ref: '#/components/responses/400Error'
  *       401:
  *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
  *       500:
  *         $ref: '#/components/responses/500Error'
  */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     HijoResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: true
- *         message:
- *           type: string
- *           example: "Hijo registrado exitosamente"
- *         data:
- *           type: object
- *           properties:
- *             hijo:
- *               $ref: '#/components/schemas/Hijo'
- *             documento:
- *               $ref: '#/components/schemas/Documento'
- *     
- *     Hijo:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           example: 1
- *         id_trabajador:
- *           type: integer
- *           example: 123
- *         nombre:
- *           type: string
- *           example: "Juan"
- *         apellido_paterno:
- *           type: string
- *           example: "Pérez"
- *         apellido_materno:
- *           type: string
- *           example: "Gómez"
- *         fecha_nacimiento:
- *           type: string
- *           format: date
- *           example: "2020-01-15"
- *     
- *     Documento:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           example: 15
- *         nombre_archivo:
- *           type: string
- *           example: "acta_nacimiento_juan.pdf"
- *         tipo:
- *           type: string
- *           example: "actas_nacimiento"
- *     
- *     Error:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: false
- *         message:
- *           type: string
- *           example: "Error en la validación de datos"
- *         error:
- *           type: object
- *           properties:
- *             code:
- *               type: integer
- *               example: 400
- *             details:
- *               type: array
- *               items:
- *                 type: string
- *               example: ["El archivo debe ser PDF, JPEG, PNG o WEBP"]
- *   
- *   responses:
- *     400Error:
- *       description: Error de validación o archivo faltante
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Error'
- *     401Error:
- *       description: No autorizado - Token inválido o expirado
- *     500Error:
- *       description: Error interno del servidor
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Error'
- *   
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- */
-
 router.post(
-    '/',
-    [
-        verifyToken,
-        uploadActaNacimiento.single('acta_nacimiento'), // Multer debe ir primero
-        multerErrorHandler,
-        check('id_trabajador').isInt().withMessage('ID del trabajador debe ser un número entero'),
-        check('nombre').trim().isLength({ min: 2, max: 100 }).withMessage('El nombre debe tener entre 2 y 100 caracteres'),
-        check('apellido_paterno').trim().isLength({ min: 2, max: 100 }).withMessage('El apellido paterno debe tener entre 2 y 100 caracteres'),
-        check('apellido_materno').trim().isLength({ min: 2, max: 100 }).withMessage('El apellido materno debe tener entre 2 y 100 caracteres'),
-        check('fecha_nacimiento').isISO8601().withMessage('La fecha de nacimiento debe estar en formatoYYYY-MM-DD')
-    ],
-    hijosController.registrarHijo
+  '/',
+  authMiddleware.verifyToken,
+  authorizationMiddleware.hasRole([Roles.USUARIO]),
+  uploadActaNacimiento.single('acta_nacimiento'),
+  multerErrorHandler,
+  hijosController.validarHijo,
+  hijosController.registrarHijo
 );
-
 
 /**
  * @swagger
  * /hijos/trabajador/{id_trabajador}:
  *   get:
- *     summary: Obtener la lista de hijos de un trabajador
+ *     summary: Obtener la lista de hijos de un trabajador (solo para ADMINISTRADOR)
+ *     description: Permite a un usuario con rol 'ADMINISTRADOR' obtener la lista de hijos de cualquier trabajador especificado por su ID.
  *     tags: [Hijos]
  *     security:
  *       - bearerAuth: []
@@ -215,10 +273,11 @@ router.post(
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del trabajador
+ *           example: 101
+ *         description: ID del trabajador del cual obtener los hijos.
  *     responses:
  *       200:
- *         description: Lista de hijos obtenida exitosamente
+ *         description: Lista de hijos obtenida exitosamente.
  *         content:
  *           application/json:
  *             schema:
@@ -230,57 +289,76 @@ router.post(
  *                 data:
  *                   type: array
  *                   items:
- *                     allOf:
- *                       - $ref: '#/components/schemas/Hijo'
- *                       - type: object
- *                         properties:
- *                           documentos:
- *                             type: object
- *                             properties:
- *                               id_documento:
- *                                 type: integer
- *                               nombre_archivo:
- *                                 type: string
- *                               tipo_documento:
- *                                 type: string
- *                               fecha_subida:
- *                                 type: string
- *                                 format: date-time
- *                               ruta_almacenamiento:
- *                                 type: string
+ *                     $ref: '#/components/schemas/HijoWithDocumento'
  *       400:
- *         description: ID del trabajador inválido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiError'
+ *         $ref: '#/components/responses/400Error'
  *       401:
- *         description: No autorizado - Token inválido o expirado
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
+ *       404:
+ *         $ref: '#/components/responses/404Error'
  *       500:
- *         description: Error del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiError'
+ *         $ref: '#/components/responses/500Error'
  */
-
-
 router.get(
   '/trabajador/:id_trabajador',
-  [
-    verifyToken,
-    param('id_trabajador').isInt().withMessage('ID del trabajador inválido')
-  ],
+  authMiddleware.verifyToken,
+  authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]),
+  param('id_trabajador').isInt().withMessage('ID del trabajador inválido'),
   hijosController.obtenerHijosPorTrabajador
 );
 
-
+/**
+ * @swagger
+ * /hijos:
+ *   get:
+ *     summary: Obtener los hijos del trabajador autenticado (solo para USUARIO)
+ *     description: Permite a un trabajador con rol 'USUARIO' obtener la lista de sus propios hijos.
+ *     tags: [Hijos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de hijos obtenida exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/HijoWithDocumento'
+ *       401:
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
+ *       404:
+ *         $ref: '#/components/responses/404Error'
+ *       500:
+ *         $ref: '#/components/responses/500Error'
+ */
+router.get(
+  '/',
+  authMiddleware.verifyToken,
+  authorizationMiddleware.hasRole([Roles.USUARIO]),
+  hijosController.obtenerHijosPorTrabajador
+);
 
 /**
  * @swagger
  * /hijos/{id_hijo}:
  *   put:
- *     summary: Actualizar información de un hijo
+ *     summary: Actualizar información de un hijo (USUARIO y ADMINISTRADOR)
+ *     description: |
+ *       Permite a un usuario con rol 'USUARIO' actualizar sus propios hijos.
+ *       Permite a un usuario con rol 'ADMINISTRADOR' actualizar cualquier hijo, pudiendo incluso reasignarlo a otro trabajador (incluyendo `id_trabajador` en el body).
+ *       Si se proporciona un nuevo archivo `acta_nacimiento`, el documento anterior asociado será reemplazado.
+ *       Automáticamente actualiza el contador 'numero_hijos' de los trabajadores afectados.
  *     tags: [Hijos]
  *     security:
  *       - bearerAuth: []
@@ -290,7 +368,8 @@ router.get(
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del hijo a actualizar
+ *           example: 1
+ *         description: ID del hijo a actualizar.
  *     requestBody:
  *       content:
  *         multipart/form-data:
@@ -299,82 +378,58 @@ router.get(
  *             properties:
  *               nombre:
  *                 type: string
- *                 description: Nombre del hijo
+ *                 description: Nuevo nombre del hijo.
+ *                 example: "Juan David"
  *               apellido_paterno:
  *                 type: string
- *                 description: Apellido paterno del hijo
+ *                 description: Nuevo apellido paterno.
+ *                 example: "González"
  *               apellido_materno:
  *                 type: string
- *                 description: Apellido materno del hijo
+ *                 description: Nuevo apellido materno.
+ *                 example: "Martínez"
  *               fecha_nacimiento:
  *                 type: string
  *                 format: date
- *                 description: Fecha de nacimiento (YYYY-MM-DD)
+ *                 description: Nueva fecha de nacimiento (YYYY-MM-DD).
+ *                 example: "2019-05-20"
  *               vigente:
  *                 type: boolean
- *                 description: Estado del registro (activo/inactivo)
+ *                 description: Estado de vigencia del hijo (true/false).
+ *                 example: false
+ *               id_trabajador:
+ *                 type: integer
+ *                 description: (Solo para ADMINISTRADORES) Nuevo ID del trabajador si se reasigna el hijo.
+ *                 example: 102
  *               acta_nacimiento:
  *                 type: string
  *                 format: binary
- *                 description: Nuevo archivo PDF del acta de nacimiento (opcional)
+ *                 description: Nuevo archivo del acta de nacimiento (PDF, JPEG, PNG, WEBP).
  *     responses:
  *       200:
- *         description: Hijo actualizado exitosamente
+ *         description: Hijo actualizado exitosamente.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiResponse'
+ *               $ref: '#/components/schemas/HijoResponse'
  *       400:
- *         description: Error de validación
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiError'
+ *         $ref: '#/components/responses/400Error'
  *       401:
- *         description: No autorizado - Token inválido o expirado
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
  *       404:
- *         description: Hijo no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiError'
+ *         $ref: '#/components/responses/404Error'
  *       500:
- *         description: Error del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiError'
+ *         $ref: '#/components/responses/500Error'
  */
 router.put(
   '/:id_hijo',
-  [
-    verifyToken,
-    param('id_hijo').isInt().withMessage('ID del hijo inválido'),
-    check('nombre')
-      .optional()
-      .trim()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Nombre debe tener entre 2 y 100 caracteres'),
-    check('apellido_paterno')
-      .optional()
-      .trim()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Apellido paterno debe tener entre 2 y 100 caracteres'),
-    check('apellido_materno')
-      .optional()
-      .trim()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Apellido materno debe tener entre 2 y 100 caracteres'),
-    check('fecha_nacimiento')
-      .optional()
-      .isDate()
-      .withMessage('Fecha de nacimiento inválida (formato YYYY-MM-DD)'),
-    check('vigente')
-      .optional()
-      .isBoolean()
-      .withMessage('El campo vigente debe ser un valor booleano')
-  ],
-  uploadActaNacimiento.single('acta_nacimiento'),  multerErrorHandler,
+  authMiddleware.verifyToken,
+  authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]),
+  uploadActaNacimiento.single('acta_nacimiento'),
+  multerErrorHandler,
+  param('id_hijo').isInt().withMessage('ID del hijo inválido'),
   hijosController.actualizarHijo
 );
 
@@ -382,7 +437,12 @@ router.put(
  * @swagger
  * /hijos/{id_hijo}:
  *   delete:
- *     summary: Eliminar un hijo (pemanente )
+ *     summary: Marcar un hijo como no vigente (eliminación lógica, para USUARIO y ADMINISTRADOR)
+ *     description: |
+ *       Permite a un usuario con rol 'USUARIO' marcar sus propios hijos como no vigentes.
+ *       Permite a un usuario con rol 'ADMINISTRADOR' marcar cualquier hijo como no vigente.
+ *       Esta es una eliminación lógica, estableciendo el campo `vigente` a `false`.
+ *       Automáticamente actualiza el contador 'numero_hijos' del trabajador afectado.
  *     tags: [Hijos]
  *     security:
  *       - bearerAuth: []
@@ -392,41 +452,47 @@ router.put(
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del hijo a eliminar
+ *           example: 1
+ *         description: ID del hijo a marcar como no vigente.
  *     responses:
  *       200:
- *         description: Hijo eliminado exitosamente (baja lógica)
+ *         description: Hijo marcado como no vigente exitosamente (baja lógica). El contador de hijos del trabajador ha sido actualizado.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiResponse'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Hijo marcado como no vigente exitosamente (eliminación lógica). El contador de hijos del trabajador ha sido actualizado."
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id_hijo:
+ *                       type: integer
+ *                       example: 1
+ *                     vigente:
+ *                       type: boolean
+ *                       example: false
  *       400:
- *         description: ID del hijo inválido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiError'
+ *         $ref: '#/components/responses/400Error'
  *       401:
- *         description: No autorizado - Token inválido o expirado
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
  *       404:
- *         description: Hijo no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiError'
+ *         $ref: '#/components/responses/404Error'
  *       500:
- *         description: Error del servidor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiError'
+ *         $ref: '#/components/responses/500Error'
  */
 router.delete(
   '/:id_hijo',
-  [
-    verifyToken,
-    param('id_hijo').isInt().withMessage('ID del hijo inválido')
-  ],
+  authMiddleware.verifyToken,
+  authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]),
+  param('id_hijo').isInt().withMessage('ID del hijo inválido'),
   hijosController.eliminarHijo
 );
 

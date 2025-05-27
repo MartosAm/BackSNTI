@@ -1,7 +1,11 @@
 // middleware/authorization.js
+const { rol_usuario } = require('@prisma/client');
 const Roles = require('../enums/roles.enum');
 
 const hasRole = (allowedRoles) => {
+
+const roles = rol_usuario
+
   if (!Array.isArray(allowedRoles)) {
     throw new Error('Los roles deben ser un array');
   }

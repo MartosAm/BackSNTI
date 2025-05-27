@@ -11,7 +11,6 @@ const { errorHandler } = require('./middleware');
 
 const indexRoutes = require('./routes'); // Aquí están agrupadas ya
 
-const userRoutes = require('./routes/userRoutes');
 const seccionRoutes = require('./routes/seccionRoutes'); // Ajusta la ruta si es necesario
 const documentoRoutes = require('./routes/documentoRoutes'); // Ajusta la ruta si es necesario
 const hijosRoutes = require('./routes/hijosRoutes'); // Ajusta la ruta si es necesario
@@ -20,7 +19,6 @@ const authRoutes = require('./routes/authRoutes'); // Ajusta la ruta si es neces
 
 
 
-const bootstrapRoutes = require('./routes/bootstrapRoutes');
 const trabajadorRoutes = require('./routes/trabajadorRoutes'); // Ajusta la ruta si es necesario
 const authMiddleware = require('./middleware/auth'); // Ajusta la ruta si es necesario
 
@@ -69,7 +67,6 @@ app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/bootstrap', bootstrapRoutes);
 
 // Documentación Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: true }));
@@ -78,7 +75,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { explorer: t
 app.use('/api', indexRoutes,);
 app.use('/api/auth', authRoutes); // Monta el enrutador con el prefijo /api/auth
 app.use('/trabajadores', trabajadorRoutes);
-app.use('/users',userRoutes); // Monta el enrutador con el prefijo /api/users
 app.use('/secciones', seccionRoutes); // Monta el enrutador con el prefijo /api/secciones
 app.use('/documentos', documentoRoutes); 
 app.use('/hijos', hijosRoutes); // Monta el enrutador con el prefijo /api/hijos
