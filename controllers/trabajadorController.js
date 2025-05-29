@@ -1,58 +1,180 @@
-// Este archivo contiene la lógica para manejar las operaciones CRUD de los trabajadores
-
+// controllers/trabajadorController.js
 const { PrismaClient } = require('@prisma/client');
-const { body, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
+const Roles = require('../enums/roles.enum'); // Asegúrate de que esta ruta sea correcta
 
-// Middleware para validar datos de entrada de un trabajador (POST y PUT)
+// --- Middleware para validar datos de entrada de un trabajador ---
+// Validaciones para campos que pueden ser opcionales en una actualización (PUT)
 const validarTrabajador = [
-    // Campos de autenticación
-    body('identificador').notEmpty().withMessage('El identificador es obligatorio')
+    body('identificador')
+        .optional()
         .isLength({ max: 150 }).withMessage('El identificador no puede exceder 150 caracteres'),
-    body('contraseña').optional().isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
-    body('rol').optional().isIn(['ADMINISTRADOR', 'USUARIO']).withMessage('Rol no válido'),
-
-    // Datos personales/laborales (mantienen las validaciones originales)
-    body('nombre').notEmpty().withMessage('El nombre es obligatorio').isLength({ max: 100 }),
-    body('apellido_paterno').notEmpty().withMessage('El apellido paterno es obligatorio').isLength({ max: 100 }),
-    body('apellido_materno').optional().isLength({ max: 100 }),
-    body('fecha_nacimiento').notEmpty().withMessage('La fecha de nacimiento es obligatoria')
-        .isISO8601().withMessage('Formato de fecha inválido (YYYY-MM-DD)'),
-    body('sexo').notEmpty().withMessage('El sexo es obligatorio')
-        .isIn(['M', 'F']).withMessage('Valor de sexo no válido'),
-    body('curp').notEmpty().withMessage('El CURP es obligatorio')
-        .isLength({ min: 18, max: 18 }).withMessage('El CURP debe tener 18 caracteres')
-        .matches(/^[A-Z]{4}\d{6}[HM][A-Z]{5}[0-9A-Z]\d$/).withMessage('Formato de CURP inválido'),
-    body('rfc').notEmpty().withMessage('El RFC es obligatorio')
-        .isLength({ min: 13, max: 13 }).withMessage('El RFC debe tener 13 caracteres')
-        .matches(/^[A-Z]{4}\d{6}[0-9A-Z]{3}$/).withMessage('Formato de RFC inválido'),
-    body('email').notEmpty().withMessage('El email es obligatorio')
-        .isEmail().withMessage('Formato de email inválido').isLength({ max: 150 }),
+    body('contraseña')
+        .optional()
+        .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
+    body('rol').optional().isIn([Roles.ADMINISTRADOR, Roles.USUARIO]).withMessage('Rol no válido. Debe ser ADMINISTRADOR o USUARIO.'),
+    body('nombre').optional().isLength({ max: 100 }).withMessage('El nombre no puede exceder 100 caracteres.'),
+    body('apellido_paterno').optional().isLength({ max: 100 }).withMessage('El apellido paterno no puede exceder 100 caracteres.'),
+    body('apellido_materno').optional().isLength({ max: 100 }).withMessage('El apellido materno no puede exceder 100 caracteres.'),
+    body('fecha_nacimiento').optional().isISO8601().withMessage('Formato de fecha de nacimiento inválido (YYYY-MM-DD).'),
+    body('sexo').optional().isIn(['M', 'F']).withMessage('Valor de sexo no válido. Debe ser M o F.'),
+    body('curp').optional()
+        .isLength({ min: 18, max: 18 }).withMessage('El CURP debe tener 18 caracteres.')
+        .matches(/^[A-Z]{4}\d{6}[HM][A-Z]{5}[0-9A-Z]\d$/).withMessage('Formato de CURP inválido.'),
+    body('rfc').optional()
+        .isLength({ min: 13, max: 13 }).withMessage('El RFC debe tener 13 caracteres.')
+        .matches(/^[A-Z]{4}\d{6}[0-9A-Z]{3}$/).withMessage('Formato de RFC inválido.'),
+    body('email').optional().isEmail().withMessage('Formato de email inválido.').isLength({ max: 150 }).withMessage('El email no puede exceder 150 caracteres.'),
     body('situacion_sentimental').optional()
-        .isIn(['Soltero', 'Casado', 'Divorciado', 'Viudo', 'Union Libre']).withMessage('Valor de situación sentimental no válido'),
-    body('numero_hijos').optional().isInt({ min: 0 }).withMessage('Número de hijos inválido'),
-    body('numero_empleado').notEmpty().withMessage('El número de empleado es obligatorio')
-        .isLength({ min: 10, max: 10 }).withMessage('El número de empleado debe tener 10 caracteres'),
-    body('numero_plaza').notEmpty().withMessage('El número de plaza es obligatorio')
-        .isLength({ min: 8, max: 8 }).withMessage('El número de plaza debe tener 8 caracteres'),
-    body('fecha_ingreso').notEmpty().withMessage('La fecha de ingreso es obligatoria')
-        .isISO8601().withMessage('Formato de fecha inválido (YYYY-MM-DD)'),
-    body('fecha_ingreso_gobierno').notEmpty().withMessage('La fecha de ingreso al gobierno es obligatoria')
-        .isISO8601().withMessage('Formato de fecha inválido (YYYY-MM-DD)'),
-    body('nivel_puesto').notEmpty().withMessage('El nivel de puesto es obligatorio').isLength({ max: 50 }),
-    body('nombre_puesto').notEmpty().withMessage('El nombre del puesto es obligatorio').isLength({ max: 100 }),
-    body('puesto_inpi').optional().isLength({ max: 100 }),
-    body('adscripcion').notEmpty().withMessage('La adscripción es obligatoria').isLength({ max: 100 }),
-    body('id_seccion').notEmpty().withMessage('La sección es obligatoria').isInt().withMessage('ID de sección inválido'),
-    body('nivel_estudios').optional().isLength({ max: 100 }),
-    body('institucion_estudios').optional().isLength({ max: 200 }),
-    body('certificado_estudios').optional().isBoolean().withMessage('Valor de certificado inválido'),
-    body('plaza_base').optional().isLength({ max: 10 })
+        .isIn(['Soltero', 'Casado', 'Divorciado', 'Viudo', 'Union Libre']).withMessage('Valor de situación sentimental no válido.'),
+    body('numero_hijos').optional().isInt({ min: 0 }).withMessage('Número de hijos inválido. Debe ser un número entero positivo.'),
+    body('numero_empleado').optional()
+        .isLength({ min: 10, max: 10 }).withMessage('El número de empleado debe tener 10 caracteres.'),
+    body('numero_plaza').optional()
+        .isLength({ min: 8, max: 8 }).withMessage('El número de plaza debe tener 8 caracteres.'),
+    body('fecha_ingreso').optional().isISO8601().withMessage('Formato de fecha de ingreso inválido (YYYY-MM-DD).'),
+    body('fecha_ingreso_gobierno').optional().isISO8601().withMessage('Formato de fecha de ingreso al gobierno inválido (YYYY-MM-DD).'),
+    body('nivel_puesto').optional().isLength({ max: 50 }).withMessage('El nivel de puesto no puede exceder 50 caracteres.'),
+    body('nombre_puesto').optional().isLength({ max: 100 }).withMessage('El nombre del puesto no puede exceder 100 caracteres.'),
+    body('puesto_inpi').optional().isLength({ max: 100 }).withMessage('El puesto INPI no puede exceder 100 caracteres.'),
+    body('adscripcion').optional().isLength({ max: 100 }).withMessage('La adscripción no puede exceder 100 caracteres.'),
+    body('id_seccion').optional().isInt().withMessage('ID de sección inválido. Debe ser un número entero.'),
+    body('nivel_estudios').optional().isLength({ max: 100 }).withMessage('El nivel de estudios no puede exceder 100 caracteres.'),
+    body('institucion_estudios').optional().isLength({ max: 200 }).withMessage('La institución de estudios no puede exceder 200 caracteres.'),
+    body('certificado_estudios').optional().isBoolean().withMessage('Valor de certificado inválido. Debe ser true o false.'),
+    body('plaza_base').optional().isLength({ max: 10 }).withMessage('La plaza base no puede exceder 10 caracteres.')
+];
+
+// Validaciones específicas para la creación de un trabajador (POST)
+const validarCreacionTrabajador = [
+    // Campos obligatorios para la creación
+    body('identificador').notEmpty().withMessage('El identificador es obligatorio.'),
+    body('contraseña').notEmpty().withMessage('La contraseña es obligatoria.').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
+    body('nombre').notEmpty().withMessage('El nombre es obligatorio.'),
+    body('apellido_paterno').notEmpty().withMessage('El apellido paterno es obligatorio.'),
+    body('fecha_nacimiento').notEmpty().withMessage('La fecha de nacimiento es obligatoria.'),
+    body('sexo').notEmpty().withMessage('El sexo es obligatorio.'),
+    body('curp').notEmpty().withMessage('El CURP es obligatorio.'),
+    body('rfc').notEmpty().withMessage('El RFC es obligatorio.'),
+    body('email').notEmpty().withMessage('El email es obligatorio.'),
+    body('numero_empleado').notEmpty().withMessage('El número de empleado es obligatorio.'),
+    body('numero_plaza').notEmpty().withMessage('El número de plaza es obligatorio.'),
+    body('fecha_ingreso').notEmpty().withMessage('La fecha de ingreso es obligatoria.'),
+    body('fecha_ingreso_gobierno').notEmpty().withMessage('La fecha de ingreso al gobierno es obligatoria.'),
+    body('nivel_puesto').notEmpty().withMessage('El nivel de puesto es obligatorio.'),
+    body('nombre_puesto').notEmpty().withMessage('El nombre del puesto es obligatorio.'),
+    body('adscripcion').notEmpty().withMessage('La adscripción es obligatoria.'),
+    body('id_seccion').notEmpty().withMessage('La sección es obligatoria.').isInt().withMessage('ID de sección inválido.'),
+    ...validarTrabajador // Combina con las validaciones de formato de los campos ya definidos
 ];
 
 /**
- * Crea un nuevo trabajador en el sistema (solo ADMINISTRADOR).
+ * Función auxiliar para verificar campos duplicados antes de crear o actualizar.
+ * @param {object} data - Objeto con los datos a verificar.
+ * @param {number} excludeId - ID del trabajador a excluir de la búsqueda (para el caso de actualización).
+ * @returns {Array<string>} - Un array de nombres de campos duplicados.
+ */
+const verificarDuplicados = async (data, excludeId = null) => {
+    const whereConditions = [];
+    if (data.identificador) whereConditions.push({ identificador: data.identificador });
+    if (data.curp) whereConditions.push({ curp: data.curp });
+    if (data.rfc) whereConditions.push({ rfc: data.rfc });
+    if (data.email) whereConditions.push({ email: data.email });
+    if (data.numero_empleado) whereConditions.push({ numero_empleado: data.numero_empleado });
+    if (data.numero_plaza) whereConditions.push({ numero_plaza: data.numero_plaza });
+
+    if (whereConditions.length === 0) {
+        return []; // No hay campos para verificar duplicados
+    }
+
+    const existente = await prisma.trabajadores.findFirst({
+        where: {
+            OR: whereConditions,
+            NOT: excludeId ? { id_trabajador: excludeId } : undefined, // Excluye el ID si se está actualizando
+        }
+    });
+
+    if (!existente) {
+        return [];
+    }
+
+    let camposDuplicados = [];
+    if (existente.identificador === data.identificador && data.identificador) camposDuplicados.push('Identificador');
+    if (existente.curp === data.curp && data.curp) camposDuplicados.push('CURP');
+    if (existente.rfc === data.rfc && data.rfc) camposDuplicados.push('RFC');
+    if (existente.email === data.email && data.email) camposDuplicados.push('Email');
+    if (existente.numero_empleado === data.numero_empleado && data.numero_empleado) camposDuplicados.push('Número de empleado');
+    if (existente.numero_plaza === data.numero_plaza && data.numero_plaza) camposDuplicados.push('Número de plaza');
+
+    return camposDuplicados;
+};
+
+
+/**
+ * @function listarTrabajadores
+ * @description Lista todos los trabajadores del sistema. Solo accesible para ADMINISTRADORES.
+ * @param {object} req - Objeto de solicitud de Express.
+ * @param {object} res - Objeto de respuesta de Express.
+ */
+const listarTrabajadores = async (req, res) => {
+    try {
+        const trabajadores = await prisma.trabajadores.findMany({
+            select: {
+                id_trabajador: true,
+                identificador: true,
+                rol: true,
+                nombre: true,
+                apellido_paterno: true,
+                apellido_materno: true,
+                fecha_nacimiento: true,
+                sexo: true,
+                curp: true,
+                rfc: true,
+                email: true,
+                situacion_sentimental: true,
+                numero_hijos: true,
+                numero_empleado: true,
+                numero_plaza: true,
+                fecha_ingreso: true,
+                fecha_ingreso_gobierno: true,
+                nivel_puesto: true,
+                nombre_puesto: true,
+                puesto_inpi: true,
+                adscripcion: true,
+                id_seccion: true,
+                nivel_estudios: true,
+                institucion_estudios: true,
+                certificado_estudios: true,
+                plaza_base: true,
+                fecha_creacion: true,
+                ultimo_login: true,
+                fecha_actualizacion: true,
+                // Incluir la relación de sección si es necesario mostrar el nombre de la sección, etc.
+                seccion: {
+                    select: {
+                        nombre_seccion: true // Ejemplo: selecciona el nombre de la sección
+                    }
+                }
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Lista de trabajadores obtenida exitosamente.',
+            data: trabajadores
+        });
+
+    } catch (error) {
+        console.error('Error al listar trabajadores:', error);
+        return res.status(500).json({ success: false, message: 'Error del servidor', error: error.message });
+    }
+};
+
+/**
+ * @function crearTrabajador
+ * @description Crea un nuevo trabajador en el sistema. Solo accesible para ADMINISTRADORES.
  * @param {object} req - Objeto de solicitud de Express.
  * @param {object} res - Objeto de respuesta de Express.
  */
@@ -72,56 +194,35 @@ const crearTrabajador = async (req, res) => {
             plaza_base
         } = req.body;
 
-        // Convertir fechas
+        // Verificar duplicados antes de la creación
+        const camposDuplicados = await verificarDuplicados({
+            identificador, curp, rfc, email, numero_empleado, numero_plaza
+        });
+
+        if (camposDuplicados.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: `Ya existe un trabajador con los siguientes datos: ${camposDuplicados.join(', ')}.`,
+                errors: [{ msg: `Los campos ${camposDuplicados.join(', ')} ya están registrados.` }]
+            });
+        }
+
+        // Convertir fechas (asegurarse de que el formato sea correcto para new Date())
         const fechaNacimientoDate = new Date(fecha_nacimiento);
         const fechaIngresoDate = new Date(fecha_ingreso);
         const fechaIngresoGobiernoDate = new Date(fecha_ingreso_gobierno);
 
-        // Verificar duplicados
-        const existente = await prisma.trabajadores.findFirst({
-            where: {
-                OR: [
-                    { identificador },
-                    { curp },
-                    { rfc },
-                    { email },
-                    { numero_empleado },
-                    { numero_plaza }
-                ]
-            }
-        });
-
-        if (existente) {
-            let camposDuplicados = [];
-            if (existente.identificador === identificador) camposDuplicados.push('Identificador');
-            if (existente.curp === curp) camposDuplicados.push('CURP');
-            if (existente.rfc === rfc) camposDuplicados.push('RFC');
-            if (existente.email === email) camposDuplicados.push('Email');
-            if (existente.numero_empleado === numero_empleado) camposDuplicados.push('Número de empleado');
-            if (existente.numero_plaza === numero_plaza) camposDuplicados.push('Número de plaza');
-
-            return res.status(409).json({
-                success: false,
-                message: `Ya existe un trabajador con los siguientes datos: ${camposDuplicados.join(', ')}`
-            });
-        }
-
-        // Encriptar contraseña si se proporciona
-        let contraseñaHash = null;
-        if (contraseña) {
-            const saltRounds = 12;
-            contraseñaHash = await bcrypt.hash(contraseña, saltRounds);
-        }
+        // Encriptar contraseña
+        const saltRounds = 12;
+        const contraseñaHash = await bcrypt.hash(contraseña, saltRounds);
 
         const nuevoTrabajador = await prisma.trabajadores.create({
             data: {
-                // Campos de autenticación
                 identificador,
                 contraseña_hash: contraseñaHash,
                 intentos_fallidos: 0,
                 bloqueado: false,
-                rol: rol || 'USUARIO', // Asigna 'USUARIO' por defecto si no se especifica
-                // Datos personales/laborales
+                rol: rol || Roles.USUARIO, // Asigna 'USUARIO' por defecto si no se especifica
                 nombre,
                 apellido_paterno,
                 apellido_materno,
@@ -131,7 +232,7 @@ const crearTrabajador = async (req, res) => {
                 rfc,
                 email,
                 situacion_sentimental,
-                numero_hijos: numero_hijos || 0,
+                numero_hijos: numero_hijos || 0, // Asegura un valor por defecto si es opcional en la entrada
                 numero_empleado,
                 numero_plaza,
                 fecha_ingreso: fechaIngresoDate,
@@ -140,45 +241,338 @@ const crearTrabajador = async (req, res) => {
                 nombre_puesto,
                 puesto_inpi,
                 adscripcion,
-                id_seccion,
+                // Conectar con la sección existente
+                seccion: {
+                    connect: {
+                        id_seccion: id_seccion
+                    }
+                },
                 nivel_estudios,
                 institucion_estudios,
                 certificado_estudios,
-                plaza_base
+                plaza_base,
+                fecha_actualizacion: new Date(), // Asignar fecha de creación/actualización
             }
         });
 
-        // Omitir contraseña_hash en la respuesta
+        // Omitir contraseña_hash en la respuesta por seguridad
         const { contraseña_hash, ...trabajadorSinPassword } = nuevoTrabajador;
 
         return res.status(201).json({
             success: true,
-            message: 'Trabajador creado exitosamente',
+            message: 'Trabajador creado exitosamente.',
             data: trabajadorSinPassword
         });
 
     } catch (error) {
         console.error('Error al crear el trabajador:', error);
-        return res.status(500).json({ success: false, message: 'Error del servidor', error: error.message });
+        // Manejo específico para errores de clave foránea (ej. id_seccion no existe)
+        if (error.code === 'P2025') { // Código de error de Prisma para "record not found" en `connect`
+            return res.status(400).json({ success: false, message: 'La sección especificada no existe.', error: error.message });
+        }
+        return res.status(500).json({ success: false, message: 'Error del servidor.', error: error.message });
     }
 };
 
 /**
- * Elimina un trabajador por su ID (solo ADMINISTRADOR).
- * @param {object} req - Objeto de solicitud de Express.
+ * @function miPerfil
+ * @description Obtiene el perfil del trabajador autenticado. Accesible para ADMINISTRADORES y USUARIOS.
+ * @param {object} req - Objeto de solicitud de Express (req.user contiene el ID del usuario autenticado).
+ * @param {object} res - Objeto de respuesta de Express.
+ */
+const miPerfil = async (req, res) => {
+    try {
+        const userId = req.user.id; // El ID del usuario se adjunta desde verifyToken
+
+        const trabajador = await prisma.trabajadores.findUnique({
+            where: {
+                id_trabajador: userId
+            },
+            select: {
+                id_trabajador: true,
+                identificador: true,
+                rol: true,
+                nombre: true,
+                apellido_paterno: true,
+                apellido_materno: true,
+                fecha_nacimiento: true,
+                sexo: true,
+                curp: true,
+                rfc: true,
+                email: true,
+                situacion_sentimental: true,
+                numero_hijos: true,
+                numero_empleado: true,
+                numero_plaza: true,
+                fecha_ingreso: true,
+                fecha_ingreso_gobierno: true,
+                nivel_puesto: true,
+                nombre_puesto: true,
+                puesto_inpi: true,
+                adscripcion: true,
+                id_seccion: true,
+                nivel_estudios: true,
+                institucion_estudios: true,
+                certificado_estudios: true,
+                plaza_base: true,
+                fecha_creacion: true,
+                ultimo_login: true,
+                fecha_actualizacion: true,
+                seccion: {
+                    select: {
+                        nombre_seccion: true
+                    }
+                }
+            }
+        });
+
+        if (!trabajador) {
+            return res.status(404).json({ success: false, message: 'Perfil de trabajador no encontrado.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Perfil de trabajador obtenido exitosamente.',
+            data: trabajador
+        });
+
+    } catch (error) {
+        console.error('Error al obtener el perfil del trabajador:', error);
+        return res.status(500).json({ success: false, message: 'Error del servidor.', error: error.message });
+    }
+};
+
+/**
+ * @function obtenerTrabajadorPorId
+ * @description Obtiene un trabajador por su ID. Solo accesible para ADMINISTRADORES.
+ * @param {object} req - Objeto de solicitud de Express (req.params.id).
+ * @param {object} res - Objeto de respuesta de Express.
+ */
+const obtenerTrabajadorPorId = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, message: 'Error de validación', errors: errors.array() });
+        }
+
+        const trabajadorId = parseInt(req.params.id);
+
+        const trabajador = await prisma.trabajadores.findUnique({
+            where: {
+                id_trabajador: trabajadorId
+            },
+            select: {
+                id_trabajador: true,
+                identificador: true,
+                rol: true,
+                nombre: true,
+                apellido_paterno: true,
+                apellido_materno: true,
+                fecha_nacimiento: true,
+                sexo: true,
+                curp: true,
+                rfc: true,
+                email: true,
+                situacion_sentimental: true,
+                numero_hijos: true,
+                numero_empleado: true,
+                numero_plaza: true,
+                fecha_ingreso: true,
+                fecha_ingreso_gobierno: true,
+                nivel_puesto: true,
+                nombre_puesto: true,
+                puesto_inpi: true,
+                adscripcion: true,
+                id_seccion: true,
+                nivel_estudios: true,
+                institucion_estudios: true,
+                certificado_estudios: true,
+                plaza_base: true,
+                fecha_creacion: true,
+                ultimo_login: true,
+                fecha_actualizacion: true,
+                seccion: {
+                    select: {
+                        nombre_seccion: true
+                    }
+                }
+            }
+        });
+
+        if (!trabajador) {
+            return res.status(404).json({ success: false, message: 'Trabajador no encontrado.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Trabajador obtenido exitosamente.',
+            data: trabajador
+        });
+
+    } catch (error) {
+        console.error('Error al obtener trabajador por ID:', error);
+        return res.status(500).json({ success: false, message: 'Error del servidor.', error: error.message });
+    }
+};
+
+/**
+ * @function actualizarTrabajador
+ * @description Actualiza completamente un trabajador por su ID. Solo accesible para ADMINISTRADORES.
+ * @param {object} req - Objeto de solicitud de Express (req.params.id, req.body).
+ * @param {object} res - Objeto de respuesta de Express.
+ */
+const actualizarTrabajador = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, message: 'Error de validación', errors: errors.array() });
+        }
+
+        const trabajadorId = parseInt(req.params.id);
+        const {
+            identificador, contraseña, rol,
+            nombre, apellido_paterno, apellido_materno, fecha_nacimiento, sexo, curp, rfc,
+            email, situacion_sentimental, numero_hijos, numero_empleado, numero_plaza,
+            fecha_ingreso, fecha_ingreso_gobierno, nivel_puesto, nombre_puesto, puesto_inpi,
+            adscripcion, id_seccion, nivel_estudios, institucion_estudios, certificado_estudios,
+            plaza_base
+        } = req.body;
+
+        const trabajadorExistente = await prisma.trabajadores.findUnique({
+            where: {
+                id_trabajador: trabajadorId
+            }
+        });
+
+        if (!trabajadorExistente) {
+            return res.status(404).json({ success: false, message: 'Trabajador no encontrado para actualizar.' });
+        }
+
+        // Verificar duplicados para campos que se están actualizando
+        const camposDuplicados = await verificarDuplicados({
+            identificador, curp, rfc, email, numero_empleado, numero_plaza
+        }, trabajadorId);
+
+        if (camposDuplicados.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: `Los siguientes datos ya existen para otro trabajador: ${camposDuplicados.join(', ')}.`,
+                errors: [{ msg: `Los campos ${camposDuplicados.join(', ')} ya están registrados.` }]
+            });
+        }
+
+        const dataToUpdate = {};
+
+        if (identificador !== undefined) dataToUpdate.identificador = identificador;
+        if (contraseña !== undefined) {
+            const saltRounds = 12;
+            dataToUpdate.contraseña_hash = await bcrypt.hash(contraseña, saltRounds);
+        }
+        if (rol !== undefined) dataToUpdate.rol = rol;
+        if (nombre !== undefined) dataToUpdate.nombre = nombre;
+        if (apellido_paterno !== undefined) dataToUpdate.apellido_paterno = apellido_paterno;
+        if (apellido_materno !== undefined) dataToUpdate.apellido_materno = apellido_materno;
+        if (fecha_nacimiento !== undefined) dataToUpdate.fecha_nacimiento = new Date(fecha_nacimiento);
+        if (sexo !== undefined) dataToUpdate.sexo = sexo;
+        if (curp !== undefined) dataToUpdate.curp = curp;
+        if (rfc !== undefined) dataToUpdate.rfc = rfc;
+        if (email !== undefined) dataToUpdate.email = email;
+        if (situacion_sentimental !== undefined) dataToUpdate.situacion_sentimental = situacion_sentimental;
+        if (numero_hijos !== undefined) dataToUpdate.numero_hijos = numero_hijos;
+        if (numero_empleado !== undefined) dataToUpdate.numero_empleado = numero_empleado;
+        if (numero_plaza !== undefined) dataToUpdate.numero_plaza = numero_plaza;
+        if (fecha_ingreso !== undefined) dataToUpdate.fecha_ingreso = new Date(fecha_ingreso);
+        if (fecha_ingreso_gobierno !== undefined) dataToUpdate.fecha_ingreso_gobierno = new Date(fecha_ingreso_gobierno);
+        if (nivel_puesto !== undefined) dataToUpdate.nivel_puesto = nivel_puesto;
+        if (nombre_puesto !== undefined) dataToUpdate.nombre_puesto = nombre_puesto;
+        if (puesto_inpi !== undefined) dataToUpdate.puesto_inpi = puesto_inpi;
+        if (adscripcion !== undefined) dataToUpdate.adscripcion = adscripcion;
+        if (id_seccion !== undefined) {
+            dataToUpdate.seccion = {
+                connect: {
+                    id_seccion: id_seccion
+                }
+            };
+        }
+        if (nivel_estudios !== undefined) dataToUpdate.nivel_estudios = nivel_estudios;
+        if (institucion_estudios !== undefined) dataToUpdate.institucion_estudios = institucion_estudios;
+        if (certificado_estudios !== undefined) dataToUpdate.certificado_estudios = certificado_estudios;
+        if (plaza_base !== undefined) dataToUpdate.plaza_base = plaza_base;
+
+        dataToUpdate.fecha_actualizacion = new Date(); // Actualizar la fecha de modificación
+
+        const trabajadorActualizado = await prisma.trabajadores.update({
+            where: {
+                id_trabajador: trabajadorId
+            },
+            data: dataToUpdate,
+            select: { // Selecciona los campos que quieres devolver
+                id_trabajador: true,
+                identificador: true,
+                rol: true,
+                nombre: true,
+                apellido_paterno: true,
+                apellido_materno: true,
+                fecha_nacimiento: true,
+                sexo: true,
+                curp: true,
+                rfc: true,
+                email: true,
+                situacion_sentimental: true,
+                numero_hijos: true,
+                numero_empleado: true,
+                numero_plaza: true,
+                fecha_ingreso: true,
+                fecha_ingreso_gobierno: true,
+                nivel_puesto: true,
+                nombre_puesto: true,
+                puesto_inpi: true,
+                adscripcion: true,
+                id_seccion: true,
+                nivel_estudios: true,
+                institucion_estudios: true,
+                certificado_estudios: true,
+                plaza_base: true,
+                fecha_creacion: true,
+                ultimo_login: true,
+                fecha_actualizacion: true,
+                seccion: {
+                    select: {
+                        nombre_seccion: true
+                    }
+                }
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Trabajador actualizado exitosamente.',
+            data: trabajadorActualizado
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar el trabajador:', error);
+        if (error.code === 'P2025') {
+            return res.status(400).json({ success: false, message: 'La sección especificada no existe.', error: error.message });
+        }
+        return res.status(500).json({ success: false, message: 'Error del servidor.', error: error.message });
+    }
+};
+
+/**
+ * @function eliminarTrabajador
+ * @description Elimina un trabajador por su ID. Solo accesible para ADMINISTRADORES.
+ * @param {object} req - Objeto de solicitud de Express (req.params.id).
  * @param {object} res - Objeto de respuesta de Express.
  */
 const eliminarTrabajador = async (req, res) => {
     try {
-        const { id } = req.params;
-
-        const trabajadorId = parseInt(id);
-        if (isNaN(trabajadorId)) {
-            return res.status(400).json({
-                success: false,
-                message: 'El ID del trabajador debe ser un número válido'
-            });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ success: false, message: 'Error de validación', errors: errors.array() });
         }
+
+        const trabajadorId = parseInt(req.params.id);
 
         const trabajadorExistente = await prisma.trabajadores.findUnique({
             where: {
@@ -189,7 +583,7 @@ const eliminarTrabajador = async (req, res) => {
         if (!trabajadorExistente) {
             return res.status(404).json({
                 success: false,
-                message: 'Trabajador no encontrado'
+                message: 'Trabajador no encontrado para eliminar.'
             });
         }
 
@@ -201,372 +595,68 @@ const eliminarTrabajador = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Trabajador eliminado exitosamente'
+            message: 'Trabajador eliminado exitosamente.'
         });
 
     } catch (error) {
-        if (error.code === 'P2003') {
-            return res.status(400).json({
-                success: false,
-                message: 'No se puede eliminar el trabajador porque está siendo utilizado en otras tablas (ej. permisos, sanciones)'
-            });
-        }
         console.error('Error al eliminar el trabajador:', error);
-        return res.status(500).json({ success: false, message: 'Error del servidor', error: error.message });
-    }
-};
-
-/**
- * Obtiene un trabajador por su ID (solo ADMINISTRADOR).
- * @param {object} req - Objeto de solicitud de Express.
- * @param {object} res - Objeto de respuesta de Express.
- */
-const obtenerTrabajadorPorId = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const trabajadorId = parseInt(id);
-
-        if (isNaN(trabajadorId)) {
+        if (error.code === 'P2003') { // ForeignKeyConstraintViolation
             return res.status(400).json({
                 success: false,
-                message: 'El ID del trabajador debe ser un número válido'
+                message: 'No se puede eliminar el trabajador porque tiene registros relacionados (ej. sanciones, permisos, hijos).',
+                error: error.message
             });
         }
-
-        const trabajador = await prisma.trabajadores.findUnique({
-            where: {
-                id_trabajador: trabajadorId
-            },
-            include: {
-                seccion: true,
-                sanciones: true,
-                trabajadores_cursos: true,
-                permisos: true, // Incluir permisos también
-                hijos: true
-            }
-        });
-
-        if (!trabajador) {
-            return res.status(404).json({
-                success: false,
-                message: 'Trabajador no encontrado'
-            });
-        }
-
-        // Omitir contraseña_hash en la respuesta
-        const { contraseña_hash, ...trabajadorSinPassword } = trabajador;
-
-        return res.status(200).json({
-            success: true,
-            data: trabajadorSinPassword
-        });
-
-    } catch (error) {
-        console.error('Error al obtener el trabajador:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error del servidor',
-            error: error.message
-        });
+        return res.status(500).json({ success: false, message: 'Error del servidor.', error: error.message });
     }
 };
 
-/**
- * Actualiza la información de un trabajador por su ID (solo ADMINISTRADOR).
- * @param {object} req - Objeto de solicitud de Express.
- * @param {object} res - Objeto de respuesta de Express.
- */
-const actualizarTrabajador = async (req, res) => {
-    const { id } = req.params;
-    const trabajadorId = parseInt(id);
-    const datosActualizar = req.body;
-
+// Funciones para actualizar el último login y registrar intentos fallidos (si se necesitan)
+// Estas funciones suelen ser internas o utilizadas por el controlador de autenticación
+const actualizarUltimoLogin = async (trabajadorId) => {
     try {
-        if (isNaN(trabajadorId)) {
-            return res.status(400).json({
-                success: false,
-                message: 'El ID del trabajador debe ser un número válido'
-            });
-        }
-
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Error de validación',
-                errors: errors.array()
-            });
-        }
-
-        // Verifica si el trabajador existe
-        const trabajadorExistente = await prisma.trabajadores.findUnique({
-            where: { id_trabajador: trabajadorId }
-        });
-
-        if (!trabajadorExistente) {
-            return res.status(404).json({
-                success: false,
-                message: `Trabajador con ID ${trabajadorId} no encontrado`
-            });
-        }
-
-        // Preparar datos para actualización
-        const datosParaActualizar = {};
-
-        // Campos de autenticación
-        if (datosActualizar.identificador !== undefined) {
-            datosParaActualizar.identificador = datosActualizar.identificador;
-        }
-
-        if (datosActualizar.contraseña !== undefined && datosActualizar.contraseña !== '') {
-            const saltRounds = 12;
-            datosParaActualizar.contraseña_hash = await bcrypt.hash(datosActualizar.contraseña, saltRounds);
-            datosParaActualizar.ultimo_cambio_password = new Date();
-        }
-
-        if (datosActualizar.rol !== undefined) {
-            datosParaActualizar.rol = datosActualizar.rol;
-        }
-
-        if (datosActualizar.bloqueado !== undefined) {
-            datosParaActualizar.bloqueado = datosActualizar.bloqueado;
-            if (!datosActualizar.bloqueado) {
-                datosParaActualizar.intentos_fallidos = 0;
-            }
-        }
-
-        // Datos personales/laborales
-        if (datosActualizar.nombre !== undefined) datosParaActualizar.nombre = datosActualizar.nombre;
-        if (datosActualizar.apellido_paterno !== undefined) datosParaActualizar.apellido_paterno = datosActualizar.apellido_paterno;
-        if (datosActualizar.apellido_materno !== undefined) datosParaActualizar.apellido_materno = datosActualizar.apellido_materno;
-        if (datosActualizar.fecha_nacimiento !== undefined) datosParaActualizar.fecha_nacimiento = new Date(datosActualizar.fecha_nacimiento);
-        if (datosActualizar.sexo !== undefined) datosParaActualizar.sexo = datosActualizar.sexo;
-        if (datosActualizar.curp !== undefined) datosParaActualizar.curp = datosActualizar.curp;
-        if (datosActualizar.rfc !== undefined) datosParaActualizar.rfc = datosActualizar.rfc;
-        if (datosActualizar.email !== undefined) datosParaActualizar.email = datosActualizar.email;
-        if (datosActualizar.situacion_sentimental !== undefined) datosParaActualizar.situacion_sentimental = datosActualizar.situacion_sentimental;
-        if (datosActualizar.numero_hijos !== undefined) datosParaActualizar.numero_hijos = datosActualizar.numero_hijos;
-        if (datosActualizar.numero_empleado !== undefined) datosParaActualizar.numero_empleado = datosActualizar.numero_empleado;
-        if (datosActualizar.numero_plaza !== undefined) datosParaActualizar.numero_plaza = datosActualizar.numero_plaza;
-        if (datosActualizar.fecha_ingreso !== undefined) datosParaActualizar.fecha_ingreso = new Date(datosActualizar.fecha_ingreso);
-        if (datosActualizar.fecha_ingreso_gobierno !== undefined) datosParaActualizar.fecha_ingreso_gobierno = new Date(datosActualizar.fecha_ingreso_gobierno);
-        if (datosActualizar.nivel_puesto !== undefined) datosParaActualizar.nivel_puesto = datosActualizar.nivel_puesto;
-        if (datosActualizar.nombre_puesto !== undefined) datosParaActualizar.nombre_puesto = datosActualizar.nombre_puesto;
-        if (datosActualizar.puesto_inpi !== undefined) datosParaActualizar.puesto_inpi = datosActualizar.puesto_inpi;
-        if (datosActualizar.adscripcion !== undefined) datosParaActualizar.adscripcion = datosActualizar.adscripcion;
-        if (datosActualizar.id_seccion !== undefined) datosParaActualizar.id_seccion = datosActualizar.id_seccion;
-        if (datosActualizar.nivel_estudios !== undefined) datosParaActualizar.nivel_estudios = datosActualizar.nivel_estudios;
-        if (datosActualizar.institucion_estudios !== undefined) datosParaActualizar.institucion_estudios = datosActualizar.institucion_estudios;
-        if (datosActualizar.certificado_estudios !== undefined) datosParaActualizar.certificado_estudios = datosActualizar.certificado_estudios;
-        if (datosActualizar.plaza_base !== undefined) datosParaActualizar.plaza_base = datosActualizar.plaza_base;
-
-        // Siempre actualizar fecha_actualizacion
-        datosParaActualizar.fecha_actualizacion = new Date();
-
-        const trabajadorActualizado = await prisma.trabajadores.update({
-            where: { id_trabajador: trabajadorId },
-            data: datosParaActualizar
-        });
-
-        // Omitir contraseña_hash en la respuesta
-        const { contraseña_hash, ...trabajadorSinPassword } = trabajadorActualizado;
-
-        return res.status(200).json({
-            success: true,
-            message: 'Trabajador actualizado exitosamente',
-            data: trabajadorSinPassword
-        });
-
-    } catch (error) {
-        if (error.code === 'P2002') {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe un trabajador con esos datos únicos (identificador, CURP, RFC, email, etc.)'
-            });
-        }
-        console.error('Error al actualizar el trabajador:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error del servidor',
-            error: error.message
-        });
-    }
-};
-
-/**
- * Obtiene la lista de todos los trabajadores (solo ADMINISTRADOR).
- * @param {object} req - Objeto de solicitud de Express.
- * @param {object} res - Objeto de respuesta de Express.
- */
-const listarTrabajadores = async (req, res) => {
-    try {
-        const trabajadores = await prisma.trabajadores.findMany({
-            select: { // Selecciona solo los campos necesarios y omite la contraseña
-                id_trabajador: true,
-                identificador: true,
-                rol: true,
-                nombre: true,
-                apellido_paterno: true,
-                apellido_materno: true,
-                email: true,
-                numero_empleado: true,
-                numero_plaza: true,
-                nombre_puesto: true,
-                adscripcion: true,
-                fecha_creacion: true,
-                bloqueado: true,
-                // Puedes incluir más campos si son necesarios para la lista
-            }
-        });
-        return res.status(200).json({
-            success: true,
-            data: trabajadores
-        });
-    } catch (error) {
-        console.error('Error al listar trabajadores:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error del servidor',
-            error: error.message
-        });
-    }
-};
-
-/**
- * Obtiene el perfil del trabajador autenticado (ADMINISTRADOR o USUARIO).
- * @param {object} req - Objeto de solicitud de Express (espera req.usuario.id_trabajador).
- * @param {object} res - Objeto de respuesta de Express.
- */
-const miPerfil = async (req, res) => {
-    try {
-        const id_trabajador = req.usuario.id_trabajador; // Viene del token JWT
-
-        const trabajador = await prisma.trabajadores.findUnique({
-            where: {
-                id_trabajador: id_trabajador
-            },
-            include: {
-                seccion: true,
-                sanciones: true,
-                trabajadores_cursos: true,
-                permisos: true,
-                hijos: true
-            }
-        });
-
-        if (!trabajador) {
-            return res.status(404).json({
-                success: false,
-                message: 'Perfil de trabajador no encontrado'
-            });
-        }
-
-        // Omitir contraseña_hash en la respuesta
-        const { contraseña_hash, ...trabajadorSinPassword } = trabajador;
-
-        return res.status(200).json({
-            success: true,
-            data: trabajadorSinPassword
-        });
-
-    } catch (error) {
-        console.error('Error al obtener mi perfil:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error del servidor',
-            error: error.message
-        });
-    }
-};
-
-// Función adicional para actualizar último login
-const actualizarUltimoLogin = async (req, res) => {
-    try {
-        const { id } = req.params; // Podría venir del token en lugar de params si es un login exitoso
-        const trabajadorId = parseInt(id);
-
-        if (isNaN(trabajadorId)) {
-            return res.status(400).json({
-                success: false,
-                message: 'El ID del trabajador debe ser un número válido'
-            });
-        }
-
         await prisma.trabajadores.update({
             where: { id_trabajador: trabajadorId },
-            data: {
-                ultimo_login: new Date(),
-                intentos_fallidos: 0
-            }
+            data: { ultimo_login: new Date() },
         });
-
-        return res.status(200).json({
-            success: true,
-            message: 'Último login actualizado exitosamente'
-        });
-
     } catch (error) {
         console.error('Error al actualizar último login:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error del servidor',
-            error: error.message
-        });
+        // Podrías loggear el error o manejarlo de otra forma, pero no se propaga a la respuesta del cliente
     }
 };
 
-// Función para manejar intentos fallidos de login
-const registrarIntentoFallido = async (req, res) => {
+const registrarIntentoFallido = async (identificador) => {
     try {
-        const { identificador } = req.body;
-
         const trabajador = await prisma.trabajadores.findUnique({
-            where: { identificador }
-        });
-
-        if (!trabajador) {
-            return res.status(404).json({
-                success: false,
-                message: 'Trabajador no encontrado'
-            });
-        }
-
-        const intentosFallidos = (trabajador.intentos_fallidos || 0) + 1;
-        const bloqueado = intentosFallidos >= 5; // Definir un umbral, por ejemplo, 5 intentos
-
-        await prisma.trabajadores.update({
             where: { identificador },
-            data: {
-                intentos_fallidos: intentosFallidos,
-                bloqueado: bloqueado
-            }
         });
 
-        // No se devuelve el trabajador completo, solo un mensaje de éxito o bloqueo
-        return res.status(200).json({
-            success: true,
-            message: `Intento de login fallido registrado. ${bloqueado ? 'Cuenta bloqueada.' : ''}`
-        });
-
+        if (trabajador) {
+            const intentos = (trabajador.intentos_fallidos || 0) + 1;
+            const bloqueado = intentos >= 5; // Ejemplo: bloquear después de 5 intentos
+            await prisma.trabajadores.update({
+                where: { identificador },
+                data: {
+                    intentos_fallidos: intentos,
+                    bloqueado: bloqueado,
+                },
+            });
+            return bloqueado;
+        }
+        return false;
     } catch (error) {
         console.error('Error al registrar intento fallido:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error del servidor',
-            error: error.message
-        });
+        return false;
     }
 };
-
 
 module.exports = {
     validarTrabajador,
+    validarCreacionTrabajador,
+    listarTrabajadores,
     crearTrabajador,
-    eliminarTrabajador,
+    miPerfil,
     obtenerTrabajadorPorId,
     actualizarTrabajador,
-    listarTrabajadores, // Nueva función
-    miPerfil,           // Nueva función
-    actualizarUltimoLogin,
-    registrarIntentoFallido
+    eliminarTrabajador,
 };

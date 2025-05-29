@@ -9,7 +9,7 @@ const swaggerUi = require('swagger-ui-express');
 const { PrismaClient } = require('@prisma/client');
 const { errorHandler } = require('./middleware');
 
-const indexRoutes = require('./routes'); // Aquí están agrupadas ya
+const indexRoutes = require('./routes'); // Aquí están agrupadas yaa
 
 const seccionRoutes = require('./routes/seccionRoutes'); // Ajusta la ruta si es necesario
 const documentoRoutes = require('./routes/documentoRoutes'); // Ajusta la ruta si es necesario

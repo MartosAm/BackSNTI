@@ -22,7 +22,7 @@ const sancionesRoutes = require('./sancionesRoutes');
 // o solo aplicarlo cuando sea necesario un rol específico.
 // Si quieres un hasRole general aquí, necesitarás ajustar el middleware para que no falle sin roles.
 
-router.use('/trabajadores', authMiddleware.verifyToken, trabajadorRoutes); // Primero verifica, luego la ruta
+router.use('/trabajadores', authMiddleware.verifyToken,authorizationMiddleware.hasRole, trabajadorRoutes); // Primero verifica, luego la ruta
 router.use('/secciones', authMiddleware.verifyToken, authorizationMiddleware.hasRole, seccionRoutes );
 router.use('/documentos', authMiddleware.verifyToken, authorizationMiddleware.hasRole, documentoRoutes);
 router.use('/hijos', authMiddleware.verifyToken, hijosRoutes);

@@ -15,7 +15,7 @@ model auditoria {
   datos_anteriores Json?
   datos_nuevos     Json?
   usuario          String    @db.VarChar(100)
-  fecha_registro   DateTime? @default(now()) @db.Timestamp(6)
+  fecha_regis8uiolp;'tro   DateTime? @default(now()) @db.Timestamp(6)
 }
 
 model cambiosadscripcion {
