@@ -7,6 +7,7 @@ const crypto = require('crypto'); // Para generar el hash del archivo
 const prisma = new PrismaClient();
 const Roles = require('../enums/roles.enum'); // Asegúrate de que la ruta sea correcta
 const { APROBACION_PERMISO_UPLOAD_DIR } = require('../config/multerPermisos'); // Importar la ruta de subida
+const { stat } = require('fs').promises; // Importa 'stat' desde fs.promises
 
 // --- Middleware para validar datos de entrada de un permiso ---
 const validarPermiso = [
@@ -95,7 +96,7 @@ const crearPermiso = async (req, res) => {
                 nombre_archivo: originalName,
                 descripcion: `Documento de aprobación para permiso de tipo "${tipo_permiso || 'N/A'}"`,
                 hash_archivo: hash_archivo,
-                ruta_almacenamiento: path.relative(path.join(__dirname, '..'), filePath), // Ruta relativa a la raíz del proyecto
+                ruta_almacenamiento: path.relative(path.join(__dirname, '..'), filePath).replace(/\\/g, '/'),
                 tamano_bytes: fileSize,
                 mimetype: mimetype,
                 es_publico: false // Los documentos de aprobación no suelen ser públicos
@@ -306,146 +307,6 @@ const consultarMiPermiso = async (req, res) => {
 };
 
 /**
- * @function actualizarPermiso
- * @description Actualiza un permiso existente por su ID. Solo accesible para ADMINISTRADORES.
- * @param {object} req - Objeto de solicitud de Express (req.params.id, req.body, req.file opcional).
- * @param {object} res - Objeto de respuesta de Express.
- */
-const actualizarPermiso = async (req, res) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            // Si hay errores de validación, elimina el archivo subido si existe
-            if (req.file) {
-                await fs.unlink(req.file.path);
-            }
-            return res.status(400).json({ success: false, message: 'Error de validación', errors: errors.array() });
-        }
-
-        const permisoId = parseInt(req.params.id);
-        const {
-            id_trabajador, // En la actualización, este no debería cambiar pero lo validamos
-            tipo_permiso,
-            fecha_inicio,
-            fecha_fin,
-            motivo,
-            estatus
-        } = req.body;
-
-        const permisoExistente = await prisma.permisos.findUnique({
-            where: { id_permiso: permisoId },
-            include: { documentos: true } // Incluir el documento para posible eliminación
-        });
-
-        if (!permisoExistente) {
-            if (req.file) { await fs.unlink(req.file.path); }
-            return res.status(404).json({ success: false, message: 'Permiso no encontrado para actualizar.' });
-        }
-
-        // Si se proporciona un nuevo archivo, se sube y se asocia
-        let documentoId = permisoExistente.documento_aprobacion_id;
-        let newDocumentoInfo = null;
-
-        if (req.file) {
-            // Eliminar el archivo anterior si existe
-            if (permisoExistente.documentos && permisoExistente.documentos.ruta_almacenamiento) {
-                const oldFilePath = path.join(__dirname, '..', permisoExistente.documentos.ruta_almacenamiento);
-                try {
-                    await fs.unlink(oldFilePath);
-                    // Eliminar el registro del documento anterior de la BD también
-                    await prisma.documentos.delete({
-                        where: { id_documento: permisoExistente.documentos.id_documento }
-                    });
-                } catch (unlinkError) {
-                    console.warn(`No se pudo eliminar el archivo antiguo ${oldFilePath}:`, unlinkError.message);
-                }
-            }
-
-            const filePath = req.file.path;
-            const originalName = req.file.originalname;
-            const fileSize = req.file.size;
-            const mimetype = req.file.mimetype;
-
-            const fileBuffer = await fs.readFile(filePath);
-            const hash_archivo = crypto.createHash('sha256').update(fileBuffer).digest('hex');
-
-            newDocumentoInfo = await prisma.documentos.create({
-                data: {
-                    id_trabajador: permisoExistente.id_trabajador, // El trabajador del permiso original
-                    tipo_documento: 'Aprobación Permiso',
-                    nombre_archivo: originalName,
-                    descripcion: `Documento de aprobación actualizado para permiso ID ${permisoId}`,
-                    hash_archivo: hash_archivo,
-                    ruta_almacenamiento: path.relative(path.join(__dirname, '..'), filePath),
-                    tamano_bytes: fileSize,
-                    mimetype: mimetype,
-                    es_publico: false
-                }
-            });
-            documentoId = newDocumentoInfo.id_documento;
-        }
-
-        const dataToUpdate = { fecha_actualizacion: new Date() };
-
-        if (tipo_permiso !== undefined) dataToUpdate.tipo_permiso = tipo_permiso;
-        if (fecha_inicio !== undefined) dataToUpdate.fecha_inicio = new Date(fecha_inicio);
-        if (fecha_fin !== undefined) dataToUpdate.fecha_fin = new Date(fecha_fin);
-        if (motivo !== undefined) dataToUpdate.motivo = motivo;
-        if (estatus !== undefined) dataToUpdate.estatus = estatus;
-        if (documentoId !== undefined) dataToUpdate.documento_aprobacion_id = documentoId;
-
-        // No permitir cambiar id_trabajador en la actualización de un permiso.
-        // Si se necesita reasignar un permiso, es mejor eliminar y crear uno nuevo o tener un endpoint específico para reasignación.
-        // Aquí solo se permite si el id_trabajador en el cuerpo es el mismo que el existente
-        if (id_trabajador !== undefined && parseInt(id_trabajador) !== permisoExistente.id_trabajador) {
-             // Opcional: podrías devolver un error si intentan cambiar el id_trabajador
-             // return res.status(400).json({ success: false, message: 'No se puede cambiar el ID del trabajador de un permiso existente.' });
-        }
-
-
-        const permisoActualizado = await prisma.permisos.update({
-            where: { id_permiso: permisoId },
-            data: dataToUpdate,
-            include: {
-                trabajadores: {
-                    select: {
-                        nombre: true,
-                        apellido_paterno: true,
-                        apellido_materno: true,
-                        identificador: true
-                    }
-                },
-                documentos: {
-                    select: {
-                        id_documento: true,
-                        nombre_archivo: true,
-                        ruta_almacenamiento: true,
-                        tipo_documento: true,
-                        fecha_subida: true
-                    }
-                }
-            }
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: 'Permiso actualizado exitosamente.',
-            data: permisoActualizado
-        });
-
-    } catch (error) {
-        console.error('Error al actualizar el permiso:', error);
-        if (req.file && await fs.access(req.file.path).then(() => true).catch(() => false)) {
-            await fs.unlink(req.file.path);
-        }
-        if (error.code === 'P2025') { // "Record not found" si el ID del trabajador en el cuerpo no existe
-            return res.status(400).json({ success: false, message: 'El ID del trabajador proporcionado no existe.', error: error.message });
-        }
-        return res.status(500).json({ success: false, message: 'Error del servidor.', error: error.message });
-    }
-};
-
-/**
  * @function eliminarPermiso
  * @description Elimina un permiso por su ID, incluyendo el archivo de aprobación asociado. Solo accesible para ADMINISTRADORES.
  * @param {object} req - Objeto de solicitud de Express (req.params.id).
@@ -586,7 +447,6 @@ module.exports = {
     listarPermisos,
     obtenerPermisosPorTrabajador,
     consultarMiPermiso,
-    actualizarPermiso,
     eliminarPermiso,
     descargarDocumentoPermiso
 };
