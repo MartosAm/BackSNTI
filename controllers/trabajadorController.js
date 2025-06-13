@@ -219,7 +219,7 @@ const crearTrabajador = async (req, res) => {
         const nuevoTrabajador = await prisma.trabajadores.create({
             data: {
                 identificador,
-                contraseña_hash: contraseñaHash,
+                password_hash: contraseñaHash,
                 intentos_fallidos: 0,
                 bloqueado: false,
                 rol: rol || Roles.USUARIO, // Asigna 'USUARIO' por defecto si no se especifica
@@ -255,8 +255,8 @@ const crearTrabajador = async (req, res) => {
             }
         });
 
-        // Omitir contraseña_hash en la respuesta por seguridad
-        const { contraseña_hash, ...trabajadorSinPassword } = nuevoTrabajador;
+        // Omitir password_hash _hash en la respuesta por seguridad
+        const { password_hash , ...trabajadorSinPassword } = nuevoTrabajador;
 
         return res.status(201).json({
             success: true,
@@ -466,7 +466,7 @@ const actualizarTrabajador = async (req, res) => {
         if (identificador !== undefined) dataToUpdate.identificador = identificador;
         if (contraseña !== undefined) {
             const saltRounds = 12;
-            dataToUpdate.contraseña_hash = await bcrypt.hash(contraseña, saltRounds);
+            dataToUpdate.password_hash  = await bcrypt.hash(contraseña, saltRounds);
         }
         if (rol !== undefined) dataToUpdate.rol = rol;
         if (nombre !== undefined) dataToUpdate.nombre = nombre;

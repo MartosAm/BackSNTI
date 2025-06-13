@@ -23,7 +23,7 @@ const sancionesRoutes = require('./sancionesRoutes');
 // Si quieres un hasRole general aquí, necesitarás ajustar el middleware para que no falle sin roles.
 
 router.use('/trabajadores', authMiddleware.verifyToken,authorizationMiddleware.hasRole, trabajadorRoutes); // Primero verifica, luego la ruta
-router.use('/secciones', authMiddleware.verifyToken, authorizationMiddleware.hasRole, seccionRoutes );
+router.use('/secciones', authMiddleware.verifyToken, authorizationMiddleware.hasRole, seccionRoutes); // Si necesitas subir archivos, multer se encarga de eso aquí
 router.use('/documentos', authMiddleware.verifyToken, authorizationMiddleware.hasRole, documentoRoutes);
 router.use('/hijos', authMiddleware.verifyToken, hijosRoutes);
 router.use('/permisos', authMiddleware.verifyToken, authorizationMiddleware.hasRole, permisosRoutes); // Si tienes un enrutador de permisos

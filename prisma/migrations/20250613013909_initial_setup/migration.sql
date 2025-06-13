@@ -1,8 +1,20 @@
 -- CreateEnum
-CREATE TYPE "rol_usuario" AS ENUM ('ADMINISTRADOR', 'USUARIO');
+CREATE TYPE "TipoDocumento" AS ENUM ('ACTA_NACIMIENTO', 'APROBACION_PERMISO', 'CERTIFICADO_CURSO', 'CERTIFICADO_ESTUDIO', 'CONSTANCIA_DOCUMENTOS_COMPROBATORIOS', 'CONSTANCIA_NOMBRAMIENTO', 'CONSTANCIA_RECONOCIMIENTO', 'CURP', 'INE', 'OFICIO', 'RFC', 'OTRO_DOCUMENTO');
 
 -- CreateEnum
-CREATE TYPE "estatus_permiso" AS ENUM ('Pendiente', 'Aprobado', 'Denegado');
+CREATE TYPE "Roles" AS ENUM ('ADMINISTRADOR', 'USUARIO');
+
+-- CreateEnum
+CREATE TYPE "estatus_permiso" AS ENUM ('Pendiente', 'Aprobado', 'Denegado', 'NoSolicitado');
+
+-- CreateEnum
+CREATE TYPE "SituacionSentimental" AS ENUM ('Soltero', 'Casado', 'Divorciado', 'Viudo', 'UnionLibre');
+
+-- CreateEnum
+CREATE TYPE "Sexo" AS ENUM ('M', 'F');
+
+-- CreateEnum
+CREATE TYPE "EstadosMexico" AS ENUM ('AGUASCALIENTES', 'BAJA_CALIFORNIA', 'BAJA_CALIFORNIA_SUR', 'CAMPECHE', 'CHIAPAS', 'CHIHUAHUA', 'CIUDAD_DE_MEXICO', 'COAHUILA', 'COLIMA', 'DURANGO', 'ESTADO_DE_MEXICO', 'GUANAJUATO', 'GUERRERO', 'HIDALGO', 'JALISCO', 'MICHOACAN', 'MORELOS', 'NAYARIT', 'NUEVO_LEON', 'OAXACA', 'PUEBLA', 'QUERETARO', 'QUINTANA_ROO', 'SAN_LUIS_POTOSI', 'SINALOA', 'SONORA', 'TABASCO', 'TAMAULIPAS', 'TLAXCALA', 'VERACRUZ', 'YUCATAN', 'ZACATECAS');
 
 -- CreateTable
 CREATE TABLE "auditoria" (
@@ -27,6 +39,10 @@ CREATE TABLE "cambiosadscripcion" (
     "fecha_cambio" DATE NOT NULL,
     "motivo" TEXT NOT NULL,
     "documento_respaldo_id" INTEGER,
+    "constancia_documentos_comprobatorios" TEXT,
+    "constancia_nombramiento_personal" TEXT,
+    "tipo_documento_comprobatorios" "TipoDocumento",
+    "tipo_documento_nombramiento" "TipoDocumento",
     "usuario_registro" VARCHAR(100) DEFAULT CURRENT_USER,
     "fecha_registro" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
 
@@ -40,6 +56,8 @@ CREATE TABLE "cursos" (
     "nombre_curso" VARCHAR(255) NOT NULL,
     "horas_duracion" INTEGER NOT NULL,
     "estatus" VARCHAR(20) DEFAULT 'En curso',
+    "constancia_reconocimiento_oficio" TEXT,
+    "tipo_documento_curso" "TipoDocumento",
 
     CONSTRAINT "cursos_pkey" PRIMARY KEY ("id_curso")
 );
@@ -110,8 +128,10 @@ CREATE TABLE "sanciones" (
 -- CreateTable
 CREATE TABLE "secciones" (
     "id_seccion" SERIAL NOT NULL,
-    "nombre_seccion" VARCHAR(100) NOT NULL,
-    "descripcion" TEXT,
+    "numero_seccion" INTEGER NOT NULL,
+    "estado" "EstadosMexico" NOT NULL,
+    "ubicacion" VARCHAR(255) NOT NULL,
+    "secretario" VARCHAR(255),
 
     CONSTRAINT "secciones_pkey" PRIMARY KEY ("id_seccion")
 );
@@ -120,22 +140,22 @@ CREATE TABLE "secciones" (
 CREATE TABLE "trabajadores" (
     "id_trabajador" SERIAL NOT NULL,
     "identificador" VARCHAR(150) NOT NULL,
-    "contraseña_hash" VARCHAR(255) NOT NULL,
+    "password_hash" VARCHAR(255) NOT NULL,
     "intentos_fallidos" INTEGER DEFAULT 0,
     "bloqueado" BOOLEAN DEFAULT false,
     "fecha_creacion" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "ultimo_login" TIMESTAMP(6),
     "ultimo_cambio_password" TIMESTAMP(6),
-    "rol" "rol_usuario" NOT NULL DEFAULT 'USUARIO',
+    "rol" "Roles" NOT NULL DEFAULT 'USUARIO',
     "nombre" VARCHAR(100) NOT NULL,
     "apellido_paterno" VARCHAR(100) NOT NULL,
     "apellido_materno" VARCHAR(100),
     "fecha_nacimiento" DATE NOT NULL,
-    "sexo" CHAR(1) NOT NULL,
+    "sexo" "Sexo" NOT NULL,
     "curp" CHAR(18) NOT NULL,
     "rfc" CHAR(13) NOT NULL,
     "email" VARCHAR(150) NOT NULL,
-    "situacion_sentimental" VARCHAR(20),
+    "situacion_sentimental" "SituacionSentimental",
     "numero_hijos" INTEGER NOT NULL DEFAULT 0,
     "numero_empleado" CHAR(10) NOT NULL,
     "numero_plaza" CHAR(8) NOT NULL,
@@ -165,8 +185,34 @@ CREATE TABLE "trabajadores_cursos" (
     "completado" BOOLEAN DEFAULT false,
     "fecha_completado" DATE,
     "certificado_id" INTEGER,
+    "documento_invitacion" TEXT,
+    "documento_conclusion" TEXT,
+    "tipo_documento_invitacion" "TipoDocumento",
+    "tipo_documento_conclusion" "TipoDocumento",
 
     CONSTRAINT "trabajadores_cursos_pkey" PRIMARY KEY ("id_trabajador_curso")
+);
+
+-- CreateTable
+CREATE TABLE "galeria" (
+    "id_imagen" SERIAL NOT NULL,
+    "nombre_imagen" VARCHAR(255) NOT NULL,
+    "ruta_imagen" TEXT NOT NULL,
+    "tipo_imagen" VARCHAR(50) NOT NULL,
+    "tamano_bytes" BIGINT NOT NULL,
+    "es_activa" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "galeria_pkey" PRIMARY KEY ("id_imagen")
+);
+
+-- CreateTable
+CREATE TABLE "contactos" (
+    "id_contacto" SERIAL NOT NULL,
+    "ocupacion" VARCHAR(100) NOT NULL,
+    "nombre" VARCHAR(150) NOT NULL,
+    "correo" TEXT NOT NULL,
+
+    CONSTRAINT "contactos_pkey" PRIMARY KEY ("id_contacto")
 );
 
 -- CreateIndex
@@ -174,6 +220,9 @@ CREATE UNIQUE INDEX "cursos_codigo_curso_key" ON "cursos"("codigo_curso");
 
 -- CreateIndex
 CREATE INDEX "idx_documentos_tipo" ON "documentos"("tipo_documento");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "secciones_numero_seccion_key" ON "secciones"("numero_seccion");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "trabajadores_identificador_key" ON "trabajadores"("identificador");
@@ -199,14 +248,29 @@ CREATE INDEX "idx_trabajadores_identificador" ON "trabajadores"("identificador")
 -- CreateIndex
 CREATE UNIQUE INDEX "trabajadores_cursos_unique" ON "trabajadores_cursos"("id_trabajador", "id_curso");
 
+-- CreateIndex
+CREATE INDEX "idx_galeria_activa" ON "galeria"("es_activa");
+
 -- AddForeignKey
 ALTER TABLE "cambiosadscripcion" ADD CONSTRAINT "cambiosadscripcion_documento_respaldo_id_fkey" FOREIGN KEY ("documento_respaldo_id") REFERENCES "documentos"("id_documento") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "cambiosadscripcion" ADD CONSTRAINT "cambiosadscripcion_id_trabajador_fkey" FOREIGN KEY ("id_trabajador") REFERENCES "trabajadores"("id_trabajador") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "documentos" ADD CONSTRAINT "documentos_id_trabajador_fkey" FOREIGN KEY ("id_trabajador") REFERENCES "trabajadores"("id_trabajador") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "hijos" ADD CONSTRAINT "hijos_id_trabajador_fkey" FOREIGN KEY ("id_trabajador") REFERENCES "trabajadores"("id_trabajador") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "hijos" ADD CONSTRAINT "hijos_acta_nacimiento_id_fkey" FOREIGN KEY ("acta_nacimiento_id") REFERENCES "documentos"("id_documento") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "permisos" ADD CONSTRAINT "permisos_documento_aprobacion_id_fkey" FOREIGN KEY ("documento_aprobacion_id") REFERENCES "documentos"("id_documento") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "permisos" ADD CONSTRAINT "permisos_id_trabajador_fkey" FOREIGN KEY ("id_trabajador") REFERENCES "trabajadores"("id_trabajador") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "sanciones" ADD CONSTRAINT "sanciones_id_trabajador_fkey" FOREIGN KEY ("id_trabajador") REFERENCES "trabajadores"("id_trabajador") ON DELETE CASCADE ON UPDATE NO ACTION;
