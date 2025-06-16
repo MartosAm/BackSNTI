@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const Roles = require('../enums/roles.enum'); // Agrega esto arriba
+
 const { authMiddleware, authorizationMiddleware } = require('../middleware');
 
 // Importa los enrutadores de las diferentes rutas
@@ -12,7 +14,7 @@ const documentoRoutes = require('./documentoRoutes');
 const hijosRoutes = require('./hijosRoutes');
 const permisosRoutes = require('./permisosRoutes'); 
 const sancionesRoutes = require('./sancionesRoutes'); 
-
+const contactosRoutes = require('./contactosRoutes'); 
 
 
 
@@ -22,13 +24,12 @@ const sancionesRoutes = require('./sancionesRoutes');
 // o solo aplicarlo cuando sea necesario un rol específico.
 // Si quieres un hasRole general aquí, necesitarás ajustar el middleware para que no falle sin roles.
 
-router.use('/trabajadores', authMiddleware.verifyToken,authorizationMiddleware.hasRole, trabajadorRoutes); // Primero verifica, luego la ruta
-router.use('/secciones', authMiddleware.verifyToken, authorizationMiddleware.hasRole, seccionRoutes); // Si necesitas subir archivos, multer se encarga de eso aquí
-router.use('/documentos', authMiddleware.verifyToken, authorizationMiddleware.hasRole, documentoRoutes);
-router.use('/hijos', authMiddleware.verifyToken, hijosRoutes);
-router.use('/permisos', authMiddleware.verifyToken, authorizationMiddleware.hasRole, permisosRoutes); // Si tienes un enrutador de permisos
-router.use('/sanciones', authMiddleware.verifyToken, authorizationMiddleware.hasRole, sancionesRoutes); // Si tienes un enrutador de sanciones
-
+router.use('/trabajadores', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]), trabajadorRoutes);
+router.use('/secciones', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]), seccionRoutes);
+router.use('/documentos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), documentoRoutes);
+router.use('/permisos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]), permisosRoutes);
+router.use('/sanciones', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]), sancionesRoutes);
+router.use('/contactos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]), contactosRoutes);
 // Las rutas de autenticación (login, test-token, etc.) NO llevan authMiddleware.verifyToken globalmente aquí.
 // Si alguna ruta dentro de authRoutes (como /auth/verify o /auth/logout) necesita token,
 // ESE middleware debe estar definido DENTRO de authRoutes.js para esa ruta específica.

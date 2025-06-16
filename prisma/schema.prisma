@@ -19,35 +19,47 @@ model auditoria {
 }
 
 model cambiosadscripcion {
-  id_cambio                           Int         @id @default(autoincrement())
+  id_cambio                           Int           @id @default(autoincrement())
   id_trabajador                       Int
-  adscripcion_anterior                String      @db.VarChar(100)
-  adscripcion_nueva                   String      @db.VarChar(100)
-  fecha_cambio                        DateTime    @db.Date
+  adscripcion_anterior                String        @db.VarChar(100)
+  adscripcion_nueva                   String        @db.VarChar(100)
+  fecha_cambio                        DateTime      @db.Date
   motivo                              String
-  documento_respaldo_id               Int?
-  // Nuevos campos para archivos
-  constancia_documentos_comprobatorios String?    @db.Text // Ruta del archivo
-  constancia_nombramiento_personal     String?    @db.Text // Ruta del archivo
-  tipo_documento_comprobatorios        TipoDocumento? // Enum para el tipo de documento
-  tipo_documento_nombramiento          TipoDocumento? // Enum para el tipo de documento
-  usuario_registro                     String?     @default(dbgenerated("CURRENT_USER")) @db.VarChar(100)
-  fecha_registro                       DateTime?   @default(now()) @db.Timestamp(6)
-  documentos                           documentos? @relation(fields: [documento_respaldo_id], references: [id_documento], onDelete: NoAction, onUpdate: NoAction)
-  trabajadores                         trabajadores @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
+
+  // Relaciones a documentos (reemplazan rutas)
+  documento_comprobatorio_id         Int?
+  documento_nombramiento_id          Int?
+
+  documentoComprobatorio             documentos?    @relation("ComprobatorioCambioAdscripcion", fields: [documento_comprobatorio_id], references: [id_documento])
+  documentoNombramiento              documentos?    @relation("NombramientoCambioAdscripcion", fields: [documento_nombramiento_id], references: [id_documento])
+
+  tipo_documento_comprobatorios      TipoDocumento?
+  tipo_documento_nombramiento        TipoDocumento?
+
+  usuario_registro                   String?        @default(dbgenerated("CURRENT_USER")) @db.VarChar(100)
+  fecha_registro                     DateTime?      @default(now()) @db.Timestamp(6)
+
+  trabajadores                       trabajadores   @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
 }
 
+
 model cursos {
-  id_curso                          Int                   @id @default(autoincrement())
-  codigo_curso                      String                @unique @db.VarChar(20)
-  nombre_curso                      String                @db.VarChar(255)
-  horas_duracion                    Int
-  estatus                           String?               @default("En curso") @db.VarChar(20)
-  // Nuevos campos para archivos
-  constancia_reconocimiento_oficio  String?               @db.Text // Ruta del archivo
-  tipo_documento_curso              TipoDocumento?        // Enum para el tipo de documento
-  trabajadores_cursos               trabajadores_cursos[]
+  id_curso                    Int                   @id @default(autoincrement())
+  codigo_curso                String                @unique @db.VarChar(20)
+  nombre_curso                String                @db.VarChar(255)
+  horas_duracion              Int
+  estatus                     String?               @default("En curso") @db.VarChar(20)
+
+  // Nueva relación a tabla de documentos
+  documento_constancia_id     Int?
+  documentoConstancia         documentos? @relation(fields: [documento_constancia_id], references: [id_documento], onDelete: NoAction, onUpdate: NoAction)
+
+  // Opcional si quieres reforzar el tipo
+  tipo_documento_curso        TipoDocumento?
+
+  trabajadores_cursos         trabajadores_cursos[]
 }
+
 
 model documentos {
   id_documento          Int                   @id @default(autoincrement())
@@ -184,25 +196,32 @@ model trabajadores {
 }
 
 model trabajadores_cursos {
-  id_trabajador_curso       Int          @id @default(autoincrement())
-  id_trabajador             Int
-  id_curso                  Int
-  fecha_inscripcion         DateTime     @default(dbgenerated("CURRENT_DATE")) @db.Date
-  calificacion              Decimal?     @db.Decimal(5, 2)
-  completado                Boolean?     @default(false)
-  fecha_completado          DateTime?    @db.Date
-  certificado_id            Int?
-  // Nuevos campos para archivos
-  documento_invitacion      String?      @db.Text // Ruta del archivo de invitación
-  documento_conclusion      String?      @db.Text // Ruta del documento de conclusión
-  tipo_documento_invitacion TipoDocumento? // Enum para el tipo de documento
-  tipo_documento_conclusion TipoDocumento? // Enum para el tipo de documento
-  documentos                documentos?  @relation(fields: [certificado_id], references: [id_documento], onDelete: NoAction, onUpdate: NoAction)
-  cursos                    cursos       @relation(fields: [id_curso], references: [id_curso], onDelete: Cascade)
-  trabajadores              trabajadores @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
+  id_trabajador_curso         Int           @id @default(autoincrement())
+  id_trabajador               Int
+  id_curso                    Int
+  fecha_inscripcion           DateTime      @default(dbgenerated("CURRENT_DATE")) @db.Date
+  calificacion                Decimal?      @db.Decimal(5, 2)
+  completado                  Boolean?      @default(false)
+  fecha_completado            DateTime?     @db.Date
+
+  // Relaciones a documentos
+  documento_certificado_id    Int?
+  documento_invitacion_id     Int?
+  documento_conclusion_id     Int?
+
+  documentoCertificado        documentos?   @relation("CertificadoCurso", fields: [documento_certificado_id], references: [id_documento])
+  documentoInvitacion         documentos?   @relation("InvitacionCurso", fields: [documento_invitacion_id], references: [id_documento])
+  documentoConclusion         documentos?   @relation("ConclusionCurso", fields: [documento_conclusion_id], references: [id_documento])
+
+  tipo_documento_invitacion   TipoDocumento?
+  tipo_documento_conclusion   TipoDocumento?
+
+  cursos                      cursos        @relation(fields: [id_curso], references: [id_curso], onDelete: Cascade)
+  trabajadores                trabajadores  @relation(fields: [id_trabajador], references: [id_trabajador], onDelete: Cascade)
 
   @@unique([id_trabajador, id_curso], name: "trabajadores_cursos_unique", map: "trabajadores_cursos_unique")
 }
+
 
 // Nueva tabla: Galería para imágenes
 model galeria {
@@ -226,19 +245,36 @@ model contactos {
 
 // Enum para tipos de documentos
 enum TipoDocumento {
+  // Uso externo (tabla hijos)
   ACTA_NACIMIENTO
+
+  // Uso externo (tabla permisos)
   APROBACION_PERMISO
-  CERTIFICADO_CURSO
+
+  // Uso interno (panel de documentos)
   CERTIFICADO_ESTUDIO
+
+  // Uso externo (tabla cambiosadscripcion)
   CONSTANCIA_DOCUMENTOS_COMPROBATORIOS
   CONSTANCIA_NOMBRAMIENTO
+
+  // Uso compartido (puede ser panel o cursos)
   CONSTANCIA_RECONOCIMIENTO
+
+  // Uso interno (panel de documentos)
   CURP
   INE
-  OFICIO
   RFC
   OTRO_DOCUMENTO
+
+  // Uso general (como respaldo o administrativos)
+  OFICIO
+
+  // Uso externo (tabla trabajadores_cursos)
+  INVITACION_CURSO
+  CONCLUSION_CURSO
 }
+
 
 enum Roles {
   ADMINISTRADOR
