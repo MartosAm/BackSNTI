@@ -10,7 +10,7 @@ const { authMiddleware, authorizationMiddleware } = require('../middleware');
 const trabajadorRoutes = require('./trabajadorRoutes');
 const authRoutes = require('./authRoutes'); // Este enrutador ya maneja sus propios middlewares internos (login, test-token)
 const seccionRoutes = require('./seccionRoutes');
-const documentoRoutes = require('./documentoRoutes');
+const documentosPanelRoutes = require('./documentosPanelRoutes');
 const hijosRoutes = require('./hijosRoutes');
 const permisosRoutes = require('./permisosRoutes'); 
 const sancionesRoutes = require('./sancionesRoutes'); 
@@ -27,7 +27,7 @@ const trabajadoresCursosRoutes = require('./trabajadoresCursosRoutes'); // Aseg√
 
 router.use('/trabajadores', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), trabajadorRoutes);
 router.use('/secciones', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]), seccionRoutes);
-router.use('/documentos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), documentoRoutes);
+router.use('/documentos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), documentosPanelRoutes);
 router.use('/permisos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), permisosRoutes);
 router.use('/sanciones', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), sancionesRoutes);
 router.use('/contactos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.ADMINISTRADOR]), contactosRoutes);
