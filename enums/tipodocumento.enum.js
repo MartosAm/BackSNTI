@@ -15,7 +15,8 @@
 
     // Nuevos tipos usados en trabajadores_cursos
     INVITACION_CURSO: 'INVITACION_CURSO',
-    CONCLUSION_CURSO: 'CONCLUSION_CURSO'
+    CONCLUSION_CURSO: 'CONCLUSION_CURSO',
+    CERTIFICADO_CURSO: 'CERTIFICADO_CURSO'
   });
 
   module.exports = TipoDocumento;

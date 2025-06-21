@@ -18,7 +18,12 @@ const authRoutes = require('./routes/authRoutes'); // Ajusta la ruta si es neces
 const sancionesRoutes = require('./routes/sancionesRoutes'); // Ajusta la ruta si es necesario
 const permisosRoutes = require('./routes/permisosRoutes'); // Ajusta la ruta si es necesario
 const contactosRoutes = require('./routes/contactosRoutes'); 
+const cursosRoutes = require('./routes/cursosRoutes'); // Ajusta la ruta si es necesario
+const trabajadoresCursosRoutes = require('./routes/trabajadoresCursosRoutes'); // Ajusta la ruta si es necesario
 
+
+
+const galeriaRoutes = require('./routes/galeriaRoutes'); // Ajusta la ruta si es necesario
 const trabajadorRoutes = require('./routes/trabajadorRoutes'); // Ajusta la ruta si es necesario
 const authMiddleware = require('./middleware/auth'); // Ajusta la ruta si es necesario
 
@@ -82,10 +87,13 @@ app.use('/auth', authRoutes); // Monta el enrutador con el prefijo /api/auth
 app.use('/sanciones', sancionesRoutes); // Monta el enrutador con el prefijo /api/sanciones
 app.use('/permisos', permisosRoutes); // Monta el enrutador con el prefijo /api/permisos
 app.use ('/contactos', contactosRoutes); // Monta el enrutador con el prefijo /api/contactos
-// Ruta base (opcional, si es necesario)
-app.get('/', (req, res) => {
-  res.json({ mensaje: '¡Servidor SNTI corriendo! 🚀' });
-});
+app.use('/galeria', galeriaRoutes); // Monta el enrutador con el prefijo /api/galeria
+app.use('/trabajadores-cursos', trabajadoresCursosRoutes); // Monta el enrutador con el prefijo /api/trabajadores-cursos
+app.use('/cursos', cursosRoutes); // Monta el enrutador con el prefijo /api/cursos
+
+
+
+
 
 // Manejo de errores
 app.use(errorHandler);
