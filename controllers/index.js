@@ -13,7 +13,7 @@ import { galeriaController}  from './galeriaController'; // Ajusta la ruta si es
 import {cursosController} from './cursosController'; // Ajusta la ruta si es necesario
 import {trabajadoresCursosController} from './trabajadoresCursosController'; // Ajusta la ruta si es necesario
 import {documentosPublicosController} from './documentosPublicosController'; // Ajusta la ruta si es necesario
-
+import {cambioAdscripcionController} from './cambioAdscripcionController'; // Ajusta la ruta si es necesario
 
 
 
@@ -30,6 +30,7 @@ module.exports = {
   galeriaController,
   cursosController,
   trabajadoresCursosController,
-  documentosPublicosController
+  documentosPublicosController,
+  cambioAdscripcionController
   
 };

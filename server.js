@@ -26,13 +26,12 @@ const contactosRoutes = require('./routes/contactosRoutes');
 const cursosRoutes = require('./routes/cursosRoutes'); // Ajusta la ruta si es necesario
 const trabajadoresCursosRoutes = require('./routes/trabajadoresCursosRoutes'); // Ajusta la ruta si es necesario
 const documentosPublicosRoutes = require('./routes/documentosPublicosRoutes'); // Ajusta la ruta si es necesario
-
+const cambioAdscripcionRoutes = require('./routes/cambioAdscripcionRoutes'); // Ajusta la ruta si es necesario
 
 const galeriaRoutes = require('./routes/galeriaRoutes'); // Ajusta la ruta si es necesario
 const trabajadorRoutes = require('./routes/trabajadorRoutes'); // Ajusta la ruta si es necesario
 const authMiddleware = require('./middleware/auth'); // Ajusta la ruta si es necesario
 
-const { obtenerHijosPorTrabajador } = require('./controllers/hijosController');
 // Inicializar app y prisma
 const app = express();
 const prisma = new PrismaClient();
@@ -96,7 +95,7 @@ app.use('/galeria', galeriaRoutes); // Monta el enrutador con el prefijo /api/ga
 app.use('/trabajadores-cursos', trabajadoresCursosRoutes); // Monta el enrutador con el prefijo /api/trabajadores-cursos
 app.use('/cursos', cursosRoutes); // Monta el enrutador con el prefijo /api/cursos
 app.use('/publicpdfs', documentosPublicosRoutes); // Monta el enrutador con el prefijo /api/documentos-publicos
-
+app.use ('/cambios-adscripcion', cambioAdscripcionRoutes) // Monta el enrutador con el prefijo /api/cambios-adscripcion
 
 
 

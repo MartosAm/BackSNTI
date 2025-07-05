@@ -19,6 +19,7 @@ const galeriaRoutes = require('./galeriaRoutes'); // Asegúrate de que este enru
 const cursosRoutes = require('./cursosRoutes'); // Asegúrate de que este enrutador esté correctamente definido
 const trabajadoresCursosRoutes = require('./trabajadoresCursosRoutes'); // Asegúrate de que este enrutador esté correctamente definido
 const documentosPublicosRoutes = require('./documentosPublicosRoutes'); // Asegúrate de que este enrutador esté correctamente definido
+const cambioAdscripcionRoutes = require('./cambioAdscripcionRoutes'); // Asegúrate de que este enrutador esté correctamente definido
 // Rutas que requieren autenticación por defecto (aplican verifyToken y hasRole)
 // Nota: El middleware hasRole, si no se le pasan roles, debe manejarlo internamente
 // o deberías pasarle un array vacío/un rol por defecto si es una ruta general
@@ -36,6 +37,8 @@ router.use ('/galeria', authMiddleware.verifyToken, authorizationMiddleware.hasR
 router.use('/hijos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), hijosRoutes);
 router.use('/cursos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), cursosRoutes);
 router.use('/trabajadoresCursos', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), trabajadoresCursosRoutes);
+router.use('/cambioAdscripcionRoutes', authMiddleware.verifyToken, authorizationMiddleware.hasRole([Roles.USUARIO, Roles.ADMINISTRADOR]), cambioAdscripcionRoutes);
+
 
 // Las rutas de autenticación (login, test-token, etc.) NO llevan authMiddleware.verifyToken globalmente aquí.
 // Si alguna ruta dentro de authRoutes (como /auth/verify o /auth/logout) necesita token,
