@@ -13,7 +13,13 @@ const validarTrabajador = [
         .isLength({ max: 150 }).withMessage('El identificador no puede exceder 150 caracteres'),
     body('contraseña')
         .optional()
-        .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
+        .custom(value => {
+    // Si viene como undefined o null, o string vacía, es válido (no se actualiza la contraseña)
+    if (value === undefined || value === null || value === '') return true;
+    // Si tiene valor, debe tener al menos 6 caracteres
+    if (value.length < 6) throw new Error('La contraseña debe tener al menos 6 caracteres');
+    return true;
+  }),
     body('rol').optional().isIn([Roles.ADMINISTRADOR, Roles.USUARIO]).withMessage('Rol no válido. Debe ser ADMINISTRADOR o USUARIO.'),
     body('nombre').optional().isLength({ max: 100 }).withMessage('El nombre no puede exceder 100 caracteres.'),
     body('apellido_paterno').optional().isLength({ max: 100 }).withMessage('El apellido paterno no puede exceder 100 caracteres.'),
@@ -28,7 +34,7 @@ const validarTrabajador = [
         .matches(/^[A-Z]{4}\d{6}[0-9A-Z]{3}$/).withMessage('Formato de RFC inválido.'),
     body('email').optional().isEmail().withMessage('Formato de email inválido.').isLength({ max: 150 }).withMessage('El email no puede exceder 150 caracteres.'),
     body('situacion_sentimental').optional()
-        .isIn(['Soltero', 'Casado', 'Divorciado', 'Viudo', 'Union Libre']).withMessage('Valor de situación sentimental no válido.'),
+        .isIn(['Soltero', 'Casado', 'Divorciado', 'Viudo', 'Union_Libre']).withMessage('Valor de situación sentimental no válido.'),
     body('numero_hijos').optional().isInt({ min: 0 }).withMessage('Número de hijos inválido. Debe ser un número entero positivo.'),
     body('numero_empleado').optional()
         .isLength({ min: 10, max: 10 }).withMessage('El número de empleado debe tener 10 caracteres.'),
@@ -40,7 +46,10 @@ const validarTrabajador = [
     body('nombre_puesto').optional().isLength({ max: 100 }).withMessage('El nombre del puesto no puede exceder 100 caracteres.'),
     body('puesto_inpi').optional().isLength({ max: 100 }).withMessage('El puesto INPI no puede exceder 100 caracteres.'),
     body('adscripcion').optional().isLength({ max: 100 }).withMessage('La adscripción no puede exceder 100 caracteres.'),
-    body('id_seccion').optional().isInt().withMessage('ID de sección inválido. Debe ser un número entero.'),
+    body('id_seccion')
+        .optional()
+        .isInt().withMessage('ID de sección inválido. Debe ser un número entero.')
+        .toInt(), // Convierte a entero, ajuste hecho para que se pueda usar en el formulario
     body('nivel_estudios').optional().isLength({ max: 100 }).withMessage('El nivel de estudios no puede exceder 100 caracteres.'),
     body('institucion_estudios').optional().isLength({ max: 200 }).withMessage('La institución de estudios no puede exceder 200 caracteres.'),
     body('certificado_estudios').optional().isBoolean().withMessage('Valor de certificado inválido. Debe ser true o false.'),
@@ -66,7 +75,10 @@ const validarCreacionTrabajador = [
     body('nivel_puesto').notEmpty().withMessage('El nivel de puesto es obligatorio.'),
     body('nombre_puesto').notEmpty().withMessage('El nombre del puesto es obligatorio.'),
     body('adscripcion').notEmpty().withMessage('La adscripción es obligatoria.'),
-    body('id_seccion').notEmpty().withMessage('La sección es obligatoria.').isInt().withMessage('ID de sección inválido.'),
+    body('id_seccion')
+        .notEmpty().withMessage('La sección es obligatoria.')
+        .isInt().withMessage('ID de sección inválido.')
+        .toInt(), // Convierte a entero, ajuste hecho para que se pueda usar en el formulario
     ...validarTrabajador // Combina con las validaciones de formato de los campos ya definidos
 ];
 
@@ -154,7 +166,10 @@ const listarTrabajadores = async (req, res) => {
                 // Incluir la relación de sección si es necesario mostrar el nombre de la sección, etc.
                 seccion: {
                     select: {
-                        nombre_seccion: true // Ejemplo: selecciona el nombre de la sección
+                        numero_seccion: true,
+                        estado: true,
+                        ubicacion: true,
+                        secretario: true
                     }
                 }
             }
@@ -194,6 +209,8 @@ const crearTrabajador = async (req, res) => {
             plaza_base
         } = req.body;
 
+        const idSeccionInt = parseInt(id_seccion, 10); // Asegurarse de que id_seccion sea un entero
+
         // Verificar duplicados antes de la creación
         const camposDuplicados = await verificarDuplicados({
             identificador, curp, rfc, email, numero_empleado, numero_plaza
@@ -219,6 +236,7 @@ const crearTrabajador = async (req, res) => {
         const nuevoTrabajador = await prisma.trabajadores.create({
             data: {
                 identificador,
+                //contraseña_hash: contraseñaHash,
                 password_hash: contraseñaHash,
                 intentos_fallidos: 0,
                 bloqueado: false,
@@ -244,7 +262,7 @@ const crearTrabajador = async (req, res) => {
                 // Conectar con la sección existente
                 seccion: {
                     connect: {
-                        id_seccion: id_seccion
+                         id_seccion: idSeccionInt
                     }
                 },
                 nivel_estudios,
@@ -255,6 +273,8 @@ const crearTrabajador = async (req, res) => {
             }
         });
 
+        // Omitir contraseña_hash en la respuesta por seguridad
+        // const { contraseña_hash, ...trabajadorSinPassword } = nuevoTrabajador;
         // Omitir password_hash _hash en la respuesta por seguridad
         const { password_hash , ...trabajadorSinPassword } = nuevoTrabajador;
 
@@ -320,7 +340,10 @@ const miPerfil = async (req, res) => {
                 fecha_actualizacion: true,
                 seccion: {
                     select: {
-                        nombre_seccion: true
+                        numero_seccion: true,
+                        estado: true,
+                        ubicacion: true,
+                        // secretario: true
                     }
                 }
             }
@@ -393,7 +416,10 @@ const obtenerTrabajadorPorId = async (req, res) => {
                 fecha_actualizacion: true,
                 seccion: {
                     select: {
-                        nombre_seccion: true
+                        numero_seccion: true,
+                        estado: true,
+                        ubicacion: true,
+                        // secretario: true
                     }
                 }
             }
@@ -422,6 +448,9 @@ const obtenerTrabajadorPorId = async (req, res) => {
  * @param {object} res - Objeto de respuesta de Express.
  */
 const actualizarTrabajador = async (req, res) => {
+
+    console.log('Body recibido:', req.body); //cada vez que te llegue una petición PUT/PATCH, verás el contenido real de lo que llega.
+
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -464,10 +493,12 @@ const actualizarTrabajador = async (req, res) => {
         const dataToUpdate = {};
 
         if (identificador !== undefined) dataToUpdate.identificador = identificador;
-        if (contraseña !== undefined) {
-            const saltRounds = 12;
-            dataToUpdate.password_hash  = await bcrypt.hash(contraseña, saltRounds);
-        }
+        
+        if (contraseña !== undefined && contraseña.trim() !== '') {
+    const saltRounds = 12;
+    // dataToUpdate.contraseña_hash = await bcrypt.hash(contraseña, saltRounds);
+    dataToUpdate.password_hash  = await bcrypt.hash(contraseña, saltRounds);
+}
         if (rol !== undefined) dataToUpdate.rol = rol;
         if (nombre !== undefined) dataToUpdate.nombre = nombre;
         if (apellido_paterno !== undefined) dataToUpdate.apellido_paterno = apellido_paterno;
@@ -488,9 +519,10 @@ const actualizarTrabajador = async (req, res) => {
         if (puesto_inpi !== undefined) dataToUpdate.puesto_inpi = puesto_inpi;
         if (adscripcion !== undefined) dataToUpdate.adscripcion = adscripcion;
         if (id_seccion !== undefined) {
+            const idSeccionIntUpdate = parseInt(id_seccion, 10);
             dataToUpdate.seccion = {
                 connect: {
-                    id_seccion: id_seccion
+                    id_seccion: idSeccionIntUpdate
                 }
             };
         }
@@ -538,7 +570,9 @@ const actualizarTrabajador = async (req, res) => {
                 fecha_actualizacion: true,
                 seccion: {
                     select: {
-                        nombre_seccion: true
+                        numero_seccion: true,
+                        estado: true,
+                        ubicacion: true,
                     }
                 }
             }

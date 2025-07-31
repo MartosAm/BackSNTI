@@ -49,7 +49,7 @@ const crearSancion = async (req, res) => {
 
         // Verificar si el trabajador existe
         const trabajadorExistente = await prisma.trabajadores.findUnique({
-            where: { id_trabajador: id_trabajador }
+            where: { id_trabajador: parseInt(id_trabajador) }
         });
 
         if (!trabajadorExistente) {
@@ -61,7 +61,7 @@ const crearSancion = async (req, res) => {
 
         const nuevaSancion = await prisma.sanciones.create({
             data: {
-                id_trabajador: id_trabajador,
+                id_trabajador: parseInt(id_trabajador),
                 tipo_sancion,
                 descripcion,
                 fecha_aplicacion: new Date(fecha_aplicacion),

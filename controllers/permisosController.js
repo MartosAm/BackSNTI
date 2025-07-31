@@ -127,7 +127,14 @@ const listarPermisos = async (req, res) => {
   try {
     const permisos = await prisma.permisos.findMany({
       where,
-      include: { documentos: true }
+      include: {
+        documentos: true,
+        trabajadores: {
+          include: {
+            seccion: true
+          }
+        }
+      }
     });
     res.status(200).json({
       success: true,
