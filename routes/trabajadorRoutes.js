@@ -10,11 +10,13 @@ const {
     miPerfil,
     obtenerTrabajadorPorId,
     actualizarTrabajador,
+    listarTrabajadoresPorSeccion,
     eliminarTrabajador
 } = require("../controllers/trabajadorController");
 const { verifyToken } = require("../middleware/auth");
 const { hasRole } = require("../middleware/authorization");
 const Roles = require('../enums/roles.enum');
+
 
 /**
  * @swagger
@@ -573,6 +575,47 @@ router.post(
     validarCreacionTrabajador,
     crearTrabajador
 );
+/**
+ * @swagger
+ * /trabajadores/seccion:
+ *   get:
+ *     summary: Lista todos los trabajadores de la misma sección del administrador autenticado
+ *     description: Accesible solo para ADMINISTRADORES
+ *     tags: [Trabajadores]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de trabajadores de la sección obtenida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/TrabajadorOutput'
+ *       401:
+ *         $ref: '#/components/responses/401Error'
+ *       403:
+ *         $ref: '#/components/responses/403Error'
+ *       404:
+ *         $ref: '#/components/responses/404Error'
+ *       500:
+ *         $ref: '#/components/responses/500Error'
+ */
+router.get(
+    '/seccion',
+    verifyToken,
+    hasRole([Roles.ADMINISTRADOR]),
+    listarTrabajadoresPorSeccion
+);
 
 /**
  * @swagger
@@ -750,5 +793,7 @@ router.delete(
     ],
     eliminarTrabajador
 );
+
+
 
 module.exports = router;

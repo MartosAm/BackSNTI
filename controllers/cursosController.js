@@ -65,6 +65,23 @@ const crearCurso = async (req, res) => {
   const { codigo_curso, nombre_curso, horas_duracion, estatus, tipo_documento_curso } = req.body;
   const { originalname, filename, path: filePath, size, mimetype } = req.file;
 
+  // Verificar duplicados antes de procesar el archivo
+  try {
+    const codigoExistente = await prisma.cursos.findUnique({ where: { codigo_curso } });
+    if (codigoExistente) {
+      await safeUnlink(filePath);
+      return res.status(409).json({ success: false, message: 'El código del curso ya existe.' });
+    }
+    const nombreExistente = await prisma.cursos.findFirst({ where: { nombre_curso } });
+    if (nombreExistente) {
+      await safeUnlink(filePath);
+      return res.status(409).json({ success: false, message: 'El nombre del curso ya existe.' });
+    }
+  } catch (err) {
+    if (req.file) await safeUnlink(filePath);
+    return res.status(500).json({ success: false, message: 'Error al verificar duplicados.', error: err.message });
+  }
+  
   // Calcular hash del archivo
   let hash_archivo;
   try {
@@ -280,6 +297,33 @@ const eliminarCurso = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al eliminar curso.', error: error.message });
   }
 };
+
+/**
+ * @desc Eliminar curso solicitando contraseña del administrador
+ */
+const eliminarCursoConPassword = async (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+  if (!password) {
+    return res.status(400).json({ success: false, message: 'Contraseña requerida.' });
+  }
+  try {
+    const admin = await prisma.trabajadores.findUnique({ where: { id_trabajador: req.user.id } });
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Administrador no encontrado.' });
+    }
+    const bcrypt = require('bcrypt');
+    const valid = await bcrypt.compare(password, admin.password_hash);
+    if (!valid) {
+      // Usar 403 para no gatillar los interceptores de token inválido en el front
+      return res.status(403).json({ success: false, message: 'Contraseña incorrecta.' });
+    }
+    // Reutilizar la lógica de eliminación existente
+    return eliminarCurso(req, res);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error al eliminar curso.', error: error.message });
+  }
+};
 //           DESCARGAS\\\
 
 
@@ -331,6 +375,7 @@ module.exports = {
   getCursoById,
   actualizarCurso,
   eliminarCurso,
+  eliminarCursoConPassword,
   descargarConstanciaCurso
 
 };

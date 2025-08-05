@@ -593,6 +593,74 @@ const actualizarTrabajador = async (req, res) => {
     }
 };
 
+
+/**
+ * @function listarTrabajadoresPorSeccion
+ * @description Devuelve todos los trabajadores de la misma sección del administrador autenticado.
+ * Solo accesible para ADMINISTRADORES.
+ * @param {object} req - Objeto de solicitud de Express (req.user debe contener id_seccion y rol).
+ * @param {object} res - Objeto de respuesta de Express.
+ */
+const listarTrabajadoresPorSeccion = async (req, res) => {
+    try {
+        // Validar que el usuario sea ADMINISTRADOR y tenga id_seccion
+        if (!req.user || req.user.rol !== Roles.ADMINISTRADOR) {
+            return res.status(403).json({ success: false, message: 'Acceso no autorizado. Solo administradores pueden consultar trabajadores por sección.' });
+        }
+        const id_seccion = req.user.id_seccion;
+        if (!id_seccion) {
+            return res.status(400).json({ success: false, message: 'El usuario autenticado no tiene sección asignada.' });
+        }
+
+        // Obtener trabajadores de la misma sección
+        const trabajadores = await prisma.trabajadores.findMany({
+            where: { id_seccion },
+            select: {
+                id_trabajador: true,
+                identificador: true,
+                nombre: true,
+                apellido_paterno: true,
+                apellido_materno: true,
+                adscripcion: true,
+                rol: true,
+                email: true,
+                puesto_inpi: true,
+                nombre_puesto: true,
+                fecha_ingreso: true,
+                seccion: {
+                    select: {
+                        id_seccion: true,
+                        numero_seccion: true,
+                        estado: true,
+                        ubicacion: true,
+                        secretario: true
+                    }
+                }
+            }
+        });
+
+        // Si no hay trabajadores en la sección
+        if (!trabajadores || trabajadores.length === 0) {
+            return res.status(404).json({ success: false, message: 'No se encontraron trabajadores en la sección.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Trabajadores de la sección obtenidos exitosamente.',
+            data: trabajadores
+        });
+    } catch (error) {
+        console.error('Error al obtener trabajadores por sección:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error del servidor al obtener trabajadores por sección.',
+            error: error.message
+        });
+    }
+};
+
+
+
 /**
  * @function eliminarTrabajador
  * @description Elimina un trabajador por su ID. Solo accesible para ADMINISTRADORES.
@@ -693,4 +761,5 @@ module.exports = {
     obtenerTrabajadorPorId,
     actualizarTrabajador,
     eliminarTrabajador,
+    listarTrabajadoresPorSeccion,
 };
